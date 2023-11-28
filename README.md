@@ -1,4 +1,4 @@
-# <p align="center">Essentia</p>
+# <p align="center">essentia</p>
 
 ![GitHub](https://img.shields.io/github/license/XDoubleU/essentia)
 [![Workflow](https://github.com/XDoubleU/essentia/actions/workflows/api.yml/badge.svg)](https://github.com/XDoubleU/essentia/actions/workflows/api.yml)
