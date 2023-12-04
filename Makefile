@@ -9,19 +9,19 @@ lint:
 lint/fix:
 	golines . -m 88 -w
 	golangci-lint run --fix
-	gci write --skip-generated -s standard -s default -s "prefix(check-in/api)" .
+	gci write --skip-generated -s standard -s default .
 
 test:
-	go test ./cmd/api
+	go test ./...
 
 test/v:
-	go test -v ./cmd/api
+	go test ./... -v 
 
 test/cov/report:
-	go test -covermode=set -coverprofile=coverage.out ./cmd/api -coverpkg ./cmd/api,./internal/...
+	go test ./... -covermode=set -coverprofile=coverage.out
 
 test/cov:
-	go test -covermode=set -coverprofile=coverage.out ./cmd/api -coverpkg ./cmd/api,./internal/...
+	go test ./... -covermode=set -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o=coverage.html
 	make test/cov/open
 

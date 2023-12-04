@@ -1,4 +1,4 @@
-package essentia
+package core
 
 import (
 	"bufio"
