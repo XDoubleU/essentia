@@ -1,4 +1,4 @@
-package essentia
+package core
 
 import (
 	"log"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 )
+
+type HandlerFunc func(*Context)
 
 type Middleware struct {
 	index    int8
@@ -20,13 +22,13 @@ type Context struct {
 	Data       map[string]interface{}
 }
 
-func (esssentia *Essentia) createContext(w http.ResponseWriter, req *http.Request, params httprouter.Params) *Context {
+func NewContext(w http.ResponseWriter, req *http.Request, params httprouter.Params, middleware []HandlerFunc) *Context {
 	return &Context{
 		Writer:  &ResponseWriter{w, 0},
 		Request: req,
 		Middleware: &Middleware{
 			index:    -1,
-			handlers: esssentia.middleware,
+			handlers: middleware,
 		},
 		Params: params,
 		Data:   make(map[string]interface{}),
