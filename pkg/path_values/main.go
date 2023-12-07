@@ -1,15 +1,6 @@
-package url_params
+package path_values
 
-import (
-	"errors"
-	"net/http"
-	"strconv"
-
-	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
-)
-
-func ReadUUID(r *http.Request, name string) (string, error) {
+/*func ReadUUID(r *http.Request, name string) (string, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	id, err := uuid.Parse(params.ByName(name))
@@ -30,4 +21,4 @@ func ReadInt(r *http.Request, name string) (int64, error) {
 	}
 
 	return id, nil
-}
+}*/
