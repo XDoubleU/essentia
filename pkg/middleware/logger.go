@@ -1,25 +1,16 @@
 package middleware
 
 import (
-	"net/http"
+	"log"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/http_tools"
-	"github.com/XDoubleU/essentia/pkg/logger"
+	"github.com/XDoubleU/essentia/pkg/router"
 )
 
-func Logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := http_tools.NewResponseWriter(w)
+func Logger() router.HandlerFunc {
+	return func(c *router.Context) {
 		t := time.Now()
-
-		next.ServeHTTP(rw, r)
-
-		logger.GetLogger().Printf(
-			"[%d] %s in %v",
-			rw.StatusCode(),
-			r.RequestURI,
-			time.Since(t),
-		)
-	})
+		c.Next()
+		log.Printf("[%d] %s in %v", c.Request.Response.StatusCode, c.Request.RequestURI, time.Since(t))
+	}
 }

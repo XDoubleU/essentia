@@ -2,15 +2,14 @@ package middleware
 
 import (
 	"net"
-	"net/http"
 	"sync"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/http_tools"
+	"github.com/XDoubleU/essentia/pkg/router"
 	"golang.org/x/time/rate"
 )
 
-func RateLimit(next http.Handler) http.Handler {
+func RateLimit() router.HandlerFunc {
 	var rps rate.Limit = 10
 	var bucketSize = 30
 
@@ -40,10 +39,10 @@ func RateLimit(next http.Handler) http.Handler {
 		}
 	}()
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	return func(c *router.Context) {
+		ip, _, err := net.SplitHostPort(c.Request.RemoteAddr)
 		if err != nil {
-			http_tools.ServerErrorResponse(w, r, err)
+			//TODO: app.serverErrorResponse(w, r, err)
 			return
 		}
 
@@ -57,12 +56,12 @@ func RateLimit(next http.Handler) http.Handler {
 
 		if !clients[ip].limiter.Allow() {
 			mu.Unlock()
-			http_tools.RateLimitExceededResponse(w, r)
+			//TODO: app.rateLimitExceededResponse(w, r)
 			return
 		}
 
 		mu.Unlock()
 
-		next.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }

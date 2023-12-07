@@ -1,11 +1,15 @@
 package essentia
 
-import "github.com/XDoubleU/essentia/internal/core"
+import (
+	"net/http"
+
+	"github.com/XDoubleU/essentia/pkg/router"
+)
 
 type Delete struct {
 	Generic
 }
 
-func (essentia Essentia) DeleteHandler(path string, handlerFunc core.HandlerFunc) {
-	essentia.GenericHandler("DELETE", path, handlerFunc)
+func (essentia Essentia) Delete(path string, handlerFunc router.HandlerFunc) {
+	essentia.Generic(http.MethodDelete, path, handlerFunc)
 }

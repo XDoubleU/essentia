@@ -1,22 +1,25 @@
 package essentia
 
 import (
-	"github.com/XDoubleU/essentia/internal/core"
-	"github.com/XDoubleU/essentia/internal/middleware"
+	"net/http"
+
+	"github.com/XDoubleU/essentia/pkg/middleware"
+	"github.com/XDoubleU/essentia/pkg/repositories"
+	"github.com/XDoubleU/essentia/pkg/router"
 )
 
 type Essentia struct {
-	router   *core.Router
-	handlers []core.HandlerFunc
+	router   *router.Router
+	handlers []router.HandlerFunc
 }
 
 func New() *Essentia {
 	essentia := &Essentia{}
-	essentia.router = core.NewRouter()
+	essentia.router = router.NewRouter()
 	return essentia
 }
 
-func (essentia *Essentia) Use(middleware ...core.HandlerFunc) {
+func (essentia *Essentia) Use(middleware ...router.HandlerFunc) {
 	essentia.router.AddMiddleware(middleware...)
 }
 
@@ -32,6 +35,10 @@ func Default() *Essentia {
 	return essentia
 }
 
-func (essentia Essentia) Serve(address string) {
-	//http.ListenAndServe(address, essentia)
+func (essentia *Essentia) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	essentia.router.ServeHTTP(w, r)
+}
+
+func (essentia *Essentia) SetRepository(key any, repository repositories.Repository) {
+	essentia.router.SetRepository(key, repository)
 }

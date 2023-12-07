@@ -1,11 +1,15 @@
 package essentia
 
-import "github.com/XDoubleU/essentia/internal/core"
+import (
+	"net/http"
+
+	"github.com/XDoubleU/essentia/pkg/router"
+)
 
 type Update struct {
 	Generic
 }
 
-func (essentia Essentia) UpdateHandler(path string, handlerFunc core.HandlerFunc) {
-	essentia.GenericHandler("PATCH", path, handlerFunc)
+func (essentia Essentia) Update(path string, handlerFunc router.HandlerFunc) {
+	essentia.Generic(http.MethodPatch, path, handlerFunc)
 }
