@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/XDoubleU/essentia/internal/core"
+	"github.com/XDoubleU/essentia/pkg/router"
 	"golang.org/x/time/rate"
 )
 
-func RateLimit() core.HandlerFunc {
+func RateLimit() router.HandlerFunc {
 	var rps rate.Limit = 10
 	var bucketSize = 30
 
@@ -39,7 +39,7 @@ func RateLimit() core.HandlerFunc {
 		}
 	}()
 
-	return func(c *core.Context) {
+	return func(c *router.Context) {
 		ip, _, err := net.SplitHostPort(c.Request.RemoteAddr)
 		if err != nil {
 			//TODO: app.serverErrorResponse(w, r, err)

@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"github.com/XDoubleU/essentia/internal/core"
+	"github.com/XDoubleU/essentia/pkg/router"
 	"github.com/goddtriffin/helmet"
 )
 
-func Helmet() core.HandlerFunc {
+func Helmet() router.HandlerFunc {
 	helmet := helmet.Default()
 
-	return func(c *core.Context) {
+	return func(c *router.Context) {
 		helmet.ContentSecurityPolicy.Header(c.Writer.ResponseWriter)
 		helmet.XContentTypeOptions.Header(c.Writer.ResponseWriter)
 		helmet.XDNSPrefetchControl.Header(c.Writer.ResponseWriter)

@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/XDoubleU/essentia/internal/core"
+	"github.com/XDoubleU/essentia/pkg/router"
 )
 
-func Recover() core.HandlerFunc {
-	return func(c *core.Context) {
+func Recover() router.HandlerFunc {
+	return func(c *router.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				c.Writer.Header().Set("Connection", "close")
