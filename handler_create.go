@@ -1,11 +1,15 @@
 package essentia
 
-import "github.com/XDoubleU/essentia/internal/core"
+import (
+	"net/http"
+
+	"github.com/XDoubleU/essentia/pkg/router"
+)
 
 type Create struct {
 	Generic
 }
 
-func (essentia Essentia) CreateHandler(path string, handlerFunc core.HandlerFunc) {
-	essentia.GenericHandler("POST", path, handlerFunc)
+func (essentia Essentia) Create(path string, handlerFunc router.HandlerFunc) {
+	essentia.Generic(http.MethodPost, path, handlerFunc)
 }
