@@ -1,4 +1,4 @@
-package validator
+package input
 
 import "github.com/XDoubleU/essentia/pkg/router"
 
