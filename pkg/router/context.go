@@ -17,11 +17,16 @@ type Context struct {
 	Request      *http.Request
 	Writer       *ResponseWriter
 	Middleware   *Middleware
-	repositories map[string]repositories.Repository
+	repositories map[string]repositories.Repository[any, any]
 	data         map[string]any
 }
 
-func NewContext(w http.ResponseWriter, r *http.Request, middleware []HandlerFunc, repositories map[string]repositories.Repository) *Context {
+func NewContext(
+	w http.ResponseWriter,
+	r *http.Request,
+	middleware []HandlerFunc,
+	repositories map[string]repositories.Repository[any, any],
+) *Context {
 	return &Context{
 		Writer:  &ResponseWriter{w, 0},
 		Request: r,
@@ -56,7 +61,7 @@ func (c Context) GetData(key string) any {
 	return value
 }
 
-func (c Context) GetRepository(key any) repositories.Repository {
+func (c Context) GetRepository(key any) repositories.Repository[any, any] {
 	value, ok := c.repositories[reflect.TypeOf(key).String()]
 
 	if !ok || value == nil {

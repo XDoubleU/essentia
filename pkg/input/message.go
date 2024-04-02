@@ -1,3 +1,3 @@
-package validator
+package input
 
 const RequiredMessage = "must be provided"

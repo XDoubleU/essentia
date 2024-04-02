@@ -8,8 +8,8 @@ type DataRepository struct {
 	data map[string]Data
 }
 
-func (r DataRepository) GetPaged(pageIndex int, pageSize int) []any {
-	page := []any{}
+func (r DataRepository) GetPaged(pageIndex int, pageSize int) []Data {
+	page := []Data{}
 
 	keys := make([]string, 0, len(r.data))
 	for k := range r.data {
@@ -23,32 +23,30 @@ func (r DataRepository) GetPaged(pageIndex int, pageSize int) []any {
 	return page
 }
 
-func (r DataRepository) GetSingle(id any) any {
-	idString := id.(string)
-	v, ok := r.data[idString]
+func (r DataRepository) GetSingle(id string) *Data {
+	v, ok := r.data[id]
 	if !ok {
 		return nil
 	}
 
-	return v
+	return &v
 }
 
-func (r DataRepository) Create() any {
+func (r DataRepository) Create() *Data {
 	return nil
 }
 
-func (r DataRepository) Update() any {
+func (r DataRepository) Update() *Data {
 	return nil
 }
 
-func (r DataRepository) Delete(id any) any {
-	idString := id.(string)
-	v, ok := r.data[idString]
+func (r DataRepository) Delete(id string) *Data {
+	v, ok := r.data[id]
 	if !ok {
 		return nil
 	}
 
-	delete(r.data, idString)
+	delete(r.data, id)
 
-	return v
+	return &v
 }

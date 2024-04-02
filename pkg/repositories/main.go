@@ -1,9 +1,9 @@
 package repositories
 
-type Repository interface {
-	GetPaged(pageIndex int, pageSize int) []any
-	GetSingle(id any) any
-	Create() any
-	Update() any
-	Delete(id any) any
+type Repository[TData any, TId any] interface {
+	GetPaged(pageIndex int, pageSize int) []TData
+	GetSingle(id TId) *TData
+	Create() *TData
+	Update() *TData
+	Delete(id TId) *TData
 }
