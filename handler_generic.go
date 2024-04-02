@@ -14,7 +14,11 @@ type Generic struct {
 	handlerFunc router.HandlerFunc
 }
 
-func (essentia *Essentia) Generic(method string, path string, handlerFunc router.HandlerFunc) {
+func (essentia *Essentia) Generic(
+	method string,
+	path string,
+	handlerFunc router.HandlerFunc,
+) {
 	handler := Generic{
 		essentia:    essentia,
 		method:      method,

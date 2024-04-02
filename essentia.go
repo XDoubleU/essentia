@@ -39,6 +39,9 @@ func (essentia *Essentia) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	essentia.router.ServeHTTP(w, r)
 }
 
-func (essentia *Essentia) SetRepository(key any, repository repositories.Repository) {
-	essentia.router.SetRepository(key, repository)
+func SetRepository[TData any, TId any](
+	e *Essentia,
+	repo repositories.Repository[TData, TId],
+) {
+	router.SetRepository[TData, TId](e.router, repo)
 }
