@@ -11,7 +11,7 @@ import (
 type Router struct {
 	mux          *http.ServeMux
 	middleware   []HandlerFunc
-	repositories map[string]repositories.Repository
+	repositories map[string]repositories.Repository[any, any]
 }
 
 func NewRouter() *Router {
@@ -23,9 +23,12 @@ func NewRouter() *Router {
 func (router Router) Handle(method string, path string, handlers ...HandlerFunc) {
 	handlers = append(router.middleware, handlers...)
 
-	router.mux.HandleFunc(fmt.Sprintf("%s %s", method, path), func(w http.ResponseWriter, r *http.Request) {
-		NewContext(w, r, handlers, router.repositories).Next()
-	})
+	router.mux.HandleFunc(
+		fmt.Sprintf("%s %s", method, path),
+		func(w http.ResponseWriter, r *http.Request) {
+			NewContext(w, r, handlers, router.repositories).Next()
+		},
+	)
 }
 
 func (router *Router) AddMiddleware(middleware ...HandlerFunc) {
@@ -36,6 +39,9 @@ func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.mux.ServeHTTP(w, r)
 }
 
-func (router *Router) SetRepository(key any, repository repositories.Repository) {
-	router.repositories[reflect.TypeOf(key).String()] = repository
+func SetRepository[TData any, TId any](
+	r *Router,
+	repo repositories.Repository[TData, TId],
+) {
+	r.repositories[reflect.TypeFor[TData]().String()] = repo.(repositories.Repository[any, any])
 }

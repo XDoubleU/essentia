@@ -1,4 +1,4 @@
-package validator
+package input
 
 import "github.com/XDoubleU/essentia/pkg/router"
 
@@ -13,7 +13,12 @@ func New() *Validator {
 	}
 }
 
-func (validator *Validator) AddRule(key string, paramType ParamType, validation Validation, message string) {
+func (validator *Validator) AddRule(
+	key string,
+	paramType ParamType,
+	validation Validation,
+	message string,
+) {
 	rule := Rule{
 		Key:        key,
 		ParamType:  paramType,

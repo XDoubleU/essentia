@@ -9,7 +9,7 @@ import (
 func App() http.Handler {
 	app := essentia.Default()
 
-	app.SetRepository(Data{}, DataRepository{})
+	essentia.SetRepository(app, DataRepository{})
 
 	app.Get("/multiple", Data{}, true)
 	app.Get("/single/{id}", Data{}, false)
