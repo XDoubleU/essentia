@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/XDoubleU/essentia/pkg/middleware"
-	"github.com/XDoubleU/essentia/pkg/repositories"
 	"github.com/XDoubleU/essentia/pkg/router"
 )
 
@@ -37,11 +36,4 @@ func Default() *Essentia {
 
 func (essentia *Essentia) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	essentia.router.ServeHTTP(w, r)
-}
-
-func SetRepository[TData any, TId any](
-	e *Essentia,
-	repo repositories.Repository[TData, TId],
-) {
-	router.SetRepository[TData, TId](e.router, repo)
 }

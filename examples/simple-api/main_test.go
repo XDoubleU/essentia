@@ -1,7 +1,7 @@
 package main
 
 /*
-func TestGetMultiple(t *testing.T) {
+func TestGetPaged(t *testing.T) {
 	ts := httptest.NewTLSServer(App())
 
 }
