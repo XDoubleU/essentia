@@ -1,8 +1,8 @@
 package essentia
 
 import (
+	"github.com/XDoubleU/essentia/pkg/input"
 	"github.com/XDoubleU/essentia/pkg/router"
-	"github.com/XDoubleU/essentia/pkg/validator"
 )
 
 type Generic struct {
@@ -10,7 +10,7 @@ type Generic struct {
 	essentia    *Essentia
 	method      string
 	path        string
-	validator   *validator.Validator
+	validator   *input.Validator
 	handlerFunc router.HandlerFunc
 }
 
@@ -28,7 +28,7 @@ func (essentia *Essentia) Generic(
 	essentia.handlers = append(essentia.handlers, handler.GetHandlerFunc())
 }
 
-func (generic *Generic) SetValidator(validator *validator.Validator) {
+func (generic *Generic) SetValidator(validator *input.Validator) {
 	generic.validator = validator
 }
 

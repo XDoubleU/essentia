@@ -3,15 +3,11 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"reflect"
-
-	"github.com/XDoubleU/essentia/pkg/repositories"
 )
 
 type Router struct {
-	mux          *http.ServeMux
-	middleware   []HandlerFunc
-	repositories map[string]repositories.Repository[any, any]
+	mux        *http.ServeMux
+	middleware []HandlerFunc
 }
 
 func NewRouter() *Router {
@@ -26,7 +22,7 @@ func (router Router) Handle(method string, path string, handlers ...HandlerFunc)
 	router.mux.HandleFunc(
 		fmt.Sprintf("%s %s", method, path),
 		func(w http.ResponseWriter, r *http.Request) {
-			NewContext(w, r, handlers, router.repositories).Next()
+			NewContext(w, r, handlers).Next()
 		},
 	)
 }
@@ -37,11 +33,4 @@ func (router *Router) AddMiddleware(middleware ...HandlerFunc) {
 
 func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.mux.ServeHTTP(w, r)
-}
-
-func SetRepository[TData any, TId any](
-	r *Router,
-	repo repositories.Repository[TData, TId],
-) {
-	r.repositories[reflect.TypeFor[TData]().String()] = repo.(repositories.Repository[any, any])
 }
