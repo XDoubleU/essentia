@@ -3,9 +3,6 @@ package router
 import (
 	"log"
 	"net/http"
-	"reflect"
-
-	"github.com/XDoubleU/essentia/pkg/repositories"
 )
 
 type Middleware struct {
@@ -14,18 +11,16 @@ type Middleware struct {
 }
 
 type Context struct {
-	Request      *http.Request
-	Writer       *ResponseWriter
-	Middleware   *Middleware
-	repositories map[string]repositories.Repository[any, any]
-	data         map[string]any
+	Request    *http.Request
+	Writer     *ResponseWriter
+	Middleware *Middleware
+	data       map[string]any
 }
 
 func NewContext(
 	w http.ResponseWriter,
 	r *http.Request,
 	middleware []HandlerFunc,
-	repositories map[string]repositories.Repository[any, any],
 ) *Context {
 	return &Context{
 		Writer:  &ResponseWriter{w, 0},
@@ -34,8 +29,7 @@ func NewContext(
 			index:    -1,
 			handlers: middleware,
 		},
-		repositories: repositories,
-		data:         make(map[string]any),
+		data: make(map[string]any),
 	}
 }
 
@@ -53,16 +47,6 @@ func (c *Context) SetData(key string, value any) {
 
 func (c Context) GetData(key string) any {
 	value, ok := c.data[key]
-
-	if !ok || value == nil {
-		log.Panicf("No key %s in context data", key)
-	}
-
-	return value
-}
-
-func (c Context) GetRepository(key any) repositories.Repository[any, any] {
-	value, ok := c.repositories[reflect.TypeOf(key).String()]
 
 	if !ok || value == nil {
 		log.Panicf("No key %s in context data", key)
