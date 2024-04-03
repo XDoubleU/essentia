@@ -9,10 +9,14 @@ import (
 func App() http.Handler {
 	app := essentia.Default()
 
-	essentia.SetRepository(app, DataRepository{})
+	var dataRepo = DataRepository{}
 
-	app.Get("/multiple", Data{}, true)
-	app.Get("/single/{id}", Data{}, false)
+	app.GetPaged("/paged", essentia.GetPaged[Data, string]{
+		Repo: dataRepo,
+	})
+	app.GetSingle("/single/{id}", essentia.GetSingle[Data, string]{
+		Repo: dataRepo,
+	})
 	app.Create("/create", nil)
 	app.Update("/update/{id}", nil)
 	app.Delete("/delete/{id}", nil)
