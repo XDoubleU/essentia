@@ -1,7 +1,7 @@
 package essentia
 
 import (
-	"github.com/XDoubleU/essentia/pkg/input"
+	"github.com/XDoubleU/essentia/pkg/parser"
 	"github.com/XDoubleU/essentia/pkg/router"
 )
 
@@ -10,7 +10,7 @@ type Generic struct {
 	essentia    *Essentia
 	method      string
 	path        string
-	validator   *input.Validator
+	parser      *parser.Parser
 	handlerFunc router.HandlerFunc
 }
 
@@ -28,13 +28,13 @@ func (essentia *Essentia) Generic(
 	essentia.handlers = append(essentia.handlers, handler.GetHandlerFunc())
 }
 
-func (generic *Generic) SetValidator(validator *input.Validator) {
-	generic.validator = validator
+func (generic *Generic) SetParser(parser *parser.Parser) {
+	generic.parser = parser
 }
 
 func (generic *Generic) GetHandlerFunc() router.HandlerFunc {
 	return func(c *router.Context) {
-		if generic.validator != nil && !generic.validator.Validate(c) {
+		if generic.parser != nil && !generic.parser.Parse(c) {
 			//TODO: throw error or smth
 		}
 
