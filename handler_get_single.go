@@ -30,6 +30,7 @@ func (g GetSingle[TData, TId]) GetSingle(id any) any {
 }
 
 func (essentia *Essentia) GetSingle(path string, g getSingle) {
+	//TODO configure validator
 	essentia.Generic(http.MethodGet, path, func(ctx *router.Context) {
 		// TODO do something with data
 		//data := g.GetSingle(-1)

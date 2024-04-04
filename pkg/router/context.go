@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -11,10 +12,14 @@ type Middleware struct {
 }
 
 type Context struct {
-	Request    *http.Request
-	Writer     *ResponseWriter
-	Middleware *Middleware
-	data       map[string]any
+	Request     *http.Request
+	Writer      *ResponseWriter
+	Middleware  *Middleware
+	QueryValues map[string]any
+	PathValues  map[string]any
+	BodyValues  map[string]any
+	body        map[string]string
+	data        map[string]any
 }
 
 func NewContext(
@@ -22,6 +27,11 @@ func NewContext(
 	r *http.Request,
 	middleware []HandlerFunc,
 ) *Context {
+	var body map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		//TODO: handle error
+	}
+
 	return &Context{
 		Writer:  &ResponseWriter{w, 0},
 		Request: r,
@@ -29,6 +39,7 @@ func NewContext(
 			index:    -1,
 			handlers: middleware,
 		},
+		body: body,
 		data: make(map[string]any),
 	}
 }
@@ -48,7 +59,7 @@ func (c *Context) SetData(key string, value any) {
 func (c Context) GetData(key string) any {
 	value, ok := c.data[key]
 
-	if !ok || value == nil {
+	if !ok {
 		log.Panicf("No key %s in context data", key)
 	}
 
@@ -58,7 +69,7 @@ func (c Context) GetData(key string) any {
 func (c Context) GetQueryValue(name string) []string {
 	value, ok := c.Request.URL.Query()[name]
 
-	if !ok || value == nil {
+	if !ok {
 		log.Panicf("No param %s in query params", name)
 	}
 
@@ -70,6 +81,16 @@ func (c Context) GetPathValue(name string) string {
 
 	if len(value) == 0 {
 		log.Panicf("No param %s in url params", name)
+	}
+
+	return value
+}
+
+func (c Context) GetBodyValue(name string) string {
+	value, ok := c.body[name]
+
+	if !ok {
+		log.Panicf("No param %s in query params", name)
 	}
 
 	return value
