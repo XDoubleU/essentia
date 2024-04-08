@@ -1,41 +1,13 @@
-package router
+package helpers
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 )
 
-func WriteJSON(
-	w http.ResponseWriter,
-	status int,
-	data any,
-	headers http.Header,
-) error {
-	js, err := json.MarshalIndent(data, "", "\t")
-	if err != nil {
-		return err
-	}
-
-	js = append(js, '\n')
-
-	for key, value := range headers {
-		w.Header()[key] = value
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_, err = w.Write(js)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ReadJSON(body io.Reader, dst any) error {
+func ReadJSON[T any](body io.Reader, dst T, allowEmpty bool) error {
 	err := json.NewDecoder(body).Decode(dst)
 
 	if err != nil {
@@ -58,12 +30,17 @@ func ReadJSON(body io.Reader, dst any) error {
 					unmarshalTypeError.Field,
 				)
 			}
+
 			return fmt.Errorf(
 				"body contains incorrect JSON type (at character %d)",
 				unmarshalTypeError.Offset,
 			)
 
 		case errors.Is(err, io.EOF):
+			if allowEmpty {
+				return nil
+			}
+
 			return errors.New("body must not be empty")
 
 		case errors.As(err, &invalidUnmarshalError):

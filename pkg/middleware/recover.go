@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/XDoubleU/essentia/pkg/router"
 )
@@ -13,7 +14,7 @@ func Recover() router.HandlerFunc {
 			if err := recover(); err != nil {
 				c.Writer.Header().Set("Connection", "close")
 				c.Writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("PANIC: %s\n", err)
+				log.Printf("PANIC: %s\nstacktrace: %s\n", err, string(debug.Stack()))
 			}
 		}()
 

@@ -8,6 +8,10 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func IsNil[T comparable](t *testing.T, value any) {
+	Equal(t, value, nil)
+}
+
 func Equal[T comparable](t *testing.T, actual, expected T) {
 	t.Helper()
 	if actual != expected {

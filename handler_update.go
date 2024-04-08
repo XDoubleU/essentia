@@ -10,6 +10,6 @@ type Update struct {
 	Generic
 }
 
-func (essentia Essentia) Update(path string, handlerFunc router.HandlerFunc) {
+func (essentia Engine) Update(path string, handlerFunc router.HandlerFunc) {
 	essentia.Generic(http.MethodPatch, path, handlerFunc)
 }
