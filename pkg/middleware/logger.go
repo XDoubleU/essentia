@@ -13,7 +13,7 @@ func Logger() router.HandlerFunc {
 		c.Next()
 		log.Printf(
 			"[%d] %s in %v",
-			c.Request.Response.StatusCode,
+			c.Writer.StatusCode(),
 			c.Request.RequestURI,
 			time.Since(t),
 		)

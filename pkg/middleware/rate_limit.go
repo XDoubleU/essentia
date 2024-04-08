@@ -47,6 +47,7 @@ func RateLimit() router.HandlerFunc {
 		}
 
 		mu.Lock()
+		defer mu.Unlock()
 
 		if _, found := clients[ip]; !found {
 			clients[ip] = &client{limiter: rate.NewLimiter(rps, bucketSize)}
@@ -55,12 +56,9 @@ func RateLimit() router.HandlerFunc {
 		clients[ip].lastSeen = time.Now()
 
 		if !clients[ip].limiter.Allow() {
-			mu.Unlock()
 			//TODO: app.rateLimitExceededResponse(w, r)
 			return
 		}
-
-		mu.Unlock()
 
 		c.Next()
 	}
