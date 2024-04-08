@@ -8,7 +8,13 @@ type DataRepository struct {
 	data map[string]Data
 }
 
-func (r DataRepository) GetPaged(pageIndex int, pageSize int) []Data {
+func NewDataRepository() DataRepository {
+	return DataRepository{
+		data: make(map[string]Data, 0),
+	}
+}
+
+func (r DataRepository) PagedGet(pageIndex int, pageSize int) []Data {
 	page := []Data{}
 
 	keys := make([]string, 0, len(r.data))
@@ -23,7 +29,7 @@ func (r DataRepository) GetPaged(pageIndex int, pageSize int) []Data {
 	return page
 }
 
-func (r DataRepository) GetSingle(id string) *Data {
+func (r DataRepository) SingleGet(id string) *Data {
 	v, ok := r.data[id]
 	if !ok {
 		return nil

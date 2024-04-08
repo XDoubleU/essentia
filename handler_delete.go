@@ -10,6 +10,6 @@ type Delete struct {
 	Generic
 }
 
-func (essentia Essentia) Delete(path string, handlerFunc router.HandlerFunc) {
-	essentia.Generic(http.MethodDelete, path, handlerFunc)
+func (e Engine) Delete(path string, handlerFunc router.HandlerFunc) {
+	e.Generic(http.MethodDelete, path, handlerFunc)
 }

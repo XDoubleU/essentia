@@ -10,19 +10,28 @@ type Router struct {
 	middleware []HandlerFunc
 }
 
-func NewRouter() *Router {
-	return &Router{
-		mux: http.DefaultServeMux,
+func NewRouter() Router {
+	return Router{
+		mux:        http.DefaultServeMux,
+		middleware: make([]HandlerFunc, 0),
 	}
 }
 
-func (router Router) Handle(method string, path string, handlers ...HandlerFunc) {
-	handlers = append(router.middleware, handlers...)
+func (router *Router) Handle(method string, path string, handler HandlerFunc) {
+	var handlers []HandlerFunc
+	handlers = append(handlers, router.middleware...)
+	handlers = append(handlers, handler)
 
 	router.mux.HandleFunc(
 		fmt.Sprintf("%s %s", method, path),
 		func(w http.ResponseWriter, r *http.Request) {
-			NewContext(w, r, handlers).Next()
+			c := NewContext(w, r, handlers)
+			if err := c.readBody(); err != nil {
+				// todo handle error
+				panic(err)
+			}
+
+			c.Next()
 		},
 	)
 }

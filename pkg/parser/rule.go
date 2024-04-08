@@ -27,7 +27,12 @@ type Error struct {
 	Message string
 }
 
-func NewRule[T any](key string, valueType ValueType, validation Validation[T], message string) Rule[T] {
+func NewRule[T any](
+	key string,
+	valueType ValueType,
+	validation Validation[T],
+	message string,
+) Rule[T] {
 	return Rule[T]{
 		Key:        key,
 		ValueType:  valueType,

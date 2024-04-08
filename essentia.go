@@ -7,33 +7,36 @@ import (
 	"github.com/XDoubleU/essentia/pkg/router"
 )
 
-type Essentia struct {
-	router   *router.Router
-	handlers []router.HandlerFunc
+type Engine struct {
+	router router.Router
 }
 
-func New() *Essentia {
-	essentia := &Essentia{}
-	essentia.router = router.NewRouter()
-	return essentia
+func New() *Engine {
+	return &Engine{
+		router: router.NewRouter(),
+	}
 }
 
-func (essentia *Essentia) Use(middleware ...router.HandlerFunc) {
+func (essentia *Engine) Use(middleware ...router.HandlerFunc) {
 	essentia.router.AddMiddleware(middleware...)
 }
 
-func Minimal() *Essentia {
+func Minimal() *Engine {
 	essentia := New()
 	essentia.Use(middleware.Logger(), middleware.Recover())
 	return essentia
 }
 
-func Default() *Essentia {
+func Default() *Engine {
 	essentia := Minimal()
 	essentia.Use(middleware.Helmet(), middleware.Cors(), middleware.RateLimit())
 	return essentia
 }
 
-func (essentia *Essentia) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	essentia.router.ServeHTTP(w, r)
+func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	e.router.ServeHTTP(w, r)
+}
+
+func (e *Engine) Run(addr string) (err error) {
+	return http.ListenAndServe(addr, e)
 }

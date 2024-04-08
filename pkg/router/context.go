@@ -1,9 +1,10 @@
 package router
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/XDoubleU/essentia/internal/helpers"
 )
 
 type Middleware struct {
@@ -24,30 +25,36 @@ type Context struct {
 
 func NewContext(
 	w http.ResponseWriter,
-	r *http.Request,
-	middleware []HandlerFunc,
-) *Context {
-	var body map[string]string
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		//TODO: handle error
-	}
-
-	return &Context{
+	req *http.Request,
+	handlers []HandlerFunc,
+) Context {
+	return Context{
 		Writer:  &ResponseWriter{w, 0},
-		Request: r,
+		Request: req,
 		Middleware: &Middleware{
 			index:    -1,
-			handlers: middleware,
+			handlers: handlers,
 		},
-		body: body,
+		body: make(map[string]string),
 		data: make(map[string]any),
 	}
 }
 
+func (c *Context) readBody() error {
+	var body map[string]string
+	if err := helpers.ReadJSON(c.Request.Body, &body, true); err != nil {
+		return err
+	}
+
+	c.body = body
+
+	return nil
+}
+
 func (c *Context) Next() {
 	c.Middleware.index++
-	s := int8(len(c.Middleware.handlers))
-	for ; c.Middleware.index < s; c.Middleware.index++ {
+
+	for ; c.Middleware.index < int8(len(c.Middleware.handlers)); c.Middleware.index++ {
 		c.Middleware.handlers[c.Middleware.index](c)
 	}
 }
