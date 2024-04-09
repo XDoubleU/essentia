@@ -11,5 +11,5 @@ type Update struct {
 }
 
 func (essentia Engine) Update(path string, handlerFunc router.HandlerFunc) {
-	essentia.Generic(http.MethodPatch, path, handlerFunc)
+	essentia.Generic(http.MethodPatch, path, nil, handlerFunc)
 }
