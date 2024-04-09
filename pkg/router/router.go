@@ -3,27 +3,34 @@ package router
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/XDoubleU/essentia/internal/logging"
 )
 
 type Router struct {
+	logger     logging.Logger
 	mux        *http.ServeMux
 	middleware []HandlerFunc
 }
 
 func NewRouter() Router {
 	return Router{
-		mux:        http.DefaultServeMux,
+		logger:     logging.NewLogger(),
+		mux:        http.NewServeMux(),
 		middleware: make([]HandlerFunc, 0),
 	}
 }
 
-func (router *Router) Handle(method string, path string, handler HandlerFunc) {
+func (r *Router) Handle(method string, path string, handler HandlerFunc) {
 	var handlers []HandlerFunc
-	handlers = append(handlers, router.middleware...)
+	handlers = append(handlers, r.middleware...)
 	handlers = append(handlers, handler)
 
-	router.mux.HandleFunc(
-		fmt.Sprintf("%s %s", method, path),
+	pattern := fmt.Sprintf("%s %s", method, path)
+
+	r.logger.Infof("Adding %s to mux", pattern)
+	r.mux.HandleFunc(
+		pattern,
 		func(w http.ResponseWriter, r *http.Request) {
 			c := NewContext(w, r, handlers)
 			if err := c.readBody(); err != nil {

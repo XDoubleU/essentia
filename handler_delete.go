@@ -11,5 +11,5 @@ type Delete struct {
 }
 
 func (e Engine) Delete(path string, handlerFunc router.HandlerFunc) {
-	e.Generic(http.MethodDelete, path, handlerFunc)
+	e.Generic(http.MethodDelete, path, nil, handlerFunc)
 }

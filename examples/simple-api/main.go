@@ -10,7 +10,7 @@ import (
 func setupRouter(dataRepo *DataRepository) *essentia.Engine {
 	r := essentia.Default()
 
-	r.Generic(http.MethodGet, "/generic", func(ctx *router.Context) {
+	r.Generic(http.MethodGet, "/generic", nil, func(ctx *router.Context) {
 		rsData := map[string]string{
 			"message": "ok",
 		}

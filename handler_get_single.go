@@ -33,9 +33,14 @@ func (g GetSingle[TData, TId]) SingleGet(id any) any {
 func (e *Engine) GetSingle(path string, g SingleGetter) {
 	// TODO configure validator
 
-	e.Generic(http.MethodGet, path, func(c *router.Context) {
-		id, _ := c.PathValues["id"]
-		fmt.Printf("id: %s", id)
+	e.Generic(http.MethodGet, path, nil, func(c *router.Context) {
+		id, ok := c.PathValues["id"]
+		if !ok {
+			//todo: handle error
+			return
+		}
+
+		fmt.Printf("id: %s\n", id)
 
 		// TODO do something with data
 		// data := g.GetSingle(id)
