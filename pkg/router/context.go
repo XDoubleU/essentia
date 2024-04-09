@@ -73,7 +73,7 @@ func (c Context) GetData(key string) any {
 	return value
 }
 
-func (c Context) GetQueryValue(name string) []string {
+func (c Context) GetRawQueryValue(name string) []string {
 	value, ok := c.Request.URL.Query()[name]
 
 	if !ok {
@@ -83,7 +83,7 @@ func (c Context) GetQueryValue(name string) []string {
 	return value
 }
 
-func (c Context) GetPathValue(name string) string {
+func (c Context) GetRawPathValue(name string) string {
 	value := c.Request.PathValue(name)
 
 	if len(value) == 0 {
@@ -93,7 +93,7 @@ func (c Context) GetPathValue(name string) string {
 	return value
 }
 
-func (c Context) GetBodyValue(name string) string {
+func (c Context) GetRawBodyValue(name string) string {
 	value, ok := c.body[name]
 
 	if !ok {
