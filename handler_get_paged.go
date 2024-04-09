@@ -26,7 +26,7 @@ func (g GetPaged[TData, TId]) PagedGet(pageIndex int, pageSize int) []any {
 
 func (essentia *Engine) GetPaged(path string, g PagedGetter) {
 	// TODO configure validator
-	essentia.Generic(http.MethodGet, path, func(ctx *router.Context) {
+	essentia.Generic(http.MethodGet, path, nil, func(ctx *router.Context) {
 		// TODO do something with data
 		// TODO parse and use pageIndex and pageSize
 		// data := g.GetPaged(-1, -1)

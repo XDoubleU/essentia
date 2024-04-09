@@ -11,5 +11,5 @@ type Create struct {
 }
 
 func (e Engine) Create(path string, handlerFunc router.HandlerFunc) {
-	e.Generic(http.MethodPost, path, handlerFunc)
+	e.Generic(http.MethodPost, path, nil, handlerFunc)
 }

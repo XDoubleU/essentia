@@ -11,7 +11,9 @@ import (
 func NewTestDataRepository() *DataRepository {
 	dataRepo := NewDataRepository()
 
-	//todo add mock data
+	dataRepo.data["first"] = Data{
+		name: "First",
+	}
 
 	return &dataRepo
 }
@@ -26,15 +28,14 @@ func TestGeneric(t *testing.T) {
 	test.Equal(t, rsData["message"], "ok")
 }
 
-/*
 func TestGetSingle(t *testing.T) {
 	ts := httptest.NewTLSServer(setupRouter(NewTestDataRepository()))
 	defer ts.Close()
 
-	var rsData any
-	test.TestGetSingle(t, ts, "single/TODO", &rsData)
+	var rsData Data
+	test.TestGetSingle(t, ts, "single/first", &rsData)
 
-	//todo test rsData
+	test.Equal(t, rsData.name, "First")
 }
 
 /*

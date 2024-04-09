@@ -47,11 +47,11 @@ func (rule Rule[T]) Parse(c *router.Context) *Error {
 	// acquire value
 	switch rule.ValueType {
 	case Query:
-		value = c.GetQueryValue(rule.Key)
+		value = c.GetRawQueryValue(rule.Key)
 	case Path:
-		value = c.GetPathValue(rule.Key)
+		value = c.GetRawPathValue(rule.Key)
 	case Body:
-		value = c.GetBodyValue(rule.Key)
+		value = c.GetRawBodyValue(rule.Key)
 	default:
 		return &Error{
 			Key:     rule.Key,

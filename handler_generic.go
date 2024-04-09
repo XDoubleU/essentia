@@ -1,6 +1,7 @@
 package essentia
 
 import (
+	"github.com/XDoubleU/essentia/pkg/parser"
 	"github.com/XDoubleU/essentia/pkg/router"
 )
 
@@ -11,9 +12,17 @@ type Generic struct {
 func (e *Engine) Generic(
 	method string,
 	path string,
+	parser *parser.Parser,
 	handlerFunc router.HandlerFunc,
 ) {
-	e.router.Handle(method, path, handlerFunc)
+	e.router.Handle(method, path, func(c *router.Context) {
+		if parser != nil && !parser.Parse(c) {
+			//TODO: handle errors
+			panic("Couldn't parse")
+		}
+
+		handlerFunc(c)
+	})
 }
 
 /*
