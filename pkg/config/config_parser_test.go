@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/test"
+	"github.com/stretchr/testify/assert"
 )
 
 var existingKey, nonExistingKey = "key", "non_key"
@@ -17,8 +17,8 @@ func TestGetEnvStr(t *testing.T) {
 	exists := GetEnvStr(existingKey, def)
 	notExists := GetEnvStr(nonExistingKey, def)
 
-	test.Equal(t, exists, expected)
-	test.Equal(t, notExists, def)
+	assert.Equal(t, exists, expected)
+	assert.Equal(t, notExists, def)
 }
 
 func TestGetEnvInt(t *testing.T) {
@@ -29,8 +29,8 @@ func TestGetEnvInt(t *testing.T) {
 	exists := GetEnvInt(existingKey, def)
 	not_exists := GetEnvInt(nonExistingKey, def)
 
-	test.Equal(t, exists, expected)
-	test.Equal(t, not_exists, def)
+	assert.Equal(t, exists, expected)
+	assert.Equal(t, not_exists, def)
 }
 
 func TestGetEnvBool(t *testing.T) {
@@ -41,6 +41,6 @@ func TestGetEnvBool(t *testing.T) {
 	exists := GetEnvBool(existingKey, def)
 	not_exists := GetEnvBool(nonExistingKey, def)
 
-	test.Equal(t, exists, expected)
-	test.Equal(t, not_exists, def)
+	assert.Equal(t, exists, expected)
+	assert.Equal(t, not_exists, def)
 }
