@@ -1,28 +1,9 @@
 package http_tools
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/context_tools"
-	"github.com/XDoubleU/essentia/pkg/logger"
-	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
-)
-
-var (
-	ErrRecordNotFound    = errors.New("record not found")
-	ErrRecordUniqueValue = errors.New("record unique value already used")
-)
-
-var (
-	MessageInternalServerError = "the server encountered a problem and could not process your request"
-	MessageTooManyRequests     = "rate limit exceeded"
-	MessageForbidden           = "user has no access to this resource"
 )
 
 type ErrorDto struct {
@@ -30,6 +11,10 @@ type ErrorDto struct {
 	Error   string `json:"error"`
 	Message any    `json:"message"`
 } //	@name	ErrorDto
+
+func logError(err error) {
+	GetLogger().Print(err)
+}
 
 func ErrorResponse(w http.ResponseWriter,
 	_ *http.Request, status int, message any) {
@@ -40,19 +25,24 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
-		logger.GetLogger().Print(err)
+		logError(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	sendErrorToSentry(r.Context(), err)
-
-	showErrors := context_tools.GetContextValue[bool](r, context_tools.ShowErrorsContextKey)
-
-	message := MessageInternalServerError
-	if showErrors {
-		message = err.Error()
+func ServerErrorResponse(w http.ResponseWriter,
+	r *http.Request, err error) {
+	if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
+		hub.WithScope(func(scope *sentry.Scope) {
+			scope.SetLevel(sentry.LevelError)
+			hub.CaptureException(err)
+		})
 	}
+
+	message := "the server encountered a problem and could not process your request"
+	/*todo: if app.config.Env != config.ProdEnv {
+		message = err.Error()
+	}*/
 
 	ErrorResponse(w, r, http.StatusInternalServerError, message)
 }
@@ -64,7 +54,8 @@ func BadRequestResponse(w http.ResponseWriter,
 
 func RateLimitExceededResponse(w http.ResponseWriter,
 	r *http.Request) {
-	ErrorResponse(w, r, http.StatusTooManyRequests, MessageTooManyRequests)
+	message := "rate limit exceeded"
+	ErrorResponse(w, r, http.StatusTooManyRequests, message)
 }
 
 func UnauthorizedResponse(w http.ResponseWriter,
@@ -72,8 +63,10 @@ func UnauthorizedResponse(w http.ResponseWriter,
 	ErrorResponse(w, r, http.StatusUnauthorized, message)
 }
 
-func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
-	ErrorResponse(w, r, http.StatusForbidden, MessageForbidden)
+func ForbiddenResponse(w http.ResponseWriter,
+	r *http.Request) {
+	message := "user has no access to this resource"
+	ErrorResponse(w, r, http.StatusForbidden, message)
 }
 
 func ConflictResponse(
@@ -81,24 +74,27 @@ func ConflictResponse(
 	r *http.Request,
 	err error,
 	resourceName string,
-	identifierValue any,
+	identifier string,
+	identifierValue string,
 	jsonField string,
 ) {
-	value := tools.AnyToString(identifierValue)
+	/*todo
+	value := helpers.AnyToString(identifierValue)
 
-	if err == nil || errors.Is(err, ErrRecordUniqueValue) {
+	if err == nil || errors.Is(err, services.ErrRecordUniqueValue) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,
-			jsonField,
+			identifier,
 			value,
 		)
 		err := make(map[string]string)
 		err[jsonField] = message
-		ErrorResponse(w, r, http.StatusConflict, err)
+		app.errorResponse(w, r, http.StatusConflict, err)
 	} else {
-		ServerErrorResponse(w, r, err)
+		app.serverErrorResponse(w, r, err)
 	}
+	*/
 }
 
 func NotFoundResponse(
@@ -106,26 +102,29 @@ func NotFoundResponse(
 	r *http.Request,
 	err error,
 	resourceName string,
+	identifier string, //nolint:unparam //should keep param
 	identifierValue any,
 	jsonField string,
 ) {
-	value := tools.AnyToString(identifierValue)
+	/*todo
+	value := helpers.AnyToString(identifierValue)
 
-	if err == nil || errors.Is(err, ErrRecordNotFound) {
+	if err == nil || errors.Is(err, services.ErrRecordNotFound) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' doesn't exist",
 			resourceName,
-			jsonField,
+			identifier,
 			value,
 		)
 
 		err := make(map[string]string)
 		err[jsonField] = message
 
-		ErrorResponse(w, r, http.StatusNotFound, err)
+		app.errorResponse(w, r, http.StatusNotFound, err)
 	} else {
-		ServerErrorResponse(w, r, err)
+		app.serverErrorResponse(w, r, err)
 	}
+	*/
 }
 
 func FailedValidationResponse(
@@ -134,36 +133,4 @@ func FailedValidationResponse(
 	errors map[string]string,
 ) {
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
-}
-
-func WSErrorResponse(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, beforeClosingFunc func(conn *websocket.Conn), err error) {
-	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
-		websocket.CloseStatus(err) == websocket.StatusGoingAway {
-		return
-	}
-
-	sendErrorToSentry(r.Context(), err)
-
-	beforeClosingFunc(conn)
-
-	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
-
-	err = wsjson.Write(r.Context(), conn, err)
-	if err != nil {
-		ErrorResponse(w, r, http.StatusInternalServerError, err)
-	}
-}
-
-func WSUpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	sendErrorToSentry(r.Context(), err)
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
-func sendErrorToSentry(ctx context.Context, err error) {
-	if hub := sentry.GetHubFromContext(ctx); hub != nil {
-		hub.WithScope(func(scope *sentry.Scope) {
-			scope.SetLevel(sentry.LevelError)
-			hub.CaptureException(err)
-		})
-	}
 }
