@@ -1,19 +1,21 @@
 package middleware
 
 import (
-	"github.com/XDoubleU/essentia/pkg/router"
 	"github.com/rs/cors"
 )
 
-func Cors() router.HandlerFunc {
+func Cors(allowedOrigins []string, useSentry bool) middleware {
+	allowedHeaders := []string{"Content-Type"}
+	if useSentry {
+		allowedHeaders = append(allowedHeaders, "Baggage", "Sentry-Trace")
+	}
+
 	cors := cors.New(cors.Options{
+		AllowedOrigins:   allowedOrigins,
 		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowedHeaders:   []string{"Content-Type"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE"},
+		AllowedHeaders:   allowedHeaders,
 	})
 
-	return func(c *router.Context) {
-		cors.HandlerFunc(c.Writer.ResponseWriter, c.Request)
-		c.Next()
-	}
+	return cors.Handler
 }

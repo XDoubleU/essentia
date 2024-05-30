@@ -1,12 +1,6 @@
-package router
+package http_tools
 
-import (
-	"log"
-	"net/http"
-
-	"github.com/XDoubleU/essentia/internal/helpers"
-)
-
+/*
 type Middleware struct {
 	index    int8
 	handlers []HandlerFunc
@@ -102,3 +96,4 @@ func (c Context) GetRawBodyValue(name string) string {
 
 	return value
 }
+*/

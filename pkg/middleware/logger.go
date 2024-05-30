@@ -2,20 +2,22 @@ package middleware
 
 import (
 	"log"
+	"net/http"
 	"time"
-
-	"github.com/XDoubleU/essentia/pkg/router"
 )
 
-func Logger() router.HandlerFunc {
-	return func(c *router.Context) {
+func Logger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
-		c.Next()
+
+		next.ServeHTTP(w, r)
+
 		log.Printf(
 			"[%d] %s in %v",
-			c.Writer.StatusCode(),
-			c.Request.RequestURI,
+			0,
+			//TODO w.StatusCode(),
+			r.RequestURI,
 			time.Since(t),
 		)
-	}
+	})
 }
