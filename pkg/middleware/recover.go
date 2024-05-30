@@ -4,20 +4,18 @@ import (
 	"log"
 	"net/http"
 	"runtime/debug"
-
-	"github.com/XDoubleU/essentia/pkg/router"
 )
 
-func Recover() router.HandlerFunc {
-	return func(c *router.Context) {
+func Recover(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				c.Writer.Header().Set("Connection", "close")
-				c.Writer.WriteHeader(http.StatusInternalServerError)
+				w.Header().Set("Connection", "close")
+				w.WriteHeader(http.StatusInternalServerError)
 				log.Printf("PANIC: %s\nstacktrace: %s\n", err, string(debug.Stack()))
 			}
 		}()
 
-		c.Next()
-	}
+		next.ServeHTTP(w, r)
+	})
 }

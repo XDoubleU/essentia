@@ -1,7 +1,6 @@
 package parser
 
-import "github.com/XDoubleU/essentia/pkg/router"
-
+/*
 type ValueType int
 type Validation[T any] func(value T) bool
 
@@ -91,3 +90,4 @@ func (rule Rule[T]) Parse(c *router.Context) *Error {
 
 	return nil
 }
+*/

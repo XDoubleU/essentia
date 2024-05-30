@@ -1,7 +1,6 @@
 package parser
 
-import "github.com/XDoubleU/essentia/pkg/router"
-
+/*
 type Parser struct {
 	rules  []rule
 	Errors map[string]string
@@ -35,3 +34,4 @@ func (p *Parser) addError(err Error) {
 		p.Errors[err.Key] = err.Message
 	}
 }
+*/
