@@ -1,9 +1,17 @@
 package http_tools
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
+)
+
+var (
+	ErrRecordNotFound    = errors.New("record not found")
+	ErrRecordUniqueValue = errors.New("record unique value already used")
 )
 
 type ErrorDto struct {
@@ -31,7 +39,7 @@ func ErrorResponse(w http.ResponseWriter,
 }
 
 func ServerErrorResponse(w http.ResponseWriter,
-	r *http.Request, err error) {
+	r *http.Request, err error, hideError bool) {
 	if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
 		hub.WithScope(func(scope *sentry.Scope) {
 			scope.SetLevel(sentry.LevelError)
@@ -40,9 +48,9 @@ func ServerErrorResponse(w http.ResponseWriter,
 	}
 
 	message := "the server encountered a problem and could not process your request"
-	/*todo: if app.config.Env != config.ProdEnv {
+	if !hideError {
 		message = err.Error()
-	}*/
+	}
 
 	ErrorResponse(w, r, http.StatusInternalServerError, message)
 }
@@ -77,11 +85,11 @@ func ConflictResponse(
 	identifier string,
 	identifierValue string,
 	jsonField string,
+	hideError bool,
 ) {
-	/*todo
-	value := helpers.AnyToString(identifierValue)
+	value := tools.AnyToString(identifierValue)
 
-	if err == nil || errors.Is(err, services.ErrRecordUniqueValue) {
+	if err == nil || errors.Is(err, ErrRecordUniqueValue) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,
@@ -90,11 +98,10 @@ func ConflictResponse(
 		)
 		err := make(map[string]string)
 		err[jsonField] = message
-		app.errorResponse(w, r, http.StatusConflict, err)
+		ErrorResponse(w, r, http.StatusConflict, err)
 	} else {
-		app.serverErrorResponse(w, r, err)
+		ServerErrorResponse(w, r, err, hideError)
 	}
-	*/
 }
 
 func NotFoundResponse(
@@ -105,11 +112,11 @@ func NotFoundResponse(
 	identifier string, //nolint:unparam //should keep param
 	identifierValue any,
 	jsonField string,
+	hideError bool,
 ) {
-	/*todo
-	value := helpers.AnyToString(identifierValue)
+	value := tools.AnyToString(identifierValue)
 
-	if err == nil || errors.Is(err, services.ErrRecordNotFound) {
+	if err == nil || errors.Is(err, ErrRecordNotFound) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' doesn't exist",
 			resourceName,
@@ -120,11 +127,10 @@ func NotFoundResponse(
 		err := make(map[string]string)
 		err[jsonField] = message
 
-		app.errorResponse(w, r, http.StatusNotFound, err)
+		ErrorResponse(w, r, http.StatusNotFound, err)
 	} else {
-		app.serverErrorResponse(w, r, err)
+		ServerErrorResponse(w, r, err, hideError)
 	}
-	*/
 }
 
 func FailedValidationResponse(

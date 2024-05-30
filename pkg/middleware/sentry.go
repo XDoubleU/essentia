@@ -20,7 +20,7 @@ func getSentryHandler(clientOptions sentry.ClientOptions) *sentryhttp.Handler {
 	err := sentry.Init(clientOptions)
 
 	if err != nil {
-		//todo: app.logger.Printf("sentry initialization failed: %v\n", err)
+		http_tools.GetLogger().Printf("sentry initialization failed: %v\n", err)
 		return nil
 	}
 
