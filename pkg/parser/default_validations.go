@@ -1,7 +1,6 @@
 package parser
 
-import "time"
-
+/*
 func RequiredString() Validation[string] {
 	return func(value string) bool {
 		return value != ""
@@ -21,3 +20,4 @@ func ValidTimeZone() Validation[any] {
 		return stringValue != "" && err == nil
 	}
 }
+*/
