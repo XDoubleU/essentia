@@ -12,7 +12,7 @@ type ErrorDto struct {
 	Message any    `json:"message"`
 } //	@name	ErrorDto
 
-func logError(err error) {
+func LogError(err error) {
 	GetLogger().Print(err)
 }
 
@@ -25,7 +25,7 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
-		logError(err)
+		LogError(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
