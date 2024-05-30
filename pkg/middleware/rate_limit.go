@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/XDoubleU/essentia/pkg/http_tools"
 	"golang.org/x/time/rate"
 )
 
@@ -42,7 +43,7 @@ func RateLimit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
-			//TODO: app.serverErrorResponse(w, r, err)
+			http_tools.ServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -56,7 +57,7 @@ func RateLimit(next http.Handler) http.Handler {
 
 		if !clients[ip].limiter.Allow() {
 			mu.Unlock()
-			//TODO: app.rateLimitExceededResponse(w, r)
+			http_tools.RateLimitExceededResponse(w, r)
 			return
 		}
 
