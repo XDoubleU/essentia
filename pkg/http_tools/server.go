@@ -9,8 +9,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/XDoubleU/essentia/pkg/logger"
 )
 
 func Serve(port int, handler http.Handler, environment string) error {
@@ -29,7 +27,7 @@ func Serve(port int, handler http.Handler, environment string) error {
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		s := <-quit
 
-		logger.GetLogger().Printf("shutting down server %s", s.String())
+		GetLogger().Printf("shutting down server %s", s.String())
 
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
@@ -40,7 +38,7 @@ func Serve(port int, handler http.Handler, environment string) error {
 		shutdownError <- srv.Shutdown(ctx)
 	}()
 
-	logger.GetLogger().Printf("starting %s server on %s", environment, srv.Addr)
+	GetLogger().Printf("starting %s server on %s", environment, srv.Addr)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -52,7 +50,7 @@ func Serve(port int, handler http.Handler, environment string) error {
 		return err
 	}
 
-	logger.GetLogger().Printf("stopped server %s", srv.Addr)
+	GetLogger().Printf("stopped server %s", srv.Addr)
 
 	return nil
 }
