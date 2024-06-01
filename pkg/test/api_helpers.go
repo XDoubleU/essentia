@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/internal/helpers"
+	"github.com/XDoubleU/essentia/pkg/http_tools"
 )
 
 type TestRequest struct {
@@ -17,6 +17,7 @@ type TestRequest struct {
 	method  string
 	path    string
 	reqData any
+	query   map[string]string
 	cookies []*http.Cookie
 }
 
@@ -27,12 +28,17 @@ func CreateTestRequest(t *testing.T, ts *httptest.Server, method, path string) T
 		method,
 		path,
 		nil,
+		make(map[string]string),
 		[]*http.Cookie{},
 	}
 }
 
 func (tReq *TestRequest) SetReqData(reqData any) {
 	tReq.reqData = reqData
+}
+
+func (tReq *TestRequest) SetQuery(query map[string]string) {
+	tReq.query = query
 }
 
 func (tReq *TestRequest) AddCookie(cookie *http.Cookie) {
@@ -64,6 +70,16 @@ func (tReq *TestRequest) Do(rsData any) *http.Response {
 		return nil
 	}
 
+	if len(tReq.query) > 0 {
+		query := req.URL.Query()
+
+		for key, value := range tReq.query {
+			query.Add(key, value)
+		}
+
+		req.URL.RawQuery = query.Encode()
+	}
+
 	for _, cookie := range tReq.cookies {
 		req.AddCookie(cookie)
 	}
@@ -76,7 +92,7 @@ func (tReq *TestRequest) Do(rsData any) *http.Response {
 	}
 
 	if rsData != nil {
-		err = helpers.ReadJSON(rs.Body, &rsData, false)
+		err = http_tools.ReadJSON(rs.Body, &rsData)
 		if err != nil {
 			tReq.t.Errorf("error when parsing response: %v", err)
 			tReq.t.FailNow()
