@@ -22,6 +22,10 @@ type TestRequest struct {
 }
 
 func CreateTestRequest(t *testing.T, ts *httptest.Server, method, path string) TestRequest {
+	if len(path) > 0 && path[0] == '/' {
+		path = path[1:]
+	}
+
 	return TestRequest{
 		t,
 		ts,
