@@ -49,7 +49,9 @@ func (tReq *TestRequest) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
-func (tReq *TestRequest) Do(rsData any) *http.Response {
+func (tReq TestRequest) Do(rsData any) *http.Response {
+	tReq.t.Helper()
+
 	var body []byte
 	var err error
 
