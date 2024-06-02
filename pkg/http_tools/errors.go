@@ -7,6 +7,7 @@ import (
 
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
+	"nhooyr.io/websocket"
 )
 
 var (
@@ -20,10 +21,6 @@ type ErrorDto struct {
 	Message any    `json:"message"`
 } //	@name	ErrorDto
 
-func LogError(err error) {
-	GetLogger().Print(err)
-}
-
 func ErrorResponse(w http.ResponseWriter,
 	_ *http.Request, status int, message any) {
 	env := ErrorDto{
@@ -33,7 +30,7 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
-		LogError(err)
+		GetLogger().Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -139,4 +136,13 @@ func FailedValidationResponse(
 	errors map[string]string,
 ) {
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+func WSErrorResponse(err error) {
+	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
+		websocket.CloseStatus(err) == websocket.StatusGoingAway {
+		return
+	}
+
+	//todo
 }
