@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/XDoubleU/essentia/internal/sentry_mock"
 	"github.com/getsentry/sentry-go"
 	"github.com/goddtriffin/helmet"
 	"github.com/justinas/alice"
@@ -17,7 +18,11 @@ func Minimal() []alice.Constructor {
 	}
 }
 
-func Default(throttle bool, allowedOrigins []string, sentryClientOptions *sentry.ClientOptions) []alice.Constructor {
+func Default(isTestEnv bool, allowedOrigins []string, sentryClientOptions *sentry.ClientOptions) []alice.Constructor {
+	if isTestEnv {
+		sentryClientOptions = sentry_mock.GetMockedClientOptions()
+	}
+
 	useSentry := sentryClientOptions != nil
 
 	helmet := helmet.Default()
@@ -25,13 +30,10 @@ func Default(throttle bool, allowedOrigins []string, sentryClientOptions *sentry
 	handlers := Minimal()
 	handlers = append(handlers, helmet.Secure)
 	handlers = append(handlers, Cors(allowedOrigins, useSentry))
-
-	if throttle {
-		handlers = append(handlers, RateLimit)
-	}
+	handlers = append(handlers, RateLimit)
 
 	if useSentry {
-		handlers = append(handlers, Sentry(*sentryClientOptions))
+		handlers = append(handlers, Sentry(isTestEnv, *sentryClientOptions))
 	}
 
 	return handlers
