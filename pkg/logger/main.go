@@ -1,4 +1,4 @@
-package http_tools
+package logger
 
 import (
 	"log"
@@ -13,4 +13,8 @@ func GetLogger() *log.Logger {
 	}
 
 	return logger
+}
+
+func SetLogger(newLogger *log.Logger) {
+	logger = newLogger
 }
