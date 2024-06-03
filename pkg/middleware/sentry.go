@@ -15,12 +15,12 @@ func Sentry(isTestEnv bool, clientOptions sentry.ClientOptions) middleware {
 
 	if isTestEnv {
 		return func(next http.Handler) http.Handler {
-			return useMockedHub(enrichSentryHub(sentryHandler.Handle(next)))
+			return sentryHandler.Handle(useMockedHub(enrichSentryHub(next)))
 		}
 	}
 
 	return func(next http.Handler) http.Handler {
-		return enrichSentryHub(sentryHandler.Handle(next))
+		return sentryHandler.Handle(enrichSentryHub(next))
 	}
 }
 
