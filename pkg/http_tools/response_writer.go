@@ -13,10 +13,14 @@ type ResponseWriter struct {
 }
 
 func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{w, http.StatusOK}
+	return &ResponseWriter{w, -1}
 }
 
 func (w *ResponseWriter) WriteHeader(statusCode int) {
+	if w.statusCode != -1 {
+		return
+	}
+
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
