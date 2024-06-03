@@ -13,7 +13,7 @@ func Logger(next http.Handler) http.Handler {
 		rw := http_tools.NewResponseWriter(w)
 		t := time.Now()
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(rw, r)
 
 		logger.GetLogger().Printf(
 			"[%d] %s in %v",
