@@ -18,6 +18,12 @@ var (
 	ErrRecordUniqueValue = errors.New("record unique value already used")
 )
 
+var (
+	MessageInternalServerError = "the server encountered a problem and could not process your request"
+	MessageTooManyRequests     = "rate limit exceeded"
+	MessageForbidden           = "user has no access to this resource"
+)
+
 type ErrorDto struct {
 	Status  int    `json:"status"`
 	Error   string `json:"error"`
@@ -38,11 +44,10 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 }
 
-func ServerErrorResponse(w http.ResponseWriter,
-	r *http.Request, err error, hideError bool) {
+func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error, hideError bool) {
 	sendErrorToSentry(r.Context(), err)
 
-	message := "the server encountered a problem and could not process your request"
+	message := MessageInternalServerError
 	if !hideError {
 		message = err.Error()
 	}
@@ -57,8 +62,7 @@ func BadRequestResponse(w http.ResponseWriter,
 
 func RateLimitExceededResponse(w http.ResponseWriter,
 	r *http.Request) {
-	message := "rate limit exceeded"
-	ErrorResponse(w, r, http.StatusTooManyRequests, message)
+	ErrorResponse(w, r, http.StatusTooManyRequests, MessageTooManyRequests)
 }
 
 func UnauthorizedResponse(w http.ResponseWriter,
@@ -66,10 +70,8 @@ func UnauthorizedResponse(w http.ResponseWriter,
 	ErrorResponse(w, r, http.StatusUnauthorized, message)
 }
 
-func ForbiddenResponse(w http.ResponseWriter,
-	r *http.Request) {
-	message := "user has no access to this resource"
-	ErrorResponse(w, r, http.StatusForbidden, message)
+func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
+	ErrorResponse(w, r, http.StatusForbidden, MessageForbidden)
 }
 
 func ConflictResponse(
@@ -136,20 +138,22 @@ func FailedValidationResponse(
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
 
-func WSErrorResponse(ctx context.Context, conn *websocket.Conn, beforeClosingFunc func(conn *websocket.Conn), err error) {
+func WSErrorResponse(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, beforeClosingFunc func(conn *websocket.Conn), err error) {
 	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
 		return
 	}
 
-	sendErrorToSentry(ctx, err)
+	sendErrorToSentry(r.Context(), err)
 
 	beforeClosingFunc(conn)
-	conn.Close(websocket.StatusInternalError, "")
 
-	err = wsjson.Write(ctx, conn, err)
+	w.WriteHeader(http.StatusInternalServerError)
+	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
+
+	err = wsjson.Write(r.Context(), conn, err)
 	if err != nil {
-		logger.GetLogger().Print(err)
+		ErrorResponse(w, r, http.StatusInternalServerError, err)
 	}
 }
 
