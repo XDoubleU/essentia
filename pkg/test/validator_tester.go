@@ -9,14 +9,12 @@ import (
 )
 
 type ValidatorTester struct {
-	t                     *testing.T
 	invalidTestRequests   []TestRequest
 	expectedErrorMessages []map[string]interface{}
 }
 
 func CreateValidatorTester(t *testing.T) ValidatorTester {
 	return ValidatorTester{
-		t:                     t,
 		invalidTestRequests:   []TestRequest{},
 		expectedErrorMessages: []map[string]interface{}{},
 	}
@@ -27,14 +25,14 @@ func (vt *ValidatorTester) AddTestCase(invalidTestRequest TestRequest, expectedE
 	vt.expectedErrorMessages = append(vt.expectedErrorMessages, expectedErrorMessage)
 }
 
-func (vt ValidatorTester) Do() {
-	vt.t.Helper()
+func (vt ValidatorTester) Do(t *testing.T) {
+	t.Helper()
 
 	for i := 0; i < len(vt.invalidTestRequests); i++ {
 		var rsData http_tools.ErrorDto
-		rs := vt.invalidTestRequests[i].Do(&rsData)
+		rs := vt.invalidTestRequests[i].Do(t, &rsData)
 
-		assert.Equal(vt.t, http.StatusUnprocessableEntity, rs.StatusCode)
-		assert.Equal(vt.t, vt.expectedErrorMessages[i], rsData.Message)
+		assert.Equal(t, http.StatusUnprocessableEntity, rs.StatusCode)
+		assert.Equal(t, vt.expectedErrorMessages[i], rsData.Message)
 	}
 }
