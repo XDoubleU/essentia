@@ -40,7 +40,6 @@ func ErrorResponse(w http.ResponseWriter,
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
 		logger.GetLogger().Print(err)
-		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
@@ -148,7 +147,6 @@ func WSErrorResponse(w http.ResponseWriter, r *http.Request, conn *websocket.Con
 
 	beforeClosingFunc(conn)
 
-	w.WriteHeader(http.StatusInternalServerError)
 	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
 
 	err = wsjson.Write(r.Context(), conn, err)
