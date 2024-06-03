@@ -5,6 +5,7 @@ import (
 
 	"github.com/XDoubleU/essentia/internal/sentry_mock"
 	"github.com/XDoubleU/essentia/pkg/http_tools"
+	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 )
@@ -27,7 +28,7 @@ func getSentryHandler(clientOptions sentry.ClientOptions) *sentryhttp.Handler {
 	err := sentry.Init(clientOptions)
 
 	if err != nil {
-		http_tools.GetLogger().Printf("sentry initialization failed: %v\n", err)
+		logger.GetLogger().Printf("sentry initialization failed: %v\n", err)
 		return nil
 	}
 

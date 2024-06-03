@@ -1,13 +1,16 @@
 package http_tools
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
 	"nhooyr.io/websocket"
+	"nhooyr.io/websocket/wsjson"
 )
 
 var (
@@ -30,19 +33,14 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
-		GetLogger().Print(err)
+		logger.GetLogger().Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func ServerErrorResponse(w http.ResponseWriter,
 	r *http.Request, err error, hideError bool) {
-	if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
-		hub.WithScope(func(scope *sentry.Scope) {
-			scope.SetLevel(sentry.LevelError)
-			hub.CaptureException(err)
-		})
-	}
+	sendErrorToSentry(r.Context(), err)
 
 	message := "the server encountered a problem and could not process your request"
 	if !hideError {
@@ -138,11 +136,28 @@ func FailedValidationResponse(
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
 
-func WSErrorResponse(err error) {
+func WSErrorResponse(ctx context.Context, conn *websocket.Conn, beforeClosingFunc func(conn *websocket.Conn), err error) {
 	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
 		return
 	}
 
-	//todo
+	sendErrorToSentry(ctx, err)
+
+	beforeClosingFunc(conn)
+	conn.Close(websocket.StatusInternalError, "")
+
+	err = wsjson.Write(ctx, conn, err)
+	if err != nil {
+		logger.GetLogger().Print(err)
+	}
+}
+
+func sendErrorToSentry(ctx context.Context, err error) {
+	if hub := sentry.GetHubFromContext(ctx); hub != nil {
+		hub.WithScope(func(scope *sentry.Scope) {
+			scope.SetLevel(sentry.LevelError)
+			hub.CaptureException(err)
+		})
+	}
 }
