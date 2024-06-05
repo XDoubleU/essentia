@@ -155,6 +155,11 @@ func WSErrorResponse(w http.ResponseWriter, r *http.Request, conn *websocket.Con
 	}
 }
 
+func WSUpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	sendErrorToSentry(r.Context(), err)
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
 func sendErrorToSentry(ctx context.Context, err error) {
 	if hub := sentry.GetHubFromContext(ctx); hub != nil {
 		hub.WithScope(func(scope *sentry.Scope) {
