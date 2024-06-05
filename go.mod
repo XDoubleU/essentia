@@ -3,7 +3,7 @@ module github.com/XDoubleU/essentia
 go 1.22
 
 require (
-	github.com/getsentry/sentry-go v0.28.0
+	github.com/getsentry/sentry-go v0.27.0
 	github.com/goddtriffin/helmet v1.0.2
 	github.com/justinas/alice v1.2.0
 	github.com/rs/cors v1.10.1
