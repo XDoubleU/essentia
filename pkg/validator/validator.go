@@ -2,6 +2,10 @@ package validator
 
 import "regexp"
 
+type IValidatedType interface {
+	Validate() *Validator
+}
+
 type Validator struct {
 	Errors map[string]string
 }
