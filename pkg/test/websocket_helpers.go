@@ -18,8 +18,10 @@ type TestWebsocket struct {
 	timeout           time.Duration
 	sleep             time.Duration
 	initialMsg        any
-	parallelOperation func(t *testing.T, ts *httptest.Server)
+	parallelOperation ParallelOperation
 }
+
+type ParallelOperation = func(t *testing.T, ts *httptest.Server)
 
 func CreateTestWebsocket(handler http.Handler) TestWebsocket {
 	return TestWebsocket{
@@ -34,7 +36,7 @@ func (tWeb *TestWebsocket) SetInitialMessage(msg any) {
 	tWeb.initialMsg = msg
 }
 
-func (tWeb *TestWebsocket) SetParallelOperation(parallelOperation func(t *testing.T, ts *httptest.Server)) {
+func (tWeb *TestWebsocket) SetParallelOperation(parallelOperation ParallelOperation) {
 	tWeb.parallelOperation = parallelOperation
 }
 
@@ -51,12 +53,16 @@ func (tWeb TestWebsocket) Do(t *testing.T, initialResponse any, parallelOperatio
 	require.Nil(t, err)
 
 	if tWeb.initialMsg != nil {
-		err := wsjson.Write(context.Background(), ws, tWeb.initialMsg)
+		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
+		defer cancel()
+		err := wsjson.Write(ctx, ws, tWeb.initialMsg)
 		require.Nil(t, err)
 	}
 
 	if initialResponse != nil {
-		err = wsjson.Read(context.Background(), ws, &initialResponse)
+		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
+		defer cancel()
+		err = wsjson.Read(ctx, ws, &initialResponse)
 		require.Nil(t, err)
 	}
 
@@ -65,7 +71,9 @@ func (tWeb TestWebsocket) Do(t *testing.T, initialResponse any, parallelOperatio
 		tWeb.parallelOperation(t, ts)
 	}()
 
-	err = wsjson.Read(context.Background(), ws, &parallelOperationResponse)
+	ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
+	defer cancel()
+	err = wsjson.Read(ctx, ws, &parallelOperationResponse)
 	require.Nil(t, err)
 }
 
