@@ -13,6 +13,7 @@ import (
 
 type TestRequest struct {
 	handler http.Handler
+	ts      *httptest.Server
 	method  string
 	path    string
 	reqData any
@@ -20,19 +21,28 @@ type TestRequest struct {
 	cookies []*http.Cookie
 }
 
-func CreateTestRequest(handler http.Handler, method, path string) TestRequest {
+func CreateTestRequest(handler http.Handler, method, path string, pathValues ...any) TestRequest {
 	if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
 	}
 
+	if len(pathValues) > 0 {
+		path = fmt.Sprintf(path, pathValues...)
+	}
+
 	return TestRequest{
 		handler,
+		nil,
 		method,
 		path,
 		nil,
 		make(map[string]string),
 		[]*http.Cookie{},
 	}
+}
+
+func (tReq *TestRequest) SetTestServer(ts *httptest.Server) {
+	tReq.ts = ts
 }
 
 func (tReq *TestRequest) SetReqData(reqData any) {
@@ -53,8 +63,14 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 	var body []byte
 	var err error
 
-	ts := httptest.NewServer(tReq.handler)
-	defer ts.Close()
+	if tReq.ts == nil && tReq.handler != nil {
+		tReq.ts = httptest.NewServer(tReq.handler)
+		defer tReq.ts.Close()
+	}
+
+	if tReq.ts == nil {
+		panic("handler nor test server has been set")
+	}
 
 	if tReq.reqData != nil {
 		body, err = json.Marshal(tReq.reqData)
@@ -67,7 +83,7 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 
 	req, err := http.NewRequest(
 		tReq.method,
-		fmt.Sprintf("%s/%s", ts.URL, tReq.path),
+		fmt.Sprintf("%s/%s", tReq.ts.URL, tReq.path),
 		bytes.NewReader(body),
 	)
 
@@ -91,7 +107,7 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 		req.AddCookie(cookie)
 	}
 
-	rs, err := ts.Client().Do(req)
+	rs, err := tReq.ts.Client().Do(req)
 	if err != nil {
 		t.Errorf("error when making request: %v", err)
 		t.FailNow()
