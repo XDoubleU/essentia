@@ -105,7 +105,6 @@ func NotFoundResponse(
 	r *http.Request,
 	err error,
 	resourceName string,
-	identifier string, //nolint:unparam //should keep param
 	identifierValue any,
 	jsonField string,
 	hideError bool,
@@ -116,7 +115,7 @@ func NotFoundResponse(
 		message := fmt.Sprintf(
 			"%s with %s '%s' doesn't exist",
 			resourceName,
-			identifier,
+			jsonField,
 			value,
 		)
 
