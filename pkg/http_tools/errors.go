@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/XDoubleU/essentia/pkg/context_tools"
 	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
@@ -43,11 +44,13 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 }
 
-func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error, hideError bool) {
+func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	sendErrorToSentry(r.Context(), err)
 
+	showErrors := context_tools.GetContextValue[bool](r, context_tools.ShowErrorsContextKey)
+
 	message := MessageInternalServerError
-	if !hideError {
+	if showErrors {
 		message = err.Error()
 	}
 
@@ -78,10 +81,8 @@ func ConflictResponse(
 	r *http.Request,
 	err error,
 	resourceName string,
-	identifier string,
-	identifierValue string,
+	identifierValue any,
 	jsonField string,
-	hideError bool,
 ) {
 	value := tools.AnyToString(identifierValue)
 
@@ -89,14 +90,14 @@ func ConflictResponse(
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,
-			identifier,
+			jsonField,
 			value,
 		)
 		err := make(map[string]string)
 		err[jsonField] = message
 		ErrorResponse(w, r, http.StatusConflict, err)
 	} else {
-		ServerErrorResponse(w, r, err, hideError)
+		ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -107,7 +108,6 @@ func NotFoundResponse(
 	resourceName string,
 	identifierValue any,
 	jsonField string,
-	hideError bool,
 ) {
 	value := tools.AnyToString(identifierValue)
 
@@ -124,7 +124,7 @@ func NotFoundResponse(
 
 		ErrorResponse(w, r, http.StatusNotFound, err)
 	} else {
-		ServerErrorResponse(w, r, err, hideError)
+		ServerErrorResponse(w, r, err)
 	}
 }
 

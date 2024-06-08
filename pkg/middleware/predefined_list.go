@@ -11,14 +11,16 @@ import (
 
 type middleware = func(next http.Handler) http.Handler
 
-func Minimal() []alice.Constructor {
+func Minimal(showErrors bool) []alice.Constructor {
+
 	return []alice.Constructor{
 		Logger,
 		Recover,
+		ErrorObfuscater(showErrors),
 	}
 }
 
-func Default(isTestEnv bool, allowedOrigins []string, sentryClientOptions *sentry.ClientOptions) []alice.Constructor {
+func Default(isTestEnv bool, allowedOrigins []string, sentryClientOptions *sentry.ClientOptions, showErrors bool) []alice.Constructor {
 	if isTestEnv {
 		sentryClientOptions = sentry_mock.GetMockedClientOptions()
 	}
@@ -27,7 +29,7 @@ func Default(isTestEnv bool, allowedOrigins []string, sentryClientOptions *sentr
 
 	helmet := helmet.Default()
 
-	handlers := Minimal()
+	handlers := Minimal(showErrors)
 	handlers = append(handlers, helmet.Secure)
 	handlers = append(handlers, Cors(allowedOrigins, useSentry))
 	handlers = append(handlers, RateLimit)
