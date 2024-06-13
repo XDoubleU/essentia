@@ -3,89 +3,47 @@ package parser
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 const (
 	URLParam   string = "URL"
-	QueryParam string = "query"
+	QueryParam        = "query"
 )
 
-func ParseURLParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (T, error) {
-	return parseURLParam(r, paramName, false, *new(T), parserFunc)
+func ParseURLParam[T any](r *http.Request, name string, parserFunc ParserFunc[T]) (T, error) {
+	return parseURLParam(r, name, parserFunc, true)
 }
 
-func ParseRequiredQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (T, error) {
-	return parseQueryParam(r, paramName, true, *new(T), parserFunc)
+func ParseURLParamWithError[T any](r *http.Request, name string, parserFunc ParserFunc[T]) (T, error) {
+	return parseURLParam(r, name, parserFunc, false)
 }
 
-func ParseQueryParam[T any](r *http.Request, paramName string, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
-	return parseQueryParam(r, paramName, false, defaultValue, parserFunc)
-}
-
-func ParseRequiredArrayQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) ([]T, error) {
-	return parseArrayQueryParam(r, paramName, true, []T{}, parserFunc)
-}
-
-func ParseArrayQueryParam[T any](r *http.Request, paramName string, defaultValue []T, parserFunc ParserFunc[T]) ([]T, error) {
-	return parseArrayQueryParam(r, paramName, false, defaultValue, parserFunc)
-}
-
-func parseURLParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
+func parseURLParam[T any](r *http.Request, name string, parserFunc ParserFunc[T], obfuscateError bool) (T, error) {
 	params := httprouter.ParamsFromContext(r.Context())
-	param := params.ByName(paramName)
-	return parseParam(paramName, URLParam, param, required, defaultValue, parserFunc)
+	param := params.ByName(name)
+	return parseParam(name, URLParam, param, parserFunc, obfuscateError)
 }
 
-func parseQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
-	param := r.URL.Query().Get(paramName)
-	return parseParam(paramName, QueryParam, param, required, defaultValue, parserFunc)
+func ParseQueryParam[T any](r *http.Request, name string, parserFunc ParserFunc[T]) (T, error) {
+	return parseQueryParam(r, name, parserFunc, true)
 }
 
-func parseArrayQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue []T, parserFunc ParserFunc[T]) ([]T, error) {
-	param := r.URL.Query().Get(paramName)
-	values := strings.Split(param, ",")
-
-	if len(values) == 0 {
-		if !required {
-			return defaultValue, nil
-		}
-
-		return []T{}, fmt.Errorf("missing %s param '%s'", QueryParam, paramName)
-	}
-
-	var results []T
-
-	for _, value := range values {
-		result, err := parseParam(paramName, QueryParam, value, true, *new(T), parserFunc)
-		if err != nil {
-			return []T{}, err
-		}
-		results = append(results, result)
-	}
-
-	return results, nil
+func ParseQueryParamWithError[T any](r *http.Request, name string, parserFunc ParserFunc[T]) (T, error) {
+	return parseQueryParam(r, name, parserFunc, false)
 }
 
-func parseParam[T any](paramName string, paramType string, value string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
-	if value == "" {
-		if !required {
-			return defaultValue, nil
-		}
+func parseQueryParam[T any](r *http.Request, name string, parserFunc ParserFunc[T], obfuscateError bool) (T, error) {
+	param := r.URL.Query().Get(name)
+	return parseParam(name, QueryParam, param, parserFunc, obfuscateError)
+}
 
-		return *new(T), fmt.Errorf("missing %s param '%s'", paramType, paramName)
-	}
-
-	if parserFunc == nil {
-		return any(value).(T), nil
-	}
-
-	result, err := parserFunc(paramType, paramName, value)
-	if err != nil {
+func parseParam[T any](name string, paramType string, param string, parserFunc ParserFunc[T], obfuscateError bool) (T, error) {
+	result, err := parserFunc(param)
+	if !obfuscateError {
 		return result, err
 	}
 
-	return result, nil
+	return result, fmt.Errorf("invalid %s param '%s'", paramType, name)
 }
