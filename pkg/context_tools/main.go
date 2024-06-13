@@ -7,8 +7,8 @@ import (
 
 type ContextKey string
 
-func SetContextValue(r *http.Request, key ContextKey, value any) {
-	r = r.WithContext(context.WithValue(r.Context(), key, value))
+func SetContextValue(r *http.Request, key ContextKey, value any) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), key, value))
 }
 
 func GetContextValue[T any](r *http.Request, key ContextKey) T {
