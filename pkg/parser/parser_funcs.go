@@ -5,13 +5,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/XDoubleU/essentia/internal/shared"
 	"github.com/google/uuid"
 )
 
 type ParserFunc[T any] func(paramType string, paramName string, value string) (T, error)
-type IntType interface {
-	int | int64
-}
 
 func ParseUUID(paramType string, paramName string, value string) (string, error) {
 	uuidVal, err := uuid.Parse(value)
@@ -34,7 +32,7 @@ func ParseInt64Func(isPositive bool, isZero bool) ParserFunc[int64] {
 	}
 }
 
-func parseInt[T IntType](isPositive bool, isZero bool, paramType string, paramName string, value string, bitSize int) (T, error) {
+func parseInt[T shared.IntType](isPositive bool, isZero bool, paramType string, paramName string, value string, bitSize int) (T, error) {
 	result, err := strconv.ParseInt(value, 10, bitSize)
 
 	if err != nil {
