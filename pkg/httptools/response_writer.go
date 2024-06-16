@@ -1,4 +1,4 @@
-package essentia
+package httptools
 
 import (
 	"bufio"
@@ -13,12 +13,20 @@ type ResponseWriter struct {
 }
 
 func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{w, http.StatusOK}
+	return &ResponseWriter{w, -1}
 }
 
 func (w *ResponseWriter) WriteHeader(statusCode int) {
+	if w.statusCode != -1 {
+		return
+	}
+
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w ResponseWriter) StatusCode() int {
+	return w.statusCode
 }
 
 func (w *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
