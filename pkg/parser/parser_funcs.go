@@ -22,17 +22,34 @@ func ParseUUID(paramType string, paramName string, value string) (string, error)
 	return uuidVal.String(), nil
 }
 
-func ParseInt(paramType string, paramName string, value string) (int, error) {
-	return parseInt[int](value, 0)
+func ParseIntFunc(isPositive bool, isZero bool) ParserFunc[int] {
+	return func(paramType string, paramName string, value string) (int, error) {
+		return parseInt[int](isPositive, isZero, paramType, paramName, value, 0)
+	}
 }
 
-func ParseInt64(paramType string, paramName string, value string) (int64, error) {
-	return parseInt[int64](value, 64)
+func ParseInt64Func(isPositive bool, isZero bool) ParserFunc[int64] {
+	return func(paramType string, paramName string, value string) (int64, error) {
+		return parseInt[int64](isPositive, isZero, paramType, paramName, value, 64)
+	}
 }
 
-func parseInt[T IntType](value string, bitSize int) (T, error) {
+func parseInt[T IntType](isPositive bool, isZero bool, paramType string, paramName string, value string, bitSize int) (T, error) {
 	result, err := strconv.ParseInt(value, 10, bitSize)
-	return T(result), err
+
+	if err != nil {
+		return *new(T), fmt.Errorf("invalid %s param '%s' with value '%s', should be an integer", paramType, paramName, value)
+	}
+
+	if isPositive && result < 0 {
+		return 0, fmt.Errorf("invalid %s param '%s' with value '%s', can't be less than '0'", paramType, paramName, value)
+	}
+
+	if !isZero && result == 0 {
+		return 0, fmt.Errorf("invalid %s param '%s' with value '%s', can't be '0'", paramType, paramName, value)
+	}
+
+	return T(result), nil
 }
 
 func ParseDateFunc(layout string) ParserFunc[time.Time] {
