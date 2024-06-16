@@ -13,7 +13,8 @@ func Recover(next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
 				w.WriteHeader(http.StatusInternalServerError)
-				logger.GetLogger().Printf("PANIC: %s\nstacktrace: %s\n", err, string(debug.Stack()))
+				logger.GetLogger().
+					Printf("PANIC: %s\nstacktrace: %s\n", err, string(debug.Stack()))
 			}
 		}()
 

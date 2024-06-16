@@ -6,9 +6,11 @@ import (
 	"os"
 )
 
+//nolint:gochecknoglobals // on purpose
 var logger *log.Logger
 
-var NullLogger *log.Logger = log.New(io.Discard, "", 0)
+//nolint:gochecknoglobals // on purpose
+var NullLogger = log.New(io.Discard, "", 0)
 
 func GetLogger() *log.Logger {
 	if logger == nil {

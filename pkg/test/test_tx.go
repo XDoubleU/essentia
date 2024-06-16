@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type TestTx struct {
+type Tx struct {
 	tx pgx.Tx
 	mu *sync.Mutex
 }
@@ -21,7 +21,7 @@ func waitOnLock(lock *sync.Mutex) {
 	}
 }
 
-func (tx TestTx) Exec(
+func (tx Tx) Exec(
 	ctx context.Context,
 	sql string,
 	arguments ...any,
@@ -32,21 +32,21 @@ func (tx TestTx) Exec(
 	return tx.tx.Exec(ctx, sql, arguments...)
 }
 
-func (tx TestTx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+func (tx Tx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
 	return tx.tx.Query(ctx, sql, args...)
 }
 
-func (tx TestTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
+func (tx Tx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
 	return tx.tx.QueryRow(ctx, sql, args...)
 }
 
-func (tx TestTx) Begin(ctx context.Context) (pgx.Tx, error) {
+func (tx Tx) Begin(ctx context.Context) (pgx.Tx, error) {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 

@@ -1,4 +1,4 @@
-package http_tools
+package httptools
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/context_tools"
+	"github.com/XDoubleU/essentia/pkg/contexttools"
 	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
@@ -19,7 +19,8 @@ var (
 	ErrRecordUniqueValue = errors.New("record unique value already used")
 )
 
-var (
+//nolint:lll // can't make these lines shorter
+const (
 	MessageInternalServerError = "the server encountered a problem and could not process your request"
 	MessageTooManyRequests     = "rate limit exceeded"
 	MessageForbidden           = "user has no access to this resource"
@@ -47,7 +48,10 @@ func ErrorResponse(w http.ResponseWriter,
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	sendErrorToSentry(r.Context(), err)
 
-	showErrors := context_tools.GetContextValue[bool](r, context_tools.ShowErrorsContextKey)
+	showErrors := contexttools.GetContextValue[bool](
+		r,
+		contexttools.ShowErrorsContextKey,
+	)
 
 	message := MessageInternalServerError
 	if showErrors {
@@ -136,7 +140,13 @@ func FailedValidationResponse(
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
 
-func WSErrorResponse(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, beforeClosingFunc func(conn *websocket.Conn), err error) {
+func WSErrorResponse(
+	w http.ResponseWriter,
+	r *http.Request,
+	conn *websocket.Conn,
+	beforeClosingFunc func(conn *websocket.Conn),
+	err error,
+) {
 	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 		websocket.CloseStatus(err) == websocket.StatusGoingAway {
 		return

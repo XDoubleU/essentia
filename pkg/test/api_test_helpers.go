@@ -6,10 +6,15 @@ import (
 	"testing"
 )
 
-func TestPaginatedEndpoint(t *testing.T, baseRequest TestRequest, pageQueryParamName string, maxPage int) {
+func PaginatedEndpointTester(
+	t *testing.T,
+	baseRequest RequestTester,
+	pageQueryParamName string,
+	maxPage int,
+) {
 	t.Helper()
 
-	mt := CreateMatrixTester(t, baseRequest)
+	mt := CreateMatrixTester(baseRequest)
 
 	pagesAndStatusCodes := map[int]int{
 		-1:          http.StatusBadRequest,
@@ -21,7 +26,7 @@ func TestPaginatedEndpoint(t *testing.T, baseRequest TestRequest, pageQueryParam
 
 	for page, statusCode := range pagesAndStatusCodes {
 		query := map[string]string{
-			"page": strconv.Itoa(page),
+			pageQueryParamName: strconv.Itoa(page),
 		}
 		mt.AddTestCaseStatusCode(query, statusCode)
 	}

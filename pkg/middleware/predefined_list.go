@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/XDoubleU/essentia/internal/sentry_mock"
+	"github.com/XDoubleU/essentia/internal/sentrymock"
 	"github.com/getsentry/sentry-go"
 	"github.com/goddtriffin/helmet"
 	"github.com/justinas/alice"
@@ -12,7 +12,6 @@ import (
 type middleware = func(next http.Handler) http.Handler
 
 func Minimal(showErrors bool) []alice.Constructor {
-
 	return []alice.Constructor{
 		Logger,
 		Recover,
@@ -20,9 +19,14 @@ func Minimal(showErrors bool) []alice.Constructor {
 	}
 }
 
-func Default(isTestEnv bool, allowedOrigins []string, sentryClientOptions *sentry.ClientOptions, showErrors bool) []alice.Constructor {
+func Default(
+	isTestEnv bool,
+	allowedOrigins []string,
+	sentryClientOptions *sentry.ClientOptions,
+	showErrors bool,
+) []alice.Constructor {
 	if isTestEnv {
-		sentryClientOptions = sentry_mock.GetMockedClientOptions()
+		sentryClientOptions = sentrymock.GetMockedClientOptions()
 	}
 
 	useSentry := sentryClientOptions != nil

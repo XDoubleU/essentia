@@ -1,3 +1,3 @@
-package context_tools
+package contexttools
 
 const ShowErrorsContextKey = ContextKey("show_errors")

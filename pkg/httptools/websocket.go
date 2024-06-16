@@ -1,43 +1,56 @@
-package http_tools
+package httptools
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/XDoubleU/essentia/pkg/validator"
+	"github.com/XDoubleU/essentia/pkg/validate"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )
 
 type ISubjectMessageDto interface {
-	validator.IValidatedType
+	validate.IValidatedType
 	GetSubject() string
 }
 
-type WebsocketHandler[T ISubjectMessageDto] struct {
+type SubjectHandler = func(
+	w http.ResponseWriter,
+	r *http.Request,
+	conn *websocket.Conn,
+	msg ISubjectMessageDto,
+)
+
+type WebsocketHandler struct {
 	url               string
 	onCloseCallBack   OnCloseCallback
-	subjectHandlerMap map[string]func(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, msg T)
+	subjectHandlerMap map[string]SubjectHandler
 }
 
 type OnCloseCallback = func(conn *websocket.Conn)
 
-func CreateWebsocketHandler[T ISubjectMessageDto](url string) WebsocketHandler[T] {
+func CreateWebsocketHandler(url string) WebsocketHandler {
 	if strings.Contains(url, "://") {
 		url = strings.Split(url, "://")[1]
 	}
 
-	return WebsocketHandler[T]{
-		url:               url,
-		subjectHandlerMap: make(map[string]func(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, msg T)),
+	return WebsocketHandler{
+		url: url,
+		subjectHandlerMap: make(
+			map[string]SubjectHandler,
+		),
 	}
 }
 
-func (h *WebsocketHandler[T]) SetOnCloseCallback(callback OnCloseCallback) {
+func (h *WebsocketHandler) SetOnCloseCallback(callback OnCloseCallback) {
 	h.onCloseCallBack = callback
 }
 
-func (h *WebsocketHandler[T]) AddSubjectHandler(subject string, handler func(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, msg T)) {
+func (h *WebsocketHandler) AddSubjectHandler(
+	subject string,
+	handler SubjectHandler,
+) {
 	_, ok := h.subjectHandlerMap[subject]
 	if ok {
 		panic("subject and handler already in map")
@@ -46,7 +59,7 @@ func (h *WebsocketHandler[T]) AddSubjectHandler(subject string, handler func(w h
 	h.subjectHandlerMap[subject] = handler
 }
 
-func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
+func (h WebsocketHandler) GetHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			OriginPatterns: []string{h.url},
@@ -61,7 +74,7 @@ func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 			conn.Close(websocket.StatusInternalError, "")
 		}()
 
-		var msg T
+		var msg ISubjectMessageDto
 		err = wsjson.Read(r.Context(), conn, &msg)
 		if err != nil {
 			WSErrorResponse(w, r, conn, h.onCloseCallBack, err)
@@ -75,13 +88,16 @@ func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 
 		handler, ok := h.subjectHandlerMap[msg.GetSubject()]
 		if !ok {
-			/*todo errorDto := ErrorDto{
-				Status: 0,
-				Error: "",
-				Message: "",
+			errorDto := ErrorDto{
+				Status:  0,
+				Error:   "unknown subject",
+				Message: fmt.Sprintf("no handler found for '%s'", msg.GetSubject()),
 			}
-			wsjson.Write...
-			*/
+			err = wsjson.Write(r.Context(), conn, errorDto)
+			if err != nil {
+				WSErrorResponse(w, r, conn, h.onCloseCallBack, err)
+				return
+			}
 			return
 		}
 
