@@ -2,7 +2,7 @@ package tools
 
 import "time"
 
-func StartOfDay(dateTime *time.Time) *time.Time {
+func StartOfDay(dateTime time.Time) time.Time {
 	output := time.Date(
 		dateTime.Year(),
 		dateTime.Month(),
@@ -11,10 +11,10 @@ func StartOfDay(dateTime *time.Time) *time.Time {
 		dateTime.Location(),
 	)
 
-	return &output
+	return output
 }
 
-func EndOfDay(dateTime *time.Time) *time.Time {
+func EndOfDay(dateTime time.Time) time.Time {
 	output := time.Date(
 		dateTime.Year(),
 		dateTime.Month(),
@@ -23,7 +23,7 @@ func EndOfDay(dateTime *time.Time) *time.Time {
 		dateTime.Location(),
 	)
 
-	return &output
+	return output
 }
 
 func TimeZoneIndependentTimeNow(locationTimeZone string) time.Time {
