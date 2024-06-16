@@ -125,3 +125,15 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 
 	return rs
 }
+
+func (tReq TestRequest) Copy() TestRequest {
+	return TestRequest{
+		handler: tReq.handler,
+		ts:      tReq.ts,
+		method:  tReq.method,
+		path:    tReq.path,
+		reqData: tReq.reqData,
+		query:   tReq.query,
+		cookies: tReq.cookies,
+	}
+}
