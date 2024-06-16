@@ -13,70 +13,79 @@ const (
 	QueryParam string = "query"
 )
 
-func ParseURLParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (value T, prettyErr error, originalErr error) {
+func ParseURLParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (T, error) {
 	return parseURLParam(r, paramName, false, *new(T), parserFunc)
 }
 
-func ParseRequiredQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (value T, prettyErr error, originalErr error) {
+func ParseRequiredQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (T, error) {
 	return parseQueryParam(r, paramName, true, *new(T), parserFunc)
 }
 
-func ParseQueryParam[T any](r *http.Request, paramName string, defaultValue T, parserFunc ParserFunc[T]) (value T, prettyErr error, originalErr error) {
+func ParseQueryParam[T any](r *http.Request, paramName string, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
 	return parseQueryParam(r, paramName, false, defaultValue, parserFunc)
 }
 
-func ParseRequiredArrayQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) (value []T, prettyErr error, originalErr error) {
-	return parseArrayQueryParam[T](r, paramName, true, []T{}, parserFunc)
+func ParseRequiredArrayQueryParam[T any](r *http.Request, paramName string, parserFunc ParserFunc[T]) ([]T, error) {
+	return parseArrayQueryParam(r, paramName, true, []T{}, parserFunc)
 }
 
-func ParseArrayQueryParam[T any](r *http.Request, paramName string, defaultValue []T, parserFunc ParserFunc[T]) (value []T, prettyErr error, originalErr error) {
-	return parseArrayQueryParam[T](r, paramName, false, defaultValue, parserFunc)
+func ParseArrayQueryParam[T any](r *http.Request, paramName string, defaultValue []T, parserFunc ParserFunc[T]) ([]T, error) {
+	return parseArrayQueryParam(r, paramName, false, defaultValue, parserFunc)
 }
 
-func parseURLParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (value T, prettyErr error, originalErr error) {
+func parseURLParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	param := params.ByName(paramName)
 	return parseParam(paramName, URLParam, param, required, defaultValue, parserFunc)
 }
 
-func parseQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (value T, prettyErr error, originalErr error) {
+func parseQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
 	param := r.URL.Query().Get(paramName)
 	return parseParam(paramName, QueryParam, param, required, defaultValue, parserFunc)
 }
 
-func parseArrayQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue []T, parserFunc ParserFunc[T]) (value []T, prettyErr error, originalErr error) {
+func parseArrayQueryParam[T any](r *http.Request, paramName string, required bool, defaultValue []T, parserFunc ParserFunc[T]) ([]T, error) {
 	param := r.URL.Query().Get(paramName)
 	values := strings.Split(param, ",")
 
+	if len(values) == 0 {
+		if !required {
+			return defaultValue, nil
+		}
+
+		return []T{}, fmt.Errorf("missing %s param '%s'", QueryParam, paramName)
+	}
+
 	var results []T
 
-	for i, value := range values {
-		result, prettyErr, originalErr := parseParam(paramName, QueryParam, value, required, defaultValue[i], parserFunc)
-		if prettyErr != nil {
-			return []T{}, prettyErr, originalErr
+	for _, value := range values {
+		result, err := parseParam(paramName, QueryParam, value, true, *new(T), parserFunc)
+		if err != nil {
+			return []T{}, err
 		}
 		results = append(results, result)
 	}
 
-	return results, nil, nil
+	return results, nil
 }
 
-func parseParam[T any](paramName string, paramType string, value string, required bool, defaultValue T, parserFunc ParserFunc[T]) (result T, prettyErr error, originalErr error) {
-	missingRequiredErr := fmt.Errorf("missing %s param '%s'", paramType, paramName)
-	invalidErr := fmt.Errorf("invalid %s param '%s' with value '%s'", paramType, paramName, value)
-
-	if parserFunc == nil {
-		return any(value).(T), nil, nil
-	}
-
+func parseParam[T any](paramName string, paramType string, value string, required bool, defaultValue T, parserFunc ParserFunc[T]) (T, error) {
 	if value == "" {
 		if !required {
-			return defaultValue, nil, nil
+			return defaultValue, nil
 		}
 
-		return *new(T), missingRequiredErr, missingRequiredErr
+		return *new(T), fmt.Errorf("missing %s param '%s'", paramType, paramName)
+	}
+
+	if parserFunc == nil {
+		return any(value).(T), nil
 	}
 
 	result, err := parserFunc(paramType, paramName, value)
-	return result, invalidErr, err
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
