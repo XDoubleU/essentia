@@ -1,4 +1,4 @@
-package http_tools
+package httptools
 
 import (
 	"context"
@@ -18,8 +18,8 @@ func Serve(port int, handler http.Handler, environment string) error {
 		Addr:         fmt.Sprintf(":%d", port),
 		Handler:      handler,
 		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,  //nolint:gomnd //no magic number
-		WriteTimeout: 10 * time.Second, //nolint:gomnd //no magic number
+		ReadTimeout:  5 * time.Second,  //nolint:mnd //no magic number
+		WriteTimeout: 10 * time.Second, //nolint:mnd //no magic number
 	}
 
 	shutdownError := make(chan error)
@@ -33,7 +33,7 @@ func Serve(port int, handler http.Handler, environment string) error {
 
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			30*time.Second, //nolint:gomnd // no magic number
+			30*time.Second, //nolint:mnd // no magic number
 		)
 		defer cancel()
 

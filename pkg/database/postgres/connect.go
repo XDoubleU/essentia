@@ -3,11 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
 	"strconv"
 	"time"
 
+	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,7 +25,7 @@ func Connect(dsn string, maxConns int, maxIdleTime string) (*pgxpool.Pool, error
 	for i := 0; i < 3; i++ {
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			5*time.Second, //nolint:gomnd //no magic number
+			5*time.Second, //nolint:mnd //no magic number
 		)
 		defer cancel()
 
@@ -35,11 +35,8 @@ func Connect(dsn string, maxConns int, maxIdleTime string) (*pgxpool.Pool, error
 			break
 		}
 
-		retryTime := 15 * time.Second //nolint:gomnd //no magic number
-		fmt.Printf(                   //nolint:forbidigo //allowed printf
-			"can't connect to database, retrying in %s",
-			retryTime,
-		)
+		retryTime := 15 * time.Second //nolint:mnd //no magic number
+		logger.GetLogger().Printf("can't connect to database, retrying in %s", retryTime)
 		time.Sleep(retryTime)
 	}
 

@@ -5,20 +5,20 @@ import (
 	"sync"
 )
 
-type TestEnv struct {
-	TestTx  TestTx
+type Env struct {
+	TestTx  Tx
 	TestCtx context.Context
 }
 
-func SetupSingle(mainTestEnv *MainTestEnv) TestEnv {
+func SetupSingle(mainTestEnv *MainTestEnv) Env {
 	testCtx := context.Background()
 
-	var testTx TestTx
+	var testTx Tx
 	var mu sync.Mutex
 	for {
 		tx, err := mainTestEnv.TestDB.Begin(testCtx)
 		if err == nil {
-			testTx = TestTx{
+			testTx = Tx{
 				tx: tx,
 				mu: &mu,
 			}
@@ -26,7 +26,7 @@ func SetupSingle(mainTestEnv *MainTestEnv) TestEnv {
 		}
 	}
 
-	testEnv := TestEnv{
+	testEnv := Env{
 		TestTx:  testTx,
 		TestCtx: testCtx,
 	}
@@ -34,7 +34,7 @@ func SetupSingle(mainTestEnv *MainTestEnv) TestEnv {
 	return testEnv
 }
 
-func TeardownSingle(testEnv TestEnv) {
+func TeardownSingle(testEnv Env) {
 	for {
 		if testEnv.TestTx.mu.TryLock() {
 			break

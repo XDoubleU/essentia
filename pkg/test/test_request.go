@@ -2,16 +2,17 @@ package test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/http_tools"
+	"github.com/XDoubleU/essentia/pkg/httptools"
 )
 
-type TestRequest struct {
+type RequestTester struct {
 	handler http.Handler
 	ts      *httptest.Server
 	method  string
@@ -21,7 +22,11 @@ type TestRequest struct {
 	cookies []*http.Cookie
 }
 
-func CreateTestRequest(handler http.Handler, method, path string, pathValues ...any) TestRequest {
+func CreateRequestTester(
+	handler http.Handler,
+	method, path string,
+	pathValues ...any,
+) RequestTester {
 	if len(path) > 0 && path[0] == '/' {
 		path = path[1:]
 	}
@@ -30,7 +35,7 @@ func CreateTestRequest(handler http.Handler, method, path string, pathValues ...
 		path = fmt.Sprintf(path, pathValues...)
 	}
 
-	return TestRequest{
+	return RequestTester{
 		handler,
 		nil,
 		method,
@@ -41,23 +46,23 @@ func CreateTestRequest(handler http.Handler, method, path string, pathValues ...
 	}
 }
 
-func (tReq *TestRequest) SetTestServer(ts *httptest.Server) {
+func (tReq *RequestTester) SetTestServer(ts *httptest.Server) {
 	tReq.ts = ts
 }
 
-func (tReq *TestRequest) SetReqData(reqData any) {
+func (tReq *RequestTester) SetReqData(reqData any) {
 	tReq.reqData = reqData
 }
 
-func (tReq *TestRequest) SetQuery(query map[string]string) {
+func (tReq *RequestTester) SetQuery(query map[string]string) {
 	tReq.query = query
 }
 
-func (tReq *TestRequest) AddCookie(cookie *http.Cookie) {
+func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
-func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
+func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	t.Helper()
 
 	var body []byte
@@ -81,7 +86,8 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 		}
 	}
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		context.Background(),
 		tReq.method,
 		fmt.Sprintf("%s/%s", tReq.ts.URL, tReq.path),
 		bytes.NewReader(body),
@@ -115,7 +121,7 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 	}
 
 	if rsData != nil {
-		err = http_tools.ReadJSON(rs.Body, &rsData)
+		err = httptools.ReadJSON(rs.Body, &rsData)
 		if err != nil {
 			t.Errorf("error when parsing response: %v", err)
 			t.FailNow()
@@ -126,8 +132,8 @@ func (tReq TestRequest) Do(t *testing.T, rsData any) *http.Response {
 	return rs
 }
 
-func (tReq TestRequest) Copy() TestRequest {
-	return TestRequest{
+func (tReq RequestTester) Copy() RequestTester {
+	return RequestTester{
 		handler: tReq.handler,
 		ts:      tReq.ts,
 		method:  tReq.method,

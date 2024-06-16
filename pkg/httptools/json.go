@@ -1,4 +1,4 @@
-package http_tools
+package httptools
 
 import (
 	"encoding/json"

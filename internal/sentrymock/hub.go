@@ -1,4 +1,4 @@
-package sentry_mock
+package sentrymock
 
 import "github.com/getsentry/sentry-go"
 

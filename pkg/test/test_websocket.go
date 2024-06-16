@@ -13,7 +13,7 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-type TestWebsocket struct {
+type WebsocketTester struct {
 	handler           http.Handler
 	timeout           time.Duration
 	sleep             time.Duration
@@ -23,24 +23,28 @@ type TestWebsocket struct {
 
 type ParallelOperation = func(t *testing.T, ts *httptest.Server)
 
-func CreateTestWebsocket(handler http.Handler) TestWebsocket {
-	return TestWebsocket{
+func CreateWebsocketTester(handler http.Handler) WebsocketTester {
+	return WebsocketTester{
 		handler:    handler,
-		timeout:    10 * time.Second,
+		timeout:    10 * time.Second, //nolint:mnd //no magic number
 		sleep:      time.Second,
 		initialMsg: nil,
 	}
 }
 
-func (tWeb *TestWebsocket) SetInitialMessage(msg any) {
+func (tWeb *WebsocketTester) SetInitialMessage(msg any) {
 	tWeb.initialMsg = msg
 }
 
-func (tWeb *TestWebsocket) SetParallelOperation(parallelOperation ParallelOperation) {
+func (tWeb *WebsocketTester) SetParallelOperation(parallelOperation ParallelOperation) {
 	tWeb.parallelOperation = parallelOperation
 }
 
-func (tWeb TestWebsocket) Do(t *testing.T, initialResponse any, parallelOperationResponse any) {
+func (tWeb WebsocketTester) Do(
+	t *testing.T,
+	initialResponse any,
+	parallelOperationResponse any,
+) {
 	t.Helper()
 
 	var err error
@@ -50,12 +54,13 @@ func (tWeb TestWebsocket) Do(t *testing.T, initialResponse any, parallelOperatio
 
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
 	ws, err := dialWebsocket(wsURL, tWeb.timeout)
+
 	require.Nil(t, err)
 
 	if tWeb.initialMsg != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
 		defer cancel()
-		err := wsjson.Write(ctx, ws, tWeb.initialMsg)
+		err = wsjson.Write(ctx, ws, tWeb.initialMsg)
 		require.Nil(t, err)
 	}
 
@@ -81,7 +86,9 @@ func dialWebsocket(url string, timeout time.Duration) (*websocket.Conn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	ws, _, err := websocket.Dial(ctx, url, nil)
+	ws, rs, err := websocket.Dial(ctx, url, nil)
+	defer rs.Body.Close()
+
 	if err != nil {
 		return nil, err
 	}
