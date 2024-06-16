@@ -51,8 +51,9 @@ func (mt MatrixTester) Do(t *testing.T) {
 
 	for tReq, errorMsg := range mt.errorMessageTests {
 		var rsData http_tools.ErrorDto
-		tReq.Do(t, &rsData)
+		rs := tReq.Do(t, &rsData)
 
+		assert.Equal(t, http.StatusUnprocessableEntity, rs.StatusCode)
 		assert.Equal(t, errorMsg, rsData.Message)
 	}
 
