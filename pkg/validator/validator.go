@@ -24,8 +24,8 @@ func (v *Validator) AddError(key, message string) {
 	}
 }
 
-func (v *Validator) Check(ok bool, key, message string) {
-	if !ok {
+func Check[T any](v *Validator, value T, validatorFunc ValidatorFunc[T], key string) {
+	if result, message := validatorFunc(value); !result {
 		v.AddError(key, message)
 	}
 }
