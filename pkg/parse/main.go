@@ -64,7 +64,14 @@ func parseURLParam[T any](
 ) (T, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	param := params.ByName(paramName)
-	return parseParam(paramName, URLParamType, param, required, defaultValue, parserFunc)
+	return parseParam(
+		paramName,
+		URLParamType,
+		param,
+		required,
+		defaultValue,
+		parserFunc,
+	)
 }
 
 func parseQueryParam[T any](
@@ -75,7 +82,14 @@ func parseQueryParam[T any](
 	parserFunc ParserFunc[T],
 ) (T, error) {
 	param := r.URL.Query().Get(paramName)
-	return parseParam(paramName, QueryParamType, param, required, defaultValue, parserFunc)
+	return parseParam(
+		paramName,
+		QueryParamType,
+		param,
+		required,
+		defaultValue,
+		parserFunc,
+	)
 }
 
 func parseArrayQueryParam[T any](

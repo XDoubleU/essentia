@@ -36,7 +36,8 @@ func Connect(dsn string, maxConns int, maxIdleTime string) (*pgxpool.Pool, error
 		}
 
 		retryTime := 15 * time.Second //nolint:mnd //no magic number
-		logger.GetLogger().Printf("can't connect to database, retrying in %s", retryTime)
+		logger.GetLogger().
+			Printf("can't connect to database, retrying in %s", retryTime)
 		time.Sleep(retryTime)
 	}
 
