@@ -1,9 +1,12 @@
-init:
-	go install github.com/segmentio/golines@v0.11.0
-	go install github.com/daixiang0/gci@v0.11.2
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.17.0
+tools: tools/lint
 
-lint:
+tools/lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.0
+	go install github.com/segmentio/golines@v0.12.2
+	go install github.com/daixiang0/gci@v0.13.4
+	go install github.com/securego/gosec/v2/cmd/gosec@v2.20.0
+
+lint: tools/lint
 	golangci-lint run
 
 lint/fix:
