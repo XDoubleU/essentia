@@ -25,7 +25,6 @@ func (spandb SpanDB) Query(ctx context.Context, sql string,
 	span := database.StartSpan(ctx, "postgresql", sql)
 	defer span.Finish()
 
-	//nolint:sqlclosecheck // user is supposed to close query
 	return spandb.DB.Query(span.Context(), sql, args...)
 }
 

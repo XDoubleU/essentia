@@ -10,13 +10,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testCorsHeaders(t *testing.T, handler func(next http.Handler) http.Handler, method string, allowedOrigins []string, exHeaders []string) {
+func testCorsHeaders(
+	t *testing.T,
+	handler func(next http.Handler) http.Handler,
+	method string,
+	allowedOrigins []string,
+	exHeaders []string,
+) {
 	t.Helper()
 
 	expectedMethods := []string{"GET", "POST", "PATCH", "DELETE"}
 
 	var testResponse = []byte("bar")
-	var testHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var testHandler = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(testResponse)
 	})
 
@@ -61,5 +67,11 @@ func TestCors(t *testing.T) {
 	testCorsHeaders(t, corsSentry, http.MethodOptions, allowedOrigins, sentryHeaders)
 
 	testCorsHeaders(t, corsNoSentry, http.MethodGet, allowedOrigins, noSentryHeaders)
-	testCorsHeaders(t, corsNoSentry, http.MethodOptions, allowedOrigins, noSentryHeaders)
+	testCorsHeaders(
+		t,
+		corsNoSentry,
+		http.MethodOptions,
+		allowedOrigins,
+		noSentryHeaders,
+	)
 }

@@ -25,9 +25,19 @@ func (ts TestStruct) Validate() *validate.Validator {
 	validate.Check(v, ts.intVal, validate.IsLesserThanOrEqualFunc(2), "intVal")
 
 	validate.Check(v, ts.int64Val, validate.IsGreaterThanFunc(int64(-1)), "int64Val")
-	validate.Check(v, ts.int64Val, validate.IsGreaterThanOrEqualFunc(int64(1)), "int64Val")
+	validate.Check(
+		v,
+		ts.int64Val,
+		validate.IsGreaterThanOrEqualFunc(int64(1)),
+		"int64Val",
+	)
 	validate.Check(v, ts.int64Val, validate.IsLesserThanFunc(int64(4)), "int64Val")
-	validate.Check(v, ts.int64Val, validate.IsLesserThanOrEqualFunc(int64(2)), "int64Val")
+	validate.Check(
+		v,
+		ts.int64Val,
+		validate.IsLesserThanOrEqualFunc(int64(2)),
+		"int64Val",
+	)
 
 	validate.Check(v, ts.tzVal, validate.IsValidTimeZone, "tzVal")
 

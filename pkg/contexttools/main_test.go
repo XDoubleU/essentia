@@ -14,13 +14,17 @@ func TestSetContextValue(t *testing.T) {
 
 	r = contexttools.SetContextValue(r, contexttools.ShowErrorsContextKey, true)
 
-	value := r.Context().Value(contexttools.ShowErrorsContextKey).(bool)
+	value, _ := r.Context().Value(contexttools.ShowErrorsContextKey).(bool)
 
 	assert.Equal(t, true, value)
 }
 
 func TestGetContextValue(t *testing.T) {
-	ctx := context.WithValue(context.Background(), contexttools.ShowErrorsContextKey, true)
+	ctx := context.WithValue(
+		context.Background(),
+		contexttools.ShowErrorsContextKey,
+		true,
+	)
 	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
 	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
