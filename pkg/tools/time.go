@@ -38,5 +38,6 @@ func TimeZoneIndependentTimeNow(locationTimeZone string) time.Time {
 		now.Minute(),
 		now.Second(),
 		now.Nanosecond(),
-		utcTimeZone)
+		utcTimeZone,
+	)
 }
