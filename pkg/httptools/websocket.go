@@ -15,41 +15,49 @@ type ISubjectMessageDto interface {
 	GetSubject() string
 }
 
-type SubjectHandler = func(
-	w http.ResponseWriter,
-	r *http.Request,
-	conn *websocket.Conn,
-	msg ISubjectMessageDto,
-)
-
-type WebsocketHandler struct {
+type WebsocketHandler[T ISubjectMessageDto] struct {
 	url               string
 	onCloseCallBack   OnCloseCallback
-	subjectHandlerMap map[string]SubjectHandler
+	subjectHandlerMap map[string]func(
+		w http.ResponseWriter,
+		r *http.Request,
+		conn *websocket.Conn,
+		msg T,
+	)
 }
 
 type OnCloseCallback = func(conn *websocket.Conn)
 
-func CreateWebsocketHandler(url string) WebsocketHandler {
+func CreateWebsocketHandler[T ISubjectMessageDto](url string) WebsocketHandler[T] {
 	if strings.Contains(url, "://") {
 		url = strings.Split(url, "://")[1]
 	}
 
-	return WebsocketHandler{
+	return WebsocketHandler[T]{
 		url: url,
 		subjectHandlerMap: make(
-			map[string]SubjectHandler,
+			map[string]func(
+				w http.ResponseWriter,
+				r *http.Request,
+				conn *websocket.Conn,
+				msg T,
+			),
 		),
 	}
 }
 
-func (h *WebsocketHandler) SetOnCloseCallback(callback OnCloseCallback) {
+func (h *WebsocketHandler[T]) SetOnCloseCallback(callback OnCloseCallback) {
 	h.onCloseCallBack = callback
 }
 
-func (h *WebsocketHandler) AddSubjectHandler(
+func (h *WebsocketHandler[T]) AddSubjectHandler(
 	subject string,
-	handler SubjectHandler,
+	handler func(
+		w http.ResponseWriter,
+		r *http.Request,
+		conn *websocket.Conn,
+		msg T,
+	),
 ) {
 	_, ok := h.subjectHandlerMap[subject]
 	if ok {
@@ -59,7 +67,7 @@ func (h *WebsocketHandler) AddSubjectHandler(
 	h.subjectHandlerMap[subject] = handler
 }
 
-func (h WebsocketHandler) GetHandler() http.HandlerFunc {
+func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			OriginPatterns: []string{h.url},
@@ -74,7 +82,7 @@ func (h WebsocketHandler) GetHandler() http.HandlerFunc {
 			conn.Close(websocket.StatusInternalError, "")
 		}()
 
-		var msg ISubjectMessageDto
+		var msg T
 		err = wsjson.Read(r.Context(), conn, &msg)
 		if err != nil {
 			WSErrorResponse(w, r, conn, h.onCloseCallBack, err)
