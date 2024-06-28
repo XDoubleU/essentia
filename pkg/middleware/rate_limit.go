@@ -10,36 +10,45 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func RateLimit(next http.Handler) http.Handler {
-	var rps rate.Limit = 10
-	var bucketSize = 30
+type client struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
 
-	type client struct {
-		limiter  *rate.Limiter
-		lastSeen time.Time
-	}
-
+func RateLimit(rps rate.Limit, bucketSize int, cleanupTimer time.Duration, removeAfter time.Duration) middleware {
 	var (
-		mu      sync.Mutex
+		mu      sync.RWMutex
 		clients = make(map[string]*client)
 	)
 
 	go func() {
 		for {
-			time.Sleep(time.Minute)
+			time.Sleep(cleanupTimer)
 
-			mu.Lock()
+			mu.RLock()
 
 			for ip, client := range clients {
-				if time.Since(client.lastSeen) > 3*time.Minute {
+				if time.Since(client.lastSeen) > removeAfter {
+					mu.RUnlock()
+					mu.Lock()
+
 					delete(clients, ip)
+
+					mu.Unlock()
+					mu.RLock()
 				}
 			}
 
-			mu.Unlock()
+			mu.RUnlock()
 		}
 	}()
 
+	return func(next http.Handler) http.Handler {
+		return rateLimit(&mu, clients, rps, bucketSize, next)
+	}
+}
+
+func rateLimit(mu *sync.RWMutex, clients map[string]*client, rps rate.Limit, bucketSize int, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {

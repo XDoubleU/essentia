@@ -29,5 +29,13 @@ func TestGetContextValue(t *testing.T) {
 
 	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
 
-	assert.Equal(t, true, value)
+	assert.Equal(t, true, *value)
+}
+
+func TestGetContextValueNotPresent(t *testing.T) {
+	r, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "", nil)
+
+	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
+
+	assert.Nil(t, value)
 }

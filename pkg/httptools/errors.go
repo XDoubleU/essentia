@@ -54,7 +54,7 @@ func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	)
 
 	message := MessageInternalServerError
-	if showErrors {
+	if showErrors != nil && *showErrors {
 		message = err.Error()
 	}
 
