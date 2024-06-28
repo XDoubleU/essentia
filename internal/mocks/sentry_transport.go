@@ -1,4 +1,4 @@
-package sentrymock
+package mocks
 
 import (
 	"sync"

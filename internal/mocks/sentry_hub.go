@@ -1,18 +1,18 @@
-package sentrymock
+package mocks
 
 import "github.com/getsentry/sentry-go"
 
 const testDsn = "http://whatever@example.com/1337"
 
-func GetMockedClientOptions() *sentry.ClientOptions {
+func GetMockedSentryClientOptions() *sentry.ClientOptions {
 	return &sentry.ClientOptions{
 		Dsn:       testDsn,
 		Transport: &TransportMock{},
 	}
 }
 
-func GetMockedHub() *sentry.Hub {
-	clientOptions := GetMockedClientOptions()
+func GetMockedSentryHub() *sentry.Hub {
+	clientOptions := GetMockedSentryClientOptions()
 
 	client, err := sentry.NewClient(*clientOptions)
 	if err != nil {
