@@ -3,6 +3,7 @@
 ![GitHub](https://img.shields.io/github/license/XDoubleU/essentia)
 [![Workflow](https://github.com/XDoubleU/essentia/actions/workflows/main.yml/badge.svg)](https://github.com/XDoubleU/essentia/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/XDoubleU/essentia/branch/main/graph/badge.svg?token=8IY0BGQ5RW)](https://codecov.io/gh/XDoubleU/essentia)
+[![Go Report Card](https://goreportcard.com/badge/github.com/XDoubleU/essentia)](https://goreportcard.com/report/github.com/XDoubleU/essentia)
 ![GitHub last commit](https://img.shields.io/github/last-commit/XDoubleU/essentia)
 
 TODO: Add description

@@ -26,12 +26,15 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.21', '1.22' ]
+    name: Test with Go v${{ matrix.go }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: './go.mod'
-          cache-dependency-path: './go.sum'
+          go-version: ${{ matrix.go }}
       - run: make test/cov/report
         working-directory: '.'
       - name: Upload coverage reports to Codecov
