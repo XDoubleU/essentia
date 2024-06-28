@@ -1,8 +1,11 @@
 package tools
 
-import "strconv"
+import (
+	"errors"
+	"strconv"
+)
 
-func AnyToString(value any) string {
+func AnyToString(value any) (string, error) {
 	var result string
 
 	var strVal string
@@ -15,8 +18,8 @@ func AnyToString(value any) string {
 	} else if int64Val, ok = value.(int64); ok {
 		result = strconv.FormatInt(int64Val, 10)
 	} else {
-		panic("undefined type")
+		return "", errors.New("undefined type")
 	}
 
-	return result
+	return result, nil
 }

@@ -34,6 +34,42 @@ func TestGetEnvInt(t *testing.T) {
 	assert.Equal(t, notExists, def)
 }
 
+func TestGetEnvIntWrong(t *testing.T) {
+	expected, def := "string", 0
+
+	t.Setenv(existingKey, expected)
+
+	assert.PanicsWithValue(
+		t,
+		"can't convert env var 'key' with value 'string' to int",
+		func() { config.GetEnvInt(existingKey, def) },
+	)
+}
+
+func TestGetEnvFloat(t *testing.T) {
+	expected, def := 14.0, 0.0
+
+	t.Setenv(existingKey, strconv.FormatFloat(expected, 'f', -1, 64))
+
+	exists := config.GetEnvFloat(existingKey, def)
+	notExists := config.GetEnvFloat(nonExistingKey, def)
+
+	assert.Equal(t, exists, expected)
+	assert.Equal(t, notExists, def)
+}
+
+func TestGetEnvFloatWrong(t *testing.T) {
+	expected, def := "string", 0.0
+
+	t.Setenv(existingKey, expected)
+
+	assert.PanicsWithValue(
+		t,
+		"can't convert env var 'key' with value 'string' to float64",
+		func() { config.GetEnvFloat(existingKey, def) },
+	)
+}
+
 func TestGetEnvBool(t *testing.T) {
 	expected, def := true, false
 
@@ -44,4 +80,16 @@ func TestGetEnvBool(t *testing.T) {
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+}
+
+func TestGetEnvBoolWrong(t *testing.T) {
+	expected, def := "string", false
+
+	t.Setenv(existingKey, expected)
+
+	assert.PanicsWithValue(
+		t,
+		"can't convert env var 'key' with value 'string' to bool",
+		func() { config.GetEnvBool(existingKey, def) },
+	)
 }

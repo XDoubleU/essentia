@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-const errorMessage = "Can't convert env var '%s' with value '%s' to %s"
+const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
 func GetEnvStr(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)

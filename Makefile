@@ -23,8 +23,7 @@ test/v:
 test/cov/report:
 	go test ./... -covermode=set -coverprofile=coverage.out
 
-test/cov:
-	go test ./... -covermode=set -coverprofile=coverage.out
+test/cov: test/cov/report
 	go tool cover -html=coverage.out -o=coverage.html
 	make test/cov/open
 

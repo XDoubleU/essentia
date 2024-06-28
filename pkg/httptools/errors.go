@@ -54,7 +54,7 @@ func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	)
 
 	message := MessageInternalServerError
-	if showErrors {
+	if showErrors != nil && *showErrors {
 		message = err.Error()
 	}
 
@@ -88,7 +88,11 @@ func ConflictResponse(
 	identifierValue any,
 	jsonField string,
 ) {
-	value := tools.AnyToString(identifierValue)
+	value, err2 := tools.AnyToString(identifierValue)
+	if err2 != nil {
+		ServerErrorResponse(w, r, err2)
+		return
+	}
 
 	if err == nil || errors.Is(err, ErrRecordUniqueValue) {
 		message := fmt.Sprintf(
@@ -113,7 +117,11 @@ func NotFoundResponse(
 	identifierValue any,
 	jsonField string,
 ) {
-	value := tools.AnyToString(identifierValue)
+	value, err2 := tools.AnyToString(identifierValue)
+	if err2 != nil {
+		ServerErrorResponse(w, r, err2)
+		return
+	}
 
 	if err == nil || errors.Is(err, ErrRecordNotFound) {
 		message := fmt.Sprintf(
