@@ -15,7 +15,12 @@ type client struct {
 	lastSeen time.Time
 }
 
-func RateLimit(rps rate.Limit, bucketSize int, cleanupTimer time.Duration, removeAfter time.Duration) middleware {
+func RateLimit(
+	rps rate.Limit,
+	bucketSize int,
+	cleanupTimer time.Duration,
+	removeAfter time.Duration,
+) middleware {
 	var (
 		mu      sync.RWMutex
 		clients = make(map[string]*client)
@@ -48,7 +53,13 @@ func RateLimit(rps rate.Limit, bucketSize int, cleanupTimer time.Duration, remov
 	}
 }
 
-func rateLimit(mu *sync.RWMutex, clients map[string]*client, rps rate.Limit, bucketSize int, next http.Handler) http.Handler {
+func rateLimit(
+	mu *sync.RWMutex,
+	clients map[string]*client,
+	rps rate.Limit,
+	bucketSize int,
+	next http.Handler,
+) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {

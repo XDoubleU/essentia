@@ -17,6 +17,10 @@ func GetContextValue[T any](r *http.Request, key ContextKey) *T {
 		return nil
 	}
 
-	castedValue := val.(T)
+	castedValue, ok := val.(T)
+	if !ok {
+		return nil
+	}
+
 	return &castedValue
 }

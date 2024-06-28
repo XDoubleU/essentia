@@ -37,6 +37,7 @@ func Default(
 	handlers := Minimal(showErrors)
 	handlers = append(handlers, helmet.Secure)
 	handlers = append(handlers, Cors(allowedOrigins, useSentry))
+	//nolint:mnd//no magic number
 	handlers = append(handlers, RateLimit(10, 30, time.Minute, 3*time.Minute))
 
 	if useSentry {

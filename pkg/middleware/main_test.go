@@ -54,7 +54,12 @@ func testCorsHeaders(
 	assert.Equal(t, exHeaders, headers)
 }
 
-func testMiddleware(t *testing.T, middleware func(next http.Handler) http.Handler, req *http.Request, innerHandler func(w http.ResponseWriter, r *http.Request)) *httptest.ResponseRecorder {
+func testMiddleware(
+	t *testing.T,
+	middleware func(next http.Handler) http.Handler,
+	req *http.Request,
+	innerHandler func(w http.ResponseWriter, r *http.Request),
+) *httptest.ResponseRecorder {
 	t.Helper()
 
 	var testResponse = []byte("bar")
@@ -99,9 +104,14 @@ func TestErrors(t *testing.T) {
 	shownErrors := middleware.ErrorObfuscater(true)
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-	testMiddleware(t, obfuscatedErrors, req, func(_ http.ResponseWriter, r *http.Request) {
-		assert.False(t, r.Context().Value(contexttools.ShowErrorsContextKey).(bool))
-	})
+	testMiddleware(
+		t,
+		obfuscatedErrors,
+		req,
+		func(_ http.ResponseWriter, r *http.Request) {
+			assert.False(t, r.Context().Value(contexttools.ShowErrorsContextKey).(bool))
+		},
+	)
 	testMiddleware(t, shownErrors, req, func(_ http.ResponseWriter, r *http.Request) {
 		assert.True(t, r.Context().Value(contexttools.ShowErrorsContextKey).(bool))
 	})
@@ -112,9 +122,14 @@ func TestLogger(t *testing.T) {
 	logger.SetLogger(mockedLogger.GetLogger())
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-	testMiddleware(t, middleware.Logger, req, func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	testMiddleware(
+		t,
+		middleware.Logger,
+		req,
+		func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		},
+	)
 
 	timeStr := time.Now().Format("2006/01/02")
 	assert.Contains(t, mockedLogger.Buffer.String(), timeStr)
@@ -123,7 +138,12 @@ func TestLogger(t *testing.T) {
 
 func TestRateLimit(t *testing.T) {
 	bucketSize := 30
-	rateLimiter := middleware.RateLimit(10, bucketSize, time.Second, 500*time.Millisecond)
+	rateLimiter := middleware.RateLimit(
+		10,
+		bucketSize,
+		time.Second,
+		500*time.Millisecond,
+	)
 
 	singleRequest := func() *httptest.ResponseRecorder {
 		req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
@@ -151,9 +171,14 @@ func TestRecover(t *testing.T) {
 	logger.SetLogger(mockedLogger.GetLogger())
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-	res := testMiddleware(t, middleware.Recover, req, func(w http.ResponseWriter, r *http.Request) {
-		panic("test")
-	})
+	res := testMiddleware(
+		t,
+		middleware.Recover,
+		req,
+		func(_ http.ResponseWriter, _ *http.Request) {
+			panic("test")
+		},
+	)
 
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, "close", res.Header()["Connection"][0])
@@ -162,7 +187,12 @@ func TestRecover(t *testing.T) {
 
 func TestSentry(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-	testMiddleware(t, middleware.Sentry(true, *mocks.GetMockedSentryClientOptions()), req, func(w http.ResponseWriter, r *http.Request) {
-		assert.NotNil(t, sentry.GetHubFromContext(r.Context()))
-	})
+	testMiddleware(
+		t,
+		middleware.Sentry(true, *mocks.GetMockedSentryClientOptions()),
+		req,
+		func(_ http.ResponseWriter, r *http.Request) {
+			assert.NotNil(t, sentry.GetHubFromContext(r.Context()))
+		},
+	)
 }
