@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 const (
@@ -18,7 +16,7 @@ func URLParam[T any](
 	paramName string,
 	parserFunc ParserFunc[T],
 ) (T, error) {
-	return parseURLParam(r, paramName, false, *new(T), parserFunc)
+	return parseURLParam(r, paramName, true, *new(T), parserFunc)
 }
 
 func RequiredQueryParam[T any](
@@ -62,8 +60,7 @@ func parseURLParam[T any](
 	defaultValue T,
 	parserFunc ParserFunc[T],
 ) (T, error) {
-	params := httprouter.ParamsFromContext(r.Context())
-	param := params.ByName(paramName)
+	param := r.PathValue(paramName)
 	return parseParam(
 		paramName,
 		URLParamType,
@@ -102,7 +99,7 @@ func parseArrayQueryParam[T any](
 	param := r.URL.Query().Get(paramName)
 	values := strings.Split(param, ",")
 
-	if len(values) == 0 {
+	if param == "" {
 		if !required {
 			return defaultValue, nil
 		}
