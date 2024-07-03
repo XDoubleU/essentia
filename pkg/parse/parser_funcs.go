@@ -11,10 +11,15 @@ import (
 
 type ParserFunc[T any] func(paramType string, paramName string, value string) (T, error)
 
-func UUID(_ string, _ string, value string) (string, error) {
+func UUID(paramType string, paramName string, value string) (string, error) {
 	uuidVal, err := uuid.Parse(value)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf(
+			"invalid %s param '%s' with value '%s', should be a UUID",
+			paramType,
+			paramName,
+			value,
+		)
 	}
 
 	return uuidVal.String(), nil
