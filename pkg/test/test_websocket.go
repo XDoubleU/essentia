@@ -44,7 +44,7 @@ func (tWeb WebsocketTester) Do(
 	t *testing.T,
 	initialResponse any,
 	parallelOperationResponse any,
-) {
+) error {
 	t.Helper()
 
 	var err error
@@ -54,7 +54,6 @@ func (tWeb WebsocketTester) Do(
 
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
 	ws, err := dialWebsocket(wsURL, tWeb.timeout)
-
 	require.Nil(t, err)
 
 	if tWeb.initialMsg != nil {
@@ -68,18 +67,25 @@ func (tWeb WebsocketTester) Do(
 		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
 		defer cancel()
 		err = wsjson.Read(ctx, ws, &initialResponse)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if tWeb.parallelOperation != nil {
+		go func() {
+			time.Sleep(tWeb.sleep)
+			tWeb.parallelOperation(t, ts)
+		}()
+
+		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
+		defer cancel()
+		err = wsjson.Read(ctx, ws, &parallelOperationResponse)
 		require.Nil(t, err)
 	}
 
-	go func() {
-		time.Sleep(tWeb.sleep)
-		tWeb.parallelOperation(t, ts)
-	}()
-
-	ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
-	defer cancel()
-	err = wsjson.Read(ctx, ws, &parallelOperationResponse)
-	require.Nil(t, err)
+	return nil
 }
 
 func dialWebsocket(url string, timeout time.Duration) (*websocket.Conn, error) {

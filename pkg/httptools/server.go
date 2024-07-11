@@ -3,7 +3,6 @@ package httptools
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,17 +12,7 @@ import (
 	"github.com/XDoubleU/essentia/pkg/logger"
 )
 
-func Serve(port int, handler http.Handler, environment string) error {
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
-		Handler:      handler,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,  //nolint:mnd //no magic number
-		WriteTimeout: 10 * time.Second, //nolint:mnd //no magic number
-	}
-
-	shutdownError := make(chan error)
-
+func Serve(srv *http.Server, environment string) error {
 	go func() {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -37,18 +26,14 @@ func Serve(port int, handler http.Handler, environment string) error {
 		)
 		defer cancel()
 
-		shutdownError <- srv.Shutdown(ctx)
+		//nolint:errcheck // not useful to capture for now
+		srv.Shutdown(ctx)
 	}()
 
 	logger.GetLogger().Printf("starting %s server on %s", environment, srv.Addr)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
-
-	err = <-shutdownError
-	if err != nil {
 		return err
 	}
 

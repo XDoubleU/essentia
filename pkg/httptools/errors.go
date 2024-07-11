@@ -11,7 +11,6 @@ import (
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
 	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 var (
@@ -149,7 +148,7 @@ func FailedValidationResponse(
 }
 
 func WSErrorResponse(
-	w http.ResponseWriter,
+	_ http.ResponseWriter,
 	r *http.Request,
 	conn *websocket.Conn,
 	beforeClosingFunc func(conn *websocket.Conn),
@@ -166,11 +165,6 @@ func WSErrorResponse(
 	beforeClosingFunc(conn)
 
 	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
-
-	err = wsjson.Write(r.Context(), conn, err)
-	if err != nil {
-		ErrorResponse(w, r, http.StatusInternalServerError, err)
-	}
 }
 
 func WSUpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {

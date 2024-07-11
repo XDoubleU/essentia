@@ -29,6 +29,7 @@ func (w ResponseWriter) StatusCode() int {
 	return w.statusCode
 }
 
+// remove when upgrading to Sentry v0.28.1?
 func (w *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	h, ok := w.ResponseWriter.(http.Hijacker)
 	if !ok {
