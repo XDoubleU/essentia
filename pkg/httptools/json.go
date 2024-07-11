@@ -25,7 +25,7 @@ func WriteJSON(
 		w.Header()[key] = value
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
 	_, err = w.Write(js)
 	if err != nil {
