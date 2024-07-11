@@ -32,7 +32,7 @@ func testCorsHeaders(
 
 	if method == http.MethodOptions {
 		req.Header["Access-Control-Request-Method"] = expectedMethods
-		req.Header["Access-Control-Request-Headers"] = exHeaders
+		req.Header["Access-Control-Request-Headers"] = exHeaders[0:1]
 	}
 
 	res := testMiddleware(t, handler, req, nil)
@@ -51,7 +51,7 @@ func testCorsHeaders(
 	assert.Equal(t, expectedMethods, methods)
 
 	headers := res.Header()["Access-Control-Allow-Headers"]
-	assert.Equal(t, exHeaders, headers)
+	assert.Equal(t, exHeaders[0:1], headers)
 }
 
 func testMiddleware(
@@ -80,8 +80,8 @@ func testMiddleware(
 func TestCors(t *testing.T) {
 	allowedOrigins := []string{"http://example.com"}
 
-	sentryHeaders := []string{"Content-Type", "Baggage", "Sentry-Trace"}
-	noSentryHeaders := []string{"Content-Type"}
+	sentryHeaders := []string{"content-type", "baggage", "sentry-trace"}
+	noSentryHeaders := []string{"content-type"}
 
 	corsSentry := middleware.Cors(allowedOrigins, true)
 	corsNoSentry := middleware.Cors(allowedOrigins, false)

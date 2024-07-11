@@ -5,9 +5,9 @@ import (
 )
 
 func Cors(allowedOrigins []string, useSentry bool) middleware {
-	allowedHeaders := []string{"Content-Type"}
+	allowedHeaders := []string{"content-type"}
 	if useSentry {
-		allowedHeaders = append(allowedHeaders, "Baggage", "Sentry-Trace")
+		allowedHeaders = append(allowedHeaders, "baggage", "sentry-trace")
 	}
 
 	cors := cors.New(cors.Options{
