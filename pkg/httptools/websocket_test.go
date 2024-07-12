@@ -8,6 +8,7 @@ import (
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/XDoubleU/essentia/pkg/validate"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )
@@ -49,7 +50,7 @@ func setup(t *testing.T) http.Handler {
 			conn *websocket.Conn,
 			_ TestSubjectMsg) {
 			err := wsjson.Write(r.Context(), conn, TestResponse{Ok: true})
-			assert.Nil(t, err)
+			require.Nil(t, err)
 		},
 	)
 	return ws.GetHandler()
@@ -62,7 +63,7 @@ func TestWebSocketExistingSubject(t *testing.T) {
 	var initialResponse TestResponse
 	err := tWeb.Do(t, &initialResponse, nil)
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.True(t, initialResponse.Ok)
 }
 
@@ -73,7 +74,7 @@ func TestWebSocketUnknownSubject(t *testing.T) {
 	var initialResponse httptools.ErrorDto
 	err := tWeb.Do(t, &initialResponse, nil)
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, "unknown subject", initialResponse.Error)
 	assert.Equal(t, "no handler found for 'unknown'", initialResponse.Message)
 }

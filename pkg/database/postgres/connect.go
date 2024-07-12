@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
@@ -11,8 +11,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect(dsn string, maxConns int, maxIdleTime string) (*pgxpool.Pool, error) {
-	connString, err := editConnString(dsn, maxConns, maxIdleTime)
+func Connect(
+	dsn string,
+	maxConns int,
+	maxIdleTime string,
+	connectTimeout string,
+	sleepBeforeRetry time.Duration,
+	maxRetryDuration time.Duration,
+) (*pgxpool.Pool, error) {
+	connString, err := setupConnString(dsn, maxConns, maxIdleTime, connectTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -22,33 +29,41 @@ func Connect(dsn string, maxConns int, maxIdleTime string) (*pgxpool.Pool, error
 		return nil, err
 	}
 
-	for i := 0; i < 3; i++ {
+	ctxTimeout, err := strconv.ParseInt(connectTimeout, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	for time.Now().Compare(start.Add(maxRetryDuration)) < 0 {
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			5*time.Second, //nolint:mnd //no magic number
+			time.Duration(ctxTimeout)*time.Second,
 		)
 		defer cancel()
 
 		err = db.Ping(ctx)
-
-		if err == nil || i == 2 {
+		if err == nil {
 			break
 		}
 
-		retryTime := 15 * time.Second //nolint:mnd //no magic number
 		logger.GetLogger().
-			Printf("can't connect to database, retrying in %s", retryTime)
-		time.Sleep(retryTime)
+			Printf("can't connect to database (%v), retrying in %s", err, sleepBeforeRetry)
+		time.Sleep(sleepBeforeRetry)
 	}
 
 	if err != nil {
-		return nil, errors.New("can't connect to database")
+		return nil, fmt.Errorf("can't connect to database (%w)", err)
 	}
 
 	return db, nil
 }
 
-func editConnString(dsn string, maxConns int, maxIdleTime string) (string, error) {
+func setupConnString(
+	dsn string,
+	maxConns int,
+	maxIdleTime string,
+	connectTimeout string) (string, error) {
 	parsedURL, err := url.Parse(dsn)
 	if err != nil {
 		return "", err
@@ -58,6 +73,7 @@ func editConnString(dsn string, maxConns int, maxIdleTime string) (string, error
 
 	queryValues.Add("pool_max_conns", strconv.Itoa(maxConns))
 	queryValues.Add("pool_max_conn_idle_time", maxIdleTime)
+	queryValues.Add("connect_timeout", connectTimeout)
 
 	parsedURL.RawQuery = queryValues.Encode()
 

@@ -7,10 +7,14 @@ import (
 	"time"
 
 	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestServerFunc(t *testing.T) {
+	logger.SetLogger(logger.NullLogger)
+
 	mux := http.NewServeMux()
 
 	srv := &http.Server{
@@ -24,7 +28,7 @@ func TestServerFunc(t *testing.T) {
 	go func() {
 		time.Sleep(time.Second)
 		err := srv.Shutdown(context.Background())
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}()
 
 	err := httptools.Serve(srv, "test")
