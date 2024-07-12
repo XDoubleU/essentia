@@ -1,4 +1,4 @@
-# <p align="center">essentia</p>
+# <p align="center">essentia 🧰</p>
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/XDoubleU/essentia.svg)](https://pkg.go.dev/github.com/XDoubleU/essentia)
 ![GitHub](https://img.shields.io/github/license/XDoubleU/essentia)
@@ -7,11 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/XDoubleU/essentia)](https://goreportcard.com/report/github.com/XDoubleU/essentia)
 ![GitHub last commit](https://img.shields.io/github/last-commit/XDoubleU/essentia)
 
-TODO: Add description
-
-## How to run use?
-
-TODO
+**essentia** is a toolkit which contains reusable tools, helpers and such. This allows you to focus on the *essence* of your project. These tools are properly tested so that you can rely on their proper functioning.
 
 ## Contributing
 
