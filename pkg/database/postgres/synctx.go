@@ -1,4 +1,4 @@
-package test
+package postgres
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Tx struct {
+type SyncTx struct {
 	tx pgx.Tx
 	mu *sync.Mutex
 }
@@ -21,7 +22,20 @@ func waitOnLock(lock *sync.Mutex) {
 	}
 }
 
-func (tx Tx) Exec(
+func CreateSyncTx(ctx context.Context, pool *pgxpool.Pool) SyncTx {
+	var mu sync.Mutex
+	for {
+		tx, err := pool.Begin(ctx)
+		if err == nil {
+			return SyncTx{
+				tx: tx,
+				mu: &mu,
+			}
+		}
+	}
+}
+
+func (tx SyncTx) Exec(
 	ctx context.Context,
 	sql string,
 	arguments ...any,
@@ -32,7 +46,7 @@ func (tx Tx) Exec(
 	return tx.tx.Exec(ctx, sql, arguments...)
 }
 
-func (tx Tx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+func (tx SyncTx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
@@ -40,16 +54,23 @@ func (tx Tx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, erro
 	return tx.tx.Query(ctx, sql, args...)
 }
 
-func (tx Tx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
+func (tx SyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
 	return tx.tx.QueryRow(ctx, sql, args...)
 }
 
-func (tx Tx) Begin(ctx context.Context) (pgx.Tx, error) {
+func (tx SyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
 	return tx.tx.Begin(ctx)
+}
+
+func (tx SyncTx) Rollback(ctx context.Context) error {
+	waitOnLock(tx.mu)
+	defer tx.mu.Unlock()
+
+	return tx.tx.Rollback(ctx)
 }

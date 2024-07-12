@@ -21,7 +21,7 @@ type WebsocketTester struct {
 	parallelOperation ParallelOperation
 }
 
-type ParallelOperation = func(t *testing.T, ts *httptest.Server)
+type ParallelOperation = func(t *testing.T, ts *httptest.Server, conn *websocket.Conn)
 
 func CreateWebsocketTester(handler http.Handler) WebsocketTester {
 	return WebsocketTester{
@@ -76,7 +76,7 @@ func (tWeb WebsocketTester) Do(
 	if tWeb.parallelOperation != nil {
 		go func() {
 			time.Sleep(tWeb.sleep)
-			tWeb.parallelOperation(t, ts)
+			tWeb.parallelOperation(t, ts, ws)
 		}()
 
 		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
