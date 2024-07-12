@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/XDoubleU/essentia/pkg/goroutine"
@@ -23,10 +24,16 @@ func TestSentryErrorHandler(t *testing.T) {
 		return errors.New("test error")
 	}
 
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
 	go func() {
 		goroutine.SentryErrorHandler(
 			name,
 			testFunc,
 		)
+		wg.Done()
 	}()
+
+	wg.Wait()
 }
