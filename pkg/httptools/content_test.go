@@ -7,6 +7,7 @@ import (
 
 	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCSV(t *testing.T) {
@@ -25,13 +26,13 @@ func TestCSV(t *testing.T) {
 
 	writeCSV := func(w http.ResponseWriter, _ *http.Request) {
 		err := httptools.WriteCSV(w, "test", data)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 	http.HandlerFunc(writeCSV).ServeHTTP(res, nil)
 
 	records, err := httptools.ReadCSV(res.Body)
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, data, records)
 }
 
@@ -51,13 +52,13 @@ func TestJSON(t *testing.T) {
 
 	writeJSON := func(w http.ResponseWriter, _ *http.Request) {
 		err := httptools.WriteJSON(w, http.StatusOK, data, nil)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 	http.HandlerFunc(writeJSON).ServeHTTP(res, nil)
 
 	var result [][]string
 	err := httptools.ReadJSON(res.Body, &result)
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, data, result)
 }

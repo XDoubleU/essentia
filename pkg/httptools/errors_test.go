@@ -13,6 +13,7 @@ import (
 	"github.com/XDoubleU/essentia/pkg/middleware"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"nhooyr.io/websocket"
 )
 
@@ -51,7 +52,7 @@ func testErrorWithReq(
 
 	var errorDto httptools.ErrorDto
 	err := httptools.ReadJSON(res.Result().Body, &errorDto)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	return res.Result().StatusCode, errorDto
 }
