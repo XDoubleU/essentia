@@ -4,12 +4,14 @@ import (
 	"github.com/rs/cors"
 )
 
-func Cors(allowedOrigins []string, useSentry bool) middleware {
+// CORS is middleware used to apply CORS settings.
+func CORS(allowedOrigins []string, useSentry bool) middleware {
 	allowedHeaders := []string{"content-type"}
 	if useSentry {
 		allowedHeaders = append(allowedHeaders, "baggage", "sentry-trace")
 	}
 
+	//nolint:exhaustruct //other fields are optional
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowCredentials: true,

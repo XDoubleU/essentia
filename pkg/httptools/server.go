@@ -3,22 +3,23 @@ package httptools
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/XDoubleU/essentia/pkg/logger"
 )
 
-func Serve(srv *http.Server, environment string) error {
+// Serve calls [http.Server.ListenAndServe] with some more fluff
+// around it to handle unexpected shutdowns nicely.
+func Serve(logger *log.Logger, srv *http.Server, environment string) error {
 	go func() {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		s := <-quit
 
-		logger.GetLogger().Printf("shutting down server %s", s.String())
+		logger.Printf("shutting down server %s", s.String())
 
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
@@ -30,14 +31,14 @@ func Serve(srv *http.Server, environment string) error {
 		srv.Shutdown(ctx)
 	}()
 
-	logger.GetLogger().Printf("starting %s server on %s", environment, srv.Addr)
+	logger.Printf("starting %s server on %s", environment, srv.Addr)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
-	logger.GetLogger().Printf("stopped server %s", srv.Addr)
+	logger.Printf("stopped server %s", srv.Addr)
 
 	return nil
 }

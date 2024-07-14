@@ -12,6 +12,7 @@ import (
 	"github.com/XDoubleU/essentia/pkg/httptools"
 )
 
+// A RequestTester is used to test a certain HTTP request.
 type RequestTester struct {
 	handler http.Handler
 	ts      *httptest.Server
@@ -22,6 +23,7 @@ type RequestTester struct {
 	cookies []*http.Cookie
 }
 
+// CreateRequestTester creates a new [RequestTester].
 func CreateRequestTester(
 	handler http.Handler,
 	method, path string,
@@ -46,22 +48,30 @@ func CreateRequestTester(
 	}
 }
 
+// SetTestServer sets the test server of a [RequestTester].
+// This allows to reuse existing test servers.
 func (tReq *RequestTester) SetTestServer(ts *httptest.Server) {
 	tReq.ts = ts
 }
 
+// SetReqData sets the request data, or body, of a [RequestTester].
 func (tReq *RequestTester) SetReqData(reqData any) {
 	tReq.reqData = reqData
 }
 
+// SetQuery sets the query of a [RequestTester].
 func (tReq *RequestTester) SetQuery(query map[string]string) {
 	tReq.query = query
 }
 
+// AddCookie adds a cookie to a [RequestTester].
+// Can be used multiple times for adding several cookies.
 func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
+// Do executes a [RequestTester] returning the response of the request
+// and providing the returned data to rsData.
 func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	t.Helper()
 
@@ -132,6 +142,7 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	return rs
 }
 
+// Copy creates a copy of a [RequestTester] in order to easily test similar requests.
 func (tReq RequestTester) Copy() RequestTester {
 	return RequestTester{
 		handler: tReq.handler,

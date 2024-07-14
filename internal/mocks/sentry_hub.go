@@ -5,9 +5,10 @@ import "github.com/getsentry/sentry-go"
 const testDsn = "http://whatever@example.com/1337"
 
 func GetMockedSentryClientOptions() *sentry.ClientOptions {
+	//nolint:exhaustruct //other fields are optional
 	return &sentry.ClientOptions{
 		Dsn:       testDsn,
-		Transport: &TransportMock{},
+		Transport: NewTransportMock(),
 	}
 }
 

@@ -10,13 +10,13 @@ import (
 
 	"github.com/XDoubleU/essentia/internal/mocks"
 	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/XDoubleU/essentia/pkg/middleware"
 	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func testCorsHeaders(
+func testCORSHeaders(
 	t *testing.T,
 	handler func(next http.Handler) http.Handler,
 	method string,
@@ -77,20 +77,20 @@ func testMiddleware(
 	return res
 }
 
-func TestCors(t *testing.T) {
+func TestCORS(t *testing.T) {
 	allowedOrigins := []string{"http://example.com"}
 
 	sentryHeaders := []string{"content-type", "baggage", "sentry-trace"}
 	noSentryHeaders := []string{"content-type"}
 
-	corsSentry := middleware.Cors(allowedOrigins, true)
-	corsNoSentry := middleware.Cors(allowedOrigins, false)
+	corsSentry := middleware.CORS(allowedOrigins, true)
+	corsNoSentry := middleware.CORS(allowedOrigins, false)
 
-	testCorsHeaders(t, corsSentry, http.MethodGet, allowedOrigins, sentryHeaders)
-	testCorsHeaders(t, corsSentry, http.MethodOptions, allowedOrigins, sentryHeaders)
+	testCORSHeaders(t, corsSentry, http.MethodGet, allowedOrigins, sentryHeaders)
+	testCORSHeaders(t, corsSentry, http.MethodOptions, allowedOrigins, sentryHeaders)
 
-	testCorsHeaders(t, corsNoSentry, http.MethodGet, allowedOrigins, noSentryHeaders)
-	testCorsHeaders(
+	testCORSHeaders(t, corsNoSentry, http.MethodGet, allowedOrigins, noSentryHeaders)
+	testCORSHeaders(
 		t,
 		corsNoSentry,
 		http.MethodOptions,
@@ -100,31 +100,33 @@ func TestCors(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	obfuscatedErrors := middleware.ErrorObfuscater(false)
-	shownErrors := middleware.ErrorObfuscater(true)
+	showErrors := middleware.ShowErrors()
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	testMiddleware(
 		t,
-		obfuscatedErrors,
+		func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				next.ServeHTTP(w, r)
+			})
+		},
 		req,
 		func(_ http.ResponseWriter, r *http.Request) {
-			assert.False(t, r.Context().Value(contexttools.ShowErrorsContextKey).(bool))
+			assert.False(t, contexttools.GetShowErrors(r))
 		},
 	)
-	testMiddleware(t, shownErrors, req, func(_ http.ResponseWriter, r *http.Request) {
-		assert.True(t, r.Context().Value(contexttools.ShowErrorsContextKey).(bool))
+	testMiddleware(t, showErrors, req, func(_ http.ResponseWriter, r *http.Request) {
+		assert.True(t, contexttools.GetShowErrors(r))
 	})
 }
 
 func TestLogger(t *testing.T) {
 	mockedLogger := mocks.MockedLogger{}
-	logger.SetLogger(mockedLogger.GetLogger())
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	testMiddleware(
 		t,
-		middleware.Logger,
+		middleware.Logger(mockedLogger.GetLogger()),
 		req,
 		func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -132,8 +134,12 @@ func TestLogger(t *testing.T) {
 	)
 
 	timeStr := time.Now().Format("2006/01/02")
-	assert.Contains(t, mockedLogger.Buffer.String(), timeStr)
-	assert.Contains(t, mockedLogger.Buffer.String(), fmt.Sprintf("[%d]", http.StatusOK))
+	assert.Contains(t, mockedLogger.GetCapturedLogs(), timeStr)
+	assert.Contains(
+		t,
+		mockedLogger.GetCapturedLogs(),
+		fmt.Sprintf("[%d]", http.StatusOK),
+	)
 }
 
 func TestRateLimit(t *testing.T) {
@@ -168,12 +174,11 @@ func TestRateLimit(t *testing.T) {
 
 func TestRecover(t *testing.T) {
 	mockedLogger := mocks.MockedLogger{}
-	logger.SetLogger(mockedLogger.GetLogger())
 
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	res := testMiddleware(
 		t,
-		middleware.Recover,
+		middleware.Recover(mockedLogger.GetLogger()),
 		req,
 		func(_ http.ResponseWriter, _ *http.Request) {
 			panic("test")
@@ -182,14 +187,21 @@ func TestRecover(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, "close", res.Header()["Connection"][0])
-	assert.Contains(t, mockedLogger.Buffer.String(), "PANIC")
+	assert.Contains(t, mockedLogger.GetCapturedLogs(), "PANIC")
 }
 
 func TestSentry(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
+
+	sentryMiddleware, err := middleware.Sentry(
+		true,
+		*mocks.GetMockedSentryClientOptions(),
+	)
+	require.Nil(t, err)
+
 	testMiddleware(
 		t,
-		middleware.Sentry(true, *mocks.GetMockedSentryClientOptions()),
+		sentryMiddleware,
 		req,
 		func(_ http.ResponseWriter, r *http.Request) {
 			assert.NotNil(t, sentry.GetHubFromContext(r.Context()))

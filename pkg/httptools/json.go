@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// WriteJSON writes the provided status, data and headers to a [http.ResponseWriter].
 func WriteJSON(
 	w http.ResponseWriter,
 	status int,
@@ -35,6 +36,8 @@ func WriteJSON(
 	return nil
 }
 
+// ReadJSON reads the returned data from a
+// [http.Response.Body] and assigns the decoded value to dst.
 func ReadJSON(body io.Reader, dst any) error {
 	err := json.NewDecoder(body).Decode(dst)
 

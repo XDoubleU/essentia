@@ -13,6 +13,14 @@ type TransportMock struct {
 	lastEvent *sentry.Event
 }
 
+func NewTransportMock() *TransportMock {
+	return &TransportMock{
+		mu:        sync.Mutex{},
+		events:    []*sentry.Event{},
+		lastEvent: nil,
+	}
+}
+
 func (t *TransportMock) Configure(_ sentry.ClientOptions) {}
 func (t *TransportMock) SendEvent(event *sentry.Event) {
 	t.mu.Lock()

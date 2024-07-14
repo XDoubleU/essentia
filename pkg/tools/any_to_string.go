@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// AnyToString converts any value to a string.
 func AnyToString(value any) (string, error) {
 	var result string
 

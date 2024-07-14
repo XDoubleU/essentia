@@ -6,15 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XDoubleU/essentia/internal/mocks"
 	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestServerFunc(t *testing.T) {
-	logger.SetLogger(logger.NullLogger)
-
 	mux := http.NewServeMux()
 
 	srv := &http.Server{
@@ -31,7 +29,10 @@ func TestServerFunc(t *testing.T) {
 		require.Nil(t, err)
 	}()
 
-	err := httptools.Serve(srv, "test")
+	mockedLogger := mocks.NewMockedLogger()
+	err := httptools.Serve(mockedLogger.GetLogger(), srv, "test")
 
-	assert.Nil(t, err)
+	require.Nil(t, err)
+	assert.Contains(t, mockedLogger.GetCapturedLogs(), "starting")
+	assert.Contains(t, mockedLogger.GetCapturedLogs(), "stopped")
 }

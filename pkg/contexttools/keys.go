@@ -1,3 +1,4 @@
 package contexttools
 
-const ShowErrorsContextKey = ContextKey("show_errors")
+const showErrorsContextKey = ContextKey("show_errors")
+const loggerContextKey = ContextKey("logger")

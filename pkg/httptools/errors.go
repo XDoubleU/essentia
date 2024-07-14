@@ -7,15 +7,16 @@ import (
 	"net/http"
 
 	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/XDoubleU/essentia/pkg/tools"
 	"github.com/getsentry/sentry-go"
 	"nhooyr.io/websocket"
 )
 
 var (
-	ErrRecordNotFound    = errors.New("record not found")
-	ErrRecordUniqueValue = errors.New("record unique value already used")
+	// ErrResourceNotFound is an error with value "resource not found".
+	ErrResourceNotFound = errors.New("resource not found")
+	// ErrResourceUniqueValue is an error with value "resource unique value already used".
+	ErrResourceUniqueValue = errors.New("resource unique value already used")
 )
 
 //nolint:lll // can't make these lines shorter
@@ -25,14 +26,16 @@ const (
 	MessageForbidden           = "user has no access to this resource"
 )
 
+// ErrorDto is used to return the error back to the client.
 type ErrorDto struct {
 	Status  int    `json:"status"`
 	Error   string `json:"error"`
 	Message any    `json:"message"`
 } //	@name	ErrorDto
 
-func ErrorResponse(w http.ResponseWriter,
-	_ *http.Request, status int, message any) {
+// ErrorResponse is used to handle any kind of error.
+func ErrorResponse(w http.ResponseWriter, r *http.Request,
+	status int, message any) {
 	env := ErrorDto{
 		Status:  status,
 		Error:   http.StatusText(status),
@@ -40,45 +43,49 @@ func ErrorResponse(w http.ResponseWriter,
 	}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
-		logger.GetLogger().Print(err)
+		sendErrorToSentry(r.Context(), err)
+		contexttools.GetLogger(r).Print(err)
 	}
 }
 
+// ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	sendErrorToSentry(r.Context(), err)
 
-	showErrors := contexttools.GetContextValue[bool](
-		r,
-		contexttools.ShowErrorsContextKey,
-	)
-
 	message := MessageInternalServerError
-	if showErrors != nil && *showErrors {
+	if contexttools.GetShowErrors(r) {
 		message = err.Error()
 	}
 
 	ErrorResponse(w, r, http.StatusInternalServerError, message)
 }
 
+// BadRequestResponse is used to handle an error when a request is incorrect.
 func BadRequestResponse(w http.ResponseWriter,
 	r *http.Request, err error) {
 	ErrorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
+// RateLimitExceededResponse is used to handle an error when the rate limit is exceeded.
 func RateLimitExceededResponse(w http.ResponseWriter,
 	r *http.Request) {
 	ErrorResponse(w, r, http.StatusTooManyRequests, MessageTooManyRequests)
 }
 
+// UnauthorizedResponse is used to handle an error when a user
+// isn't authorized.
 func UnauthorizedResponse(w http.ResponseWriter,
 	r *http.Request, message string) {
 	ErrorResponse(w, r, http.StatusUnauthorized, message)
 }
 
+// ForbiddenResponse is used to handle an error when a user
+// isn't authorized to access a certain resource.
 func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
 	ErrorResponse(w, r, http.StatusForbidden, MessageForbidden)
 }
 
+// ConflictResponse is used to handle an error when a resource already exists.
 func ConflictResponse(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -93,7 +100,7 @@ func ConflictResponse(
 		return
 	}
 
-	if err == nil || errors.Is(err, ErrRecordUniqueValue) {
+	if err == nil || errors.Is(err, ErrResourceUniqueValue) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,
@@ -108,6 +115,7 @@ func ConflictResponse(
 	}
 }
 
+// NotFoundResponse is used to handle an error when a resource wasn't found.
 func NotFoundResponse(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -122,7 +130,7 @@ func NotFoundResponse(
 		return
 	}
 
-	if err == nil || errors.Is(err, ErrRecordNotFound) {
+	if err == nil || errors.Is(err, ErrResourceNotFound) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' doesn't exist",
 			resourceName,
@@ -139,6 +147,7 @@ func NotFoundResponse(
 	}
 }
 
+// FailedValidationResponse is used to handle an error of a [validate.Validator].
 func FailedValidationResponse(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -147,6 +156,7 @@ func FailedValidationResponse(
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
 
+// WSErrorResponse is used to handle an error that occured on a Websocket.
 func WSErrorResponse(
 	_ http.ResponseWriter,
 	r *http.Request,
@@ -161,11 +171,15 @@ func WSErrorResponse(
 
 	sendErrorToSentry(r.Context(), err)
 
-	beforeClosingFunc(conn)
+	if beforeClosingFunc != nil {
+		beforeClosingFunc(conn)
+	}
 
 	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
 }
 
+// WSUpgradeErrorResponse is used to handle an error that
+// occured during the upgrade towards a Websocket.
 func WSUpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	sendErrorToSentry(r.Context(), err)
 	w.WriteHeader(http.StatusInternalServerError)

@@ -14,13 +14,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type Pair struct {
+type pair struct {
 	Key   int
 	Value string
 }
 
+func newPair() pair {
+	return pair{
+		Key:   0,
+		Value: "",
+	}
+}
+
 func TestSetup(t *testing.T) {
+	mockedLogger := mocks.NewMockedLogger()
+
 	db, err := postgres.Connect(
+		mockedLogger.GetLogger(),
 		"postgres://postgres@localhost/postgres",
 		1,
 		"1m",
@@ -29,9 +39,9 @@ func TestSetup(t *testing.T) {
 		30*time.Second,
 	)
 	require.Nil(t, err)
+	defer db.Close()
 
-	mainTestEnv, err := database.SetupGlobal(db, postgres.CreatePgxSyncTx)
-	require.Nil(t, err)
+	mainTestEnv := database.CreateMainTestEnv(db, postgres.CreatePgxSyncTx)
 
 	ctx := context.Background()
 	CreateTable(ctx, t, mainTestEnv.TestDB)
@@ -45,8 +55,7 @@ func TestSetup(t *testing.T) {
 
 	DropTable(ctx, t, mainTestEnv.TestDB)
 
-	err = mainTestEnv.TeardownGlobal()
-	require.Nil(t, err)
+	assert.Equal(t, "", mockedLogger.GetCapturedLogs())
 }
 
 func CreateTable(ctx context.Context, t *testing.T, db postgres.DB) {
@@ -76,7 +85,7 @@ func OperationsInTx(ctx context.Context, t *testing.T, tx postgres.DB) {
 	rows.Close()
 	require.Nil(t, err)
 
-	pair := Pair{}
+	p := newPair()
 
 	// wrap with span to get some additional coverage
 	sentry.SetHubOnContext(ctx, mocks.GetMockedSentryHub())
@@ -87,13 +96,13 @@ func OperationsInTx(ctx context.Context, t *testing.T, tx postgres.DB) {
 		"SELECT value FROM pairs WHERE key = $1", 1,
 	)
 
-	err = row.Scan(&pair.Value)
+	err = row.Scan(&p.Value)
 	require.Nil(t, err)
-	assert.Equal(t, "test", pair.Value)
+	assert.Equal(t, "test", p.Value)
 }
 
 func OperationsAfterTx(ctx context.Context, t *testing.T, db postgres.DB) {
-	pair := Pair{}
-	err := db.QueryRow(ctx, "SELECT value FROM pairs WHERE key = 1").Scan(&pair.Value)
+	p := newPair()
+	err := db.QueryRow(ctx, "SELECT value FROM pairs WHERE key = 1").Scan(&p.Value)
 	assert.ErrorIs(t, err, pgx.ErrNoRows)
 }

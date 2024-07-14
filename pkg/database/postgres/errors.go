@@ -9,15 +9,17 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// PgxErrorToHTTPError converts a database error
+// from [github.com/jackc/pgx] to an appropriate HTTP error.
 func PgxErrorToHTTPError(err error) error {
 	var pgxError *pgconn.PgError
 	errors.As(err, &pgxError)
 
 	switch {
 	case errors.Is(err, pgx.ErrNoRows), pgxError.Code == pgerrcode.ForeignKeyViolation:
-		return httptools.ErrRecordNotFound
+		return httptools.ErrResourceNotFound
 	case pgxError.Code == pgerrcode.UniqueViolation:
-		return httptools.ErrRecordUniqueValue
+		return httptools.ErrResourceUniqueValue
 	default:
 		return err
 	}

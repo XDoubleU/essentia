@@ -6,19 +6,14 @@ import (
 	"github.com/XDoubleU/essentia/pkg/contexttools"
 )
 
-func ErrorObfuscater(showErrors bool) middleware {
+// ShowErrors is middleware used to show errors.
+// When used errors handled by [httptools.ServerErrorResponse] will be shown.
+// Otherwise these will be hidden.
+func ShowErrors() middleware {
 	return func(next http.Handler) http.Handler {
-		return obfuscateErrors(showErrors, next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r = contexttools.SetShowErrors(r)
+			next.ServeHTTP(w, r)
+		})
 	}
-}
-
-func obfuscateErrors(showErrors bool, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r = contexttools.SetContextValue(
-			r,
-			contexttools.ShowErrorsContextKey,
-			showErrors,
-		)
-		next.ServeHTTP(w, r)
-	})
 }

@@ -1,3 +1,5 @@
+// Package parse contains helper functions for parsing
+// different kinds of URL and Query parameters.
 package parse
 
 import (
@@ -7,10 +9,11 @@ import (
 )
 
 const (
-	URLParamType   string = "URL"
-	QueryParamType string = "query"
+	urlParamType   string = "URL"
+	queryParamType string = "query"
 )
 
+// URLParam is used to parse a required parameter provided to a URL.
 func URLParam[T any](
 	r *http.Request,
 	paramName string,
@@ -19,6 +22,7 @@ func URLParam[T any](
 	return parseURLParam(r, paramName, true, *new(T), parserFunc)
 }
 
+// RequiredQueryParam is used to parse a required parameter provided to a query.
 func RequiredQueryParam[T any](
 	r *http.Request,
 	paramName string,
@@ -27,6 +31,7 @@ func RequiredQueryParam[T any](
 	return parseQueryParam(r, paramName, true, *new(T), parserFunc)
 }
 
+// QueryParam is used to parse an optional parameter provided to a query.
 func QueryParam[T any](
 	r *http.Request,
 	paramName string,
@@ -36,6 +41,9 @@ func QueryParam[T any](
 	return parseQueryParam(r, paramName, false, defaultValue, parserFunc)
 }
 
+// RequiredArrayQueryParam is used to parse
+// a required array parameter provided to a query.
+// The format that should be used here is: ?paramName=1,2,3&...
 func RequiredArrayQueryParam[T any](
 	r *http.Request,
 	paramName string,
@@ -44,6 +52,8 @@ func RequiredArrayQueryParam[T any](
 	return parseArrayQueryParam(r, paramName, true, []T{}, parserFunc)
 }
 
+// ArrayQueryParam is used to parse an optional array parameter provided to a query.
+// The format that should be used here is: ?paramName=1,2,3&...
 func ArrayQueryParam[T any](
 	r *http.Request,
 	paramName string,
@@ -63,7 +73,7 @@ func parseURLParam[T any](
 	param := r.PathValue(paramName)
 	return parseParam(
 		paramName,
-		URLParamType,
+		urlParamType,
 		param,
 		required,
 		defaultValue,
@@ -81,7 +91,7 @@ func parseQueryParam[T any](
 	param := r.URL.Query().Get(paramName)
 	return parseParam(
 		paramName,
-		QueryParamType,
+		queryParamType,
 		param,
 		required,
 		defaultValue,
@@ -104,7 +114,7 @@ func parseArrayQueryParam[T any](
 			return defaultValue, nil
 		}
 
-		return []T{}, fmt.Errorf("missing %s param '%s'", QueryParamType, paramName)
+		return []T{}, fmt.Errorf("missing %s param '%s'", queryParamType, paramName)
 	}
 
 	var results []T
@@ -112,7 +122,7 @@ func parseArrayQueryParam[T any](
 	for _, value := range values {
 		result, err := parseParam(
 			paramName,
-			QueryParamType,
+			queryParamType,
 			value,
 			true,
 			*new(T),

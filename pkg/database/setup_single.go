@@ -4,12 +4,14 @@ import (
 	"context"
 )
 
+// TestEnv encapsulates test transaction.
 type TestEnv[TTx MinimalDBTx] struct {
 	Tx  TTx
 	ctx context.Context
 }
 
-func (mainTestEnv *MainTestEnv[TDb, TTx]) SetupSingle() TestEnv[TTx] {
+// SetupSingle starts test transaction.
+func (mainTestEnv *MainTestEnv[TDB, TTx]) SetupSingle() TestEnv[TTx] {
 	ctx := context.Background()
 
 	testEnv := TestEnv[TTx]{
@@ -20,6 +22,7 @@ func (mainTestEnv *MainTestEnv[TDb, TTx]) SetupSingle() TestEnv[TTx] {
 	return testEnv
 }
 
+// TeardownSingle executes rollback of test transaction.
 func (testEnv *TestEnv[TTx]) TeardownSingle() {
 	err := testEnv.Tx.Rollback(testEnv.ctx)
 	if err != nil {

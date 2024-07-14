@@ -3,15 +3,25 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Connect connects to postgres and returns a [*pgxpool.Pool].
+//
+// The provided arguments are:
+//   - dsn: the url to reach the database
+//   - maxConns: the maximum amount of open connections
+//   - maxIdleTime: the maximum idle time of an open connection
+//   - connectTimeout: the timeout on connecting to the database
+//   - sleepBeforeRetry: duration to sleep before trying to connect again
+//   - maxRetryDuration: total amount of time to try and achieve a database connection
 func Connect(
+	logger *log.Logger,
 	dsn string,
 	maxConns int,
 	maxIdleTime string,
@@ -47,8 +57,12 @@ func Connect(
 			break
 		}
 
-		logger.GetLogger().
-			Printf("can't connect to database (%v), retrying in %s", err, sleepBeforeRetry)
+		logger.
+			Printf(
+				"can't connect to database (%v), retrying in %s",
+				err,
+				sleepBeforeRetry,
+			)
 		time.Sleep(sleepBeforeRetry)
 	}
 
