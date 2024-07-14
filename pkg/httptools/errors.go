@@ -154,9 +154,8 @@ func WSErrorResponse(
 	beforeClosingFunc func(conn *websocket.Conn),
 	err error,
 ) {
-	if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
-		websocket.CloseStatus(err) == websocket.StatusGoingAway ||
-		websocket.CloseStatus(err) == websocket.StatusNoStatusRcvd {
+	// don't want to capture close errors
+	if websocket.CloseStatus(err) != -1 {
 		return
 	}
 
