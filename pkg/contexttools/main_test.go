@@ -9,12 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const testContextKey = contexttools.ContextKey("test")
+
 func TestSetContextValue(t *testing.T) {
 	r, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "", nil)
 
-	r = contexttools.SetContextValue(r, contexttools.ShowErrorsContextKey, true)
+	r = contexttools.SetContextValue(r, testContextKey, true)
 
-	value, _ := r.Context().Value(contexttools.ShowErrorsContextKey).(bool)
+	value, _ := r.Context().Value(testContextKey).(bool)
 
 	assert.Equal(t, true, value)
 }
@@ -22,12 +24,12 @@ func TestSetContextValue(t *testing.T) {
 func TestGetContextValue(t *testing.T) {
 	ctx := context.WithValue(
 		context.Background(),
-		contexttools.ShowErrorsContextKey,
+		testContextKey,
 		true,
 	)
 	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
-	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
+	value := contexttools.GetContextValue[bool](r, testContextKey)
 
 	assert.Equal(t, true, *value)
 }
@@ -35,7 +37,7 @@ func TestGetContextValue(t *testing.T) {
 func TestGetContextValueNotPresent(t *testing.T) {
 	r, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "", nil)
 
-	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
+	value := contexttools.GetContextValue[bool](r, testContextKey)
 
 	assert.Nil(t, value)
 }
@@ -43,12 +45,12 @@ func TestGetContextValueNotPresent(t *testing.T) {
 func TestGetContextValueIncorrectType(t *testing.T) {
 	ctx := context.WithValue(
 		context.Background(),
-		contexttools.ShowErrorsContextKey,
+		testContextKey,
 		10,
 	)
 	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
-	value := contexttools.GetContextValue[bool](r, contexttools.ShowErrorsContextKey)
+	value := contexttools.GetContextValue[bool](r, testContextKey)
 
 	assert.Nil(t, value)
 }

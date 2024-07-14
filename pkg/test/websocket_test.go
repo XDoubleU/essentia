@@ -36,7 +36,6 @@ func setup(t *testing.T) http.Handler {
 	t.Helper()
 
 	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]("http://localhost")
-	ws.SetOnCloseCallback(func(_ *websocket.Conn) {})
 	ws.AddSubjectHandler(
 		"exists",
 		func(

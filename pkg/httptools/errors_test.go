@@ -1,7 +1,6 @@
 package httptools_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -23,9 +22,13 @@ func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
 	res := httptest.NewRecorder()
 
-	middleware.Sentry(true, *mocks.GetMockedSentryClientOptions())(
-		handler,
-	).ServeHTTP(res, req)
+	sentryMiddleware, err := middleware.Sentry(
+		true,
+		*mocks.GetMockedSentryClientOptions(),
+	)
+	require.Nil(t, err)
+
+	sentryMiddleware(handler).ServeHTTP(res, req)
 
 	return res.Result().StatusCode
 }
@@ -46,12 +49,16 @@ func testErrorWithReq(
 
 	res := httptest.NewRecorder()
 
-	middleware.Sentry(true, *mocks.GetMockedSentryClientOptions())(
-		handler,
-	).ServeHTTP(res, req)
+	sentryMiddleware, err := middleware.Sentry(
+		true,
+		*mocks.GetMockedSentryClientOptions(),
+	)
+	require.Nil(t, err)
+
+	sentryMiddleware(handler).ServeHTTP(res, req)
 
 	var errorDto httptools.ErrorDto
-	err := httptools.ReadJSON(res.Result().Body, &errorDto)
+	err = httptools.ReadJSON(res.Result().Body, &errorDto)
 	require.Nil(t, err)
 
 	return res.Result().StatusCode, errorDto
@@ -69,20 +76,20 @@ func testErrorWS(
 
 	wsHandler := httptools.CreateWebsocketHandler[TestSubjectMsg]("localhost")
 	wsHandler.AddSubjectHandler("subject", handler)
-	wsHandler.SetOnCloseCallback(func(_ *websocket.Conn) {})
+
+	sentryMiddleware, err := middleware.Sentry(
+		true,
+		*mocks.GetMockedSentryClientOptions(),
+	)
+	require.Nil(t, err)
 
 	tWeb := test.CreateWebsocketTester(
-		middleware.Sentry(
-			true,
-			*mocks.GetMockedSentryClientOptions(),
-		)(
-			wsHandler.GetHandler(),
-		),
+		sentryMiddleware(wsHandler.GetHandler()),
 	)
 	tWeb.SetInitialMessage(TestSubjectMsg{Subject: "subject"})
 
 	var errorDto httptools.ErrorDto
-	err := tWeb.Do(t, &errorDto, nil)
+	err = tWeb.Do(t, &errorDto, nil)
 
 	assert.ErrorContains(t, err, "status = StatusInternalError")
 	assert.ErrorContains(
@@ -108,16 +115,8 @@ func TestServerErrorResponseShown(t *testing.T) {
 		httptools.ServerErrorResponse(w, r, errors.New("test"))
 	}
 
-	req, _ := http.NewRequestWithContext(
-		context.WithValue(
-			context.Background(),
-			contexttools.ShowErrorsContextKey,
-			true,
-		),
-		http.MethodGet,
-		"",
-		nil,
-	)
+	req, _ := http.NewRequest(http.MethodGet, "", nil)
+	req = contexttools.SetShowErrors(req)
 	statusCode, errorDto := testErrorWithReq(t, handler, req)
 
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
@@ -173,7 +172,7 @@ func TestConflictResponse(t *testing.T) {
 		httptools.ConflictResponse(
 			w,
 			r,
-			httptools.ErrRecordUniqueValue,
+			httptools.ErrResourceUniqueValue,
 			"resource",
 			"value",
 			"field",
@@ -193,7 +192,7 @@ func TestNotFoundResponse(t *testing.T) {
 		httptools.NotFoundResponse(
 			w,
 			r,
-			httptools.ErrRecordNotFound,
+			httptools.ErrResourceNotFound,
 			"resource",
 			"value",
 			"field",

@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+// PaginatedEndpointTester uses a predefined configuration
+// for a MatrixTester to test boundaries of a paginated HTTP endpoint.
 func PaginatedEndpointTester(
 	t *testing.T,
 	baseRequest RequestTester,

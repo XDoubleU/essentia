@@ -1,3 +1,5 @@
+// Package config provides functions which can be used to
+// extract environment variables and parse them to the right type.
 package config
 
 import (
@@ -8,6 +10,7 @@ import (
 
 const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
+// GetEnvStr extracts a string environment variable.
 func GetEnvStr(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
@@ -17,6 +20,7 @@ func GetEnvStr(key string, defaultValue string) string {
 	return value
 }
 
+// GetEnvInt extracts an integer environment variable.
 func GetEnvInt(key string, defaultValue int) int {
 	strVal := GetEnvStr(key, "")
 	if len(strVal) == 0 {
@@ -31,6 +35,7 @@ func GetEnvInt(key string, defaultValue int) int {
 	return intVal
 }
 
+// GetEnvFloat extracts a float environment variable.
 func GetEnvFloat(key string, defaultValue float64) float64 {
 	strVal := GetEnvStr(key, "")
 	if len(strVal) == 0 {
@@ -45,6 +50,7 @@ func GetEnvFloat(key string, defaultValue float64) float64 {
 	return floatVal
 }
 
+// GetEnvBool extracts a boolean environment variable.
 func GetEnvBool(key string, defaultValue bool) bool {
 	strVal := GetEnvStr(key, "")
 	if len(strVal) == 0 {

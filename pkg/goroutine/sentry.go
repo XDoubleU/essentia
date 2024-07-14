@@ -9,6 +9,8 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+// SentryErrorHandler makes sure a
+// go routine and its errors are captured by Sentry.
 func SentryErrorHandler(name string, f func(ctx context.Context) error) {
 	name = fmt.Sprintf("GO ROUTINE %s", name)
 

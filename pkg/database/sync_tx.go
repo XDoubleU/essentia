@@ -5,10 +5,13 @@ import (
 	"sync"
 )
 
+// MinimalDBTx is the minimal interface a DB transaction should implement.
 type MinimalDBTx interface {
 	Rollback(ctx context.Context) error
 }
 
+// SyncTx wraps a database transaction to make sure it can be used concurrently.
+// This is achieved by locking the transaction when in use.
 type SyncTx[TTx MinimalDBTx] struct {
 	Tx TTx
 	mu *sync.Mutex
@@ -22,6 +25,8 @@ func waitOnLock(lock *sync.Mutex) {
 	}
 }
 
+// CreateSyncTx creates a [SyncTx] which
+// makes sure a database transaction can be used concurrently.
 func CreateSyncTx[TTx MinimalDBTx](
 	ctx context.Context,
 	beginTxFunc func(ctx context.Context) (TTx, error),
@@ -38,6 +43,8 @@ func CreateSyncTx[TTx MinimalDBTx](
 	}
 }
 
+// WrapInSyncTx is used to make sure a
+// transactional database action can run concurrently.
 func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
 	tx SyncTx[TTx],
@@ -51,6 +58,9 @@ func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 	return queryFunc(ctx, sql, args...)
 }
 
+// WrapInSyncTxNoError is used to make sure a
+// transactional database action can run concurrently.
+// The executed database action shouldn't return an error.
 func WrapInSyncTxNoError[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
 	tx SyncTx[TTx],
@@ -64,6 +74,7 @@ func WrapInSyncTxNoError[TTx MinimalDBTx, TResult any](
 	return queryFunc(ctx, sql, args...)
 }
 
+// Rollback is used to rollback the wrapped transaction.
 func (tx SyncTx[TTx]) Rollback(ctx context.Context) error {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()

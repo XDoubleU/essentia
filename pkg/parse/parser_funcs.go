@@ -9,8 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// ParserFunc is the expected format used for parsing data using any parsing function.
 type ParserFunc[T any] func(paramType string, paramName string, value string) (T, error)
 
+// UUID is used to parse a parameter as UUID value.
+// Technically this only validates if a string is a UUID.
 func UUID(paramType string, paramName string, value string) (string, error) {
 	uuidVal, err := uuid.Parse(value)
 	if err != nil {
@@ -25,12 +28,14 @@ func UUID(paramType string, paramName string, value string) (string, error) {
 	return uuidVal.String(), nil
 }
 
+// IntFunc parses a parameter as [int].
 func IntFunc(isPositive bool, isZero bool) ParserFunc[int] {
 	return func(paramType string, paramName string, value string) (int, error) {
 		return parseInt[int](isPositive, isZero, paramType, paramName, value, 0)
 	}
 }
 
+// Int64Func parses a parameter as [int64].
 func Int64Func(isPositive bool, isZero bool) ParserFunc[int64] {
 	return func(paramType string, paramName string, value string) (int64, error) {
 		//nolint:mnd // no magic number
@@ -78,6 +83,8 @@ func parseInt[T shared.IntType](
 	return T(result), nil
 }
 
+// DateFunc parses a parameter as a date.
+// The parameter should match the required date layout.
 func DateFunc(layout string) ParserFunc[time.Time] {
 	return func(paramType string, paramName string, value string) (time.Time, error) {
 		result, err := time.Parse(layout, value)

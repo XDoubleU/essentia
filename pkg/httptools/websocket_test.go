@@ -37,11 +37,13 @@ func emptyHandler(
 ) {
 }
 
-func setup(t *testing.T) http.Handler {
+func setup(t *testing.T, onCloseCallBackIsCalled *bool) http.Handler {
 	t.Helper()
 
 	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]("http://localhost")
-	ws.SetOnCloseCallback(func(_ *websocket.Conn) {})
+	ws.SetOnCloseCallback(func(_ *websocket.Conn) {
+		*onCloseCallBackIsCalled = true
+	})
 	ws.AddSubjectHandler(
 		"exists",
 		func(
@@ -57,7 +59,10 @@ func setup(t *testing.T) http.Handler {
 }
 
 func TestWebSocketExistingSubject(t *testing.T) {
-	tWeb := test.CreateWebsocketTester(setup(t))
+	onCloseCallbackIsCalled := false
+	wsHandler := setup(t, &onCloseCallbackIsCalled)
+
+	tWeb := test.CreateWebsocketTester(wsHandler)
 	tWeb.SetInitialMessage(TestSubjectMsg{Subject: "exists"})
 
 	var initialResponse TestResponse
@@ -65,10 +70,14 @@ func TestWebSocketExistingSubject(t *testing.T) {
 
 	require.Nil(t, err)
 	assert.True(t, initialResponse.Ok)
+	assert.True(t, onCloseCallbackIsCalled)
 }
 
 func TestWebSocketUnknownSubject(t *testing.T) {
-	tWeb := test.CreateWebsocketTester(setup(t))
+	onCloseCallbackIsCalled := false
+	wsHandler := setup(t, &onCloseCallbackIsCalled)
+
+	tWeb := test.CreateWebsocketTester(wsHandler)
 	tWeb.SetInitialMessage(TestSubjectMsg{Subject: "unknown"})
 
 	var initialResponse httptools.ErrorDto
@@ -77,11 +86,11 @@ func TestWebSocketUnknownSubject(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, "unknown subject", initialResponse.Error)
 	assert.Equal(t, "no handler found for 'unknown'", initialResponse.Message)
+	assert.True(t, onCloseCallbackIsCalled)
 }
 
 func TestWebSocketExistingHandler(t *testing.T) {
 	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]("localhost")
-	ws.SetOnCloseCallback(func(_ *websocket.Conn) {})
 	ws.AddSubjectHandler(
 		"exists",
 		emptyHandler,

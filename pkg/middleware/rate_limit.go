@@ -15,6 +15,7 @@ type client struct {
 	lastSeen time.Time
 }
 
+// RateLimit is middleware used to rate limit requests by clients identified by IP.
 func RateLimit(
 	rps rate.Limit,
 	bucketSize int,
@@ -70,7 +71,10 @@ func rateLimit(
 		mu.Lock()
 
 		if _, found := clients[ip]; !found {
-			clients[ip] = &client{limiter: rate.NewLimiter(rps, bucketSize)}
+			//nolint:exhaustruct //lastSeen is set later
+			clients[ip] = &client{
+				limiter: rate.NewLimiter(rps, bucketSize),
+			}
 		}
 
 		clients[ip].lastSeen = time.Now()

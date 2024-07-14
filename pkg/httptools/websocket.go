@@ -10,12 +10,16 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-type ISubjectMessageDto interface {
-	validate.IValidatedType
+// SubjectMessageDto is implemented by all messages
+// used to subscribe to a certain handler of a [WebsocketHandler].
+type SubjectMessageDto interface {
+	validate.ValidatedType
 	GetSubject() string
 }
 
-type WebsocketHandler[T ISubjectMessageDto] struct {
+// A WebsocketHandler handles incoming requests to a
+// websocket and makes sure that the right handler is called for each subject.
+type WebsocketHandler[T SubjectMessageDto] struct {
 	url               string
 	onCloseCallBack   OnCloseCallback
 	subjectHandlerMap map[string]func(
@@ -26,9 +30,11 @@ type WebsocketHandler[T ISubjectMessageDto] struct {
 	)
 }
 
+// OnCloseCallback is called when the websocket is closed.
 type OnCloseCallback = func(conn *websocket.Conn)
 
-func CreateWebsocketHandler[T ISubjectMessageDto](url string) WebsocketHandler[T] {
+// CreateWebsocketHandler creates a new [WebsocketHandler].
+func CreateWebsocketHandler[T SubjectMessageDto](url string) WebsocketHandler[T] {
 	if strings.Contains(url, "://") {
 		url = strings.Split(url, "://")[1]
 	}
@@ -43,13 +49,17 @@ func CreateWebsocketHandler[T ISubjectMessageDto](url string) WebsocketHandler[T
 				msg T,
 			),
 		),
+		onCloseCallBack: nil,
 	}
 }
 
+// SetOnCloseCallback sets the function to call when closing a [websocket.Conn].
 func (h *WebsocketHandler[T]) SetOnCloseCallback(callback OnCloseCallback) {
 	h.onCloseCallBack = callback
 }
 
+// AddSubjectHandler adds a handler for a
+// specific subject provided by a [SubjectMessageDto].
 func (h *WebsocketHandler[T]) AddSubjectHandler(
 	subject string,
 	handler func(
@@ -67,8 +77,10 @@ func (h *WebsocketHandler[T]) AddSubjectHandler(
 	h.subjectHandlerMap[subject] = handler
 }
 
+// GetHandler returns the [http.HandlerFunc] of a [WebsocketHandler].
 func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 			OriginPatterns: []string{h.url},
 		})
@@ -78,7 +90,10 @@ func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 		}
 
 		defer func() {
-			h.onCloseCallBack(conn)
+			if h.onCloseCallBack != nil {
+				h.onCloseCallBack(conn)
+			}
+
 			conn.Close(websocket.StatusInternalError, "")
 		}()
 
