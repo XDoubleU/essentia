@@ -21,7 +21,8 @@ func GetEnvStr(key string, defaultValue string) string {
 	return value
 }
 
-// GetEnvStrArray extracts a string array environment variable. The values are seperated by ','.
+// GetEnvStrArray extracts a string
+// array environment variable. The values should be seperated by ','.
 func GetEnvStrArray(key string, defaultValue []string) []string {
 	strVal := GetEnvStr(key, "")
 	if len(strVal) == 0 {

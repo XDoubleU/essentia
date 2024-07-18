@@ -34,13 +34,20 @@ func (app *application) websocketRoutes(mux *http.ServeMux) {
 
 func (app *application) getWebSocketHandler() http.HandlerFunc {
 
-	wsHandler := httptools.CreateWebsocketHandler[SubjectMessageDto](app.config.AllowedOrigins)
+	wsHandler := httptools.CreateWebsocketHandler[SubjectMessageDto](
+		app.config.AllowedOrigins,
+	)
 	wsHandler.AddSubjectHandler("subject", subjectHandler)
 
 	return wsHandler.GetHandler()
 }
 
-func subjectHandler(w http.ResponseWriter, r *http.Request, conn *websocket.Conn, msg SubjectMessageDto) {
+func subjectHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+	conn *websocket.Conn,
+	msg SubjectMessageDto,
+) {
 	err := wsjson.Write(r.Context(), conn, ResponseMessageDto{
 		Message: "Hello, World!",
 	})

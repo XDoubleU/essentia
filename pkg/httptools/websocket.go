@@ -34,7 +34,9 @@ type WebsocketHandler[T SubjectMessageDto] struct {
 type OnCloseCallback = func(conn *websocket.Conn)
 
 // CreateWebsocketHandler creates a new [WebsocketHandler].
-func CreateWebsocketHandler[T SubjectMessageDto](allowedOrigins []string) WebsocketHandler[T] {
+func CreateWebsocketHandler[T SubjectMessageDto](
+	allowedOrigins []string,
+) WebsocketHandler[T] {
 	for i, url := range allowedOrigins {
 		if strings.Contains(url, "://") {
 			allowedOrigins[i] = strings.Split(url, "://")[1]

@@ -74,7 +74,9 @@ func testErrorWS(
 ) {
 	t.Helper()
 
-	wsHandler := httptools.CreateWebsocketHandler[TestSubjectMsg]([]string{"http://localhost"})
+	wsHandler := httptools.CreateWebsocketHandler[TestSubjectMsg](
+		[]string{"http://localhost"},
+	)
 	wsHandler.AddSubjectHandler("subject", handler)
 
 	sentryMiddleware, err := middleware.Sentry(
