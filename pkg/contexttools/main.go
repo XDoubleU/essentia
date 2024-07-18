@@ -39,13 +39,13 @@ func SetLogger(r *http.Request, logger *log.Logger) *http.Request {
 
 // GetLogger returns the logger stored in the context or a NullLogger.
 func GetLogger(r *http.Request) *log.Logger {
-	logger := GetContextValue[log.Logger](r, loggerContextKey)
+	logger := GetContextValue[*log.Logger](r, loggerContextKey)
 
 	if logger == nil {
 		return log.New(io.Discard, "", 0)
 	}
 
-	return logger
+	return *logger
 }
 
 // SetShowErrors enables showing errors
