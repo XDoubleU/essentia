@@ -2,6 +2,8 @@ package contexttools_test
 
 import (
 	"context"
+	"io"
+	"log"
 	"net/http"
 	"testing"
 
@@ -53,4 +55,27 @@ func TestGetContextValueIncorrectType(t *testing.T) {
 	value := contexttools.GetContextValue[bool](r, testContextKey)
 
 	assert.Nil(t, value)
+}
+
+func TestSetGetLogger(t *testing.T) {
+	ctx := context.Background()
+
+	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
+
+	logger := log.Default()
+	r = contexttools.SetLogger(r, logger)
+
+	value := contexttools.GetLogger(r)
+
+	assert.Equal(t, logger, value)
+}
+
+func TestGetNullLogger(t *testing.T) {
+	ctx := context.Background()
+
+	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
+
+	value := contexttools.GetLogger(r)
+
+	assert.Equal(t, io.Discard, value.Writer())
 }

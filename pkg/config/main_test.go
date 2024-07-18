@@ -22,6 +22,19 @@ func TestGetEnvStr(t *testing.T) {
 	assert.Equal(t, notExists, def)
 }
 
+func TestGetEnvStrArray(t *testing.T) {
+	rawExpected := "string1,string2"
+	expected, def := []string{"string1", "string2"}, []string{""}
+
+	t.Setenv(existingKey, rawExpected)
+
+	exists := config.GetEnvStrArray(existingKey, def)
+	notExists := config.GetEnvStrArray(nonExistingKey, def)
+
+	assert.Equal(t, exists, expected)
+	assert.Equal(t, notExists, def)
+}
+
 func TestGetEnvInt(t *testing.T) {
 	expected, def := 14, 0
 
