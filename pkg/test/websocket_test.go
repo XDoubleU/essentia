@@ -35,7 +35,7 @@ func (s TestSubjectMsg) GetSubject() string {
 func setup(t *testing.T) http.Handler {
 	t.Helper()
 
-	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]("http://localhost")
+	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]([]string{"http://localhost"})
 	ws.AddSubjectHandler(
 		"exists",
 		func(

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 const errorMessage = "can't convert env var '%s' with value '%s' to %s"
@@ -18,6 +19,16 @@ func GetEnvStr(key string, defaultValue string) string {
 	}
 
 	return value
+}
+
+// GetEnvStrArray extracts a string array environment variable. The values are seperated by ','.
+func GetEnvStrArray(key string, defaultValue []string) []string {
+	strVal := GetEnvStr(key, "")
+	if len(strVal) == 0 {
+		return defaultValue
+	}
+
+	return strings.Split(strVal, ",")
 }
 
 // GetEnvInt extracts an integer environment variable.

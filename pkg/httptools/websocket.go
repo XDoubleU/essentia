@@ -20,7 +20,7 @@ type SubjectMessageDto interface {
 // A WebsocketHandler handles incoming requests to a
 // websocket and makes sure that the right handler is called for each subject.
 type WebsocketHandler[T SubjectMessageDto] struct {
-	url               string
+	allowedOrigins    []string
 	onCloseCallBack   OnCloseCallback
 	subjectHandlerMap map[string]func(
 		w http.ResponseWriter,
@@ -34,13 +34,15 @@ type WebsocketHandler[T SubjectMessageDto] struct {
 type OnCloseCallback = func(conn *websocket.Conn)
 
 // CreateWebsocketHandler creates a new [WebsocketHandler].
-func CreateWebsocketHandler[T SubjectMessageDto](url string) WebsocketHandler[T] {
-	if strings.Contains(url, "://") {
-		url = strings.Split(url, "://")[1]
+func CreateWebsocketHandler[T SubjectMessageDto](allowedOrigins []string) WebsocketHandler[T] {
+	for i, url := range allowedOrigins {
+		if strings.Contains(url, "://") {
+			allowedOrigins[i] = strings.Split(url, "://")[1]
+		}
 	}
 
 	return WebsocketHandler[T]{
-		url: url,
+		allowedOrigins: allowedOrigins,
 		subjectHandlerMap: make(
 			map[string]func(
 				w http.ResponseWriter,
@@ -82,7 +84,7 @@ func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-			OriginPatterns: []string{h.url},
+			OriginPatterns: h.allowedOrigins,
 		})
 		if err != nil {
 			WSUpgradeErrorResponse(w, r, err)
