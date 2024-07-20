@@ -37,8 +37,8 @@ func SetLogger(r *http.Request, logger *log.Logger) *http.Request {
 	return SetContextValue(r, loggerContextKey, logger)
 }
 
-// GetLogger returns the logger stored in the context or a NullLogger.
-func GetLogger(r *http.Request) *log.Logger {
+// Logger returns the logger stored in the context or a NullLogger.
+func Logger(r *http.Request) *log.Logger {
 	logger := GetContextValue[*log.Logger](r, loggerContextKey)
 
 	if logger == nil {
@@ -54,9 +54,9 @@ func SetShowErrors(r *http.Request) *http.Request {
 	return SetContextValue(r, showErrorsContextKey, true)
 }
 
-// GetShowErrors returns if errors should be shown
+// ShowErrors returns if errors should be shown
 // in [httptools.ServerErrorResponse.].
-func GetShowErrors(r *http.Request) bool {
+func ShowErrors(r *http.Request) bool {
 	showErrors := GetContextValue[bool](r, showErrorsContextKey)
 
 	if showErrors == nil {

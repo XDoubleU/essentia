@@ -24,7 +24,7 @@ func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
 
 	sentryMiddleware, err := middleware.Sentry(
 		true,
-		*mocks.GetMockedSentryClientOptions(),
+		*mocks.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 
@@ -51,7 +51,7 @@ func testErrorWithReq(
 
 	sentryMiddleware, err := middleware.Sentry(
 		true,
-		*mocks.GetMockedSentryClientOptions(),
+		*mocks.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 
@@ -70,25 +70,23 @@ func testErrorWS(
 		w http.ResponseWriter,
 		r *http.Request,
 		conn *websocket.Conn,
-		msg TestSubjectMsg),
+		msg TestSubscribeMsg),
 ) {
 	t.Helper()
 
-	wsHandler := httptools.CreateWebsocketHandler[TestSubjectMsg](
-		[]string{"http://localhost"},
-	)
+	wsHandler := httptools.CreateWebsocketHandler[TestSubscribeMsg]([]string{"http://localhost"})
 	wsHandler.AddSubjectHandler("subject", handler)
 
 	sentryMiddleware, err := middleware.Sentry(
 		true,
-		*mocks.GetMockedSentryClientOptions(),
+		*mocks.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 
 	tWeb := test.CreateWebsocketTester(
-		sentryMiddleware(wsHandler.GetHandler()),
+		sentryMiddleware(wsHandler.Handler()),
 	)
-	tWeb.SetInitialMessage(TestSubjectMsg{Subject: "subject"})
+	tWeb.SetInitialMessage(TestSubscribeMsg{Topic: "topic"})
 
 	var errorDto httptools.ErrorDto
 	err = tWeb.Do(t, &errorDto, nil)
@@ -239,7 +237,7 @@ func TestWSErrorResponse(t *testing.T) {
 		w http.ResponseWriter,
 		r *http.Request,
 		conn *websocket.Conn,
-		_ TestSubjectMsg) {
+		_ TestSubscribeMsg) {
 		httptools.WSErrorResponse(
 			w,
 			r,
