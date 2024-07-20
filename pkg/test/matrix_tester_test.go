@@ -8,6 +8,7 @@ import (
 	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/XDoubleU/essentia/pkg/parse"
 	"github.com/XDoubleU/essentia/pkg/test"
+	"github.com/stretchr/testify/require"
 )
 
 func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,25 +58,39 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMatrixTester(t *testing.T) {
-	tReq := test.CreateRequestTester(
+	baseRequest := test.CreateRequestTester(
 		http.HandlerFunc(matrixTestHandler),
 		http.MethodGet,
 		"",
 	)
-	mt := test.CreateMatrixTester(tReq)
+	mt := test.CreateMatrixTester()
 
-	mt.AddTestCaseErrorMessage(map[string]string{
+	tReq1 := baseRequest.Copy()
+	tReq1.SetReqData(map[string]string{
 		"test": "error",
-	}, map[string]any{"message": "test"})
+	})
 
-	mt.AddTestCaseStatusCode(map[string]string{
+	tRes1 := test.NewCaseResponse(http.StatusBadRequest)
+	err := tRes1.SetExpectedBody(httptools.ErrorDto{
+		Status:  http.StatusBadRequest,
+		Error:   http.StatusText(http.StatusBadRequest),
+		Message: map[string]any{"message": "test"},
+	})
+	require.Nil(t, err)
+
+	mt.AddTestCase(tReq1, tRes1)
+
+	tReq2 := baseRequest.Copy()
+	tReq2.SetQuery(map[string]string{
 		"param": "value",
-	}, http.StatusForbidden)
+	})
 
-	mt.AddTestCaseCookieStatusCode(
-		&http.Cookie{Name: "cookie", Value: "value"},
-		http.StatusUnauthorized,
-	)
+	mt.AddTestCase(tReq2, test.NewCaseResponse(http.StatusForbidden))
+
+	tReq3 := baseRequest.Copy()
+	tReq3.AddCookie(&http.Cookie{Name: "cookie", Value: "value"})
+
+	mt.AddTestCase(tReq3, test.NewCaseResponse(http.StatusUnauthorized))
 
 	mt.Do(t)
 }

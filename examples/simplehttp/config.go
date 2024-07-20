@@ -16,9 +16,9 @@ const (
 func NewConfig() Config {
 	var cfg Config
 
-	cfg.Env = config.GetEnvStr("ENV", ProdEnv)
-	cfg.Port = config.GetEnvInt("PORT", 8000)
-	cfg.AllowedOrigins = config.GetEnvStrArray(
+	cfg.Env = config.EnvStr("ENV", ProdEnv)
+	cfg.Port = config.EnvInt("PORT", 8000)
+	cfg.AllowedOrigins = config.EnvStrArray(
 		"ALLOWED_ORIGINS",
 		[]string{"http://localhost"},
 	)

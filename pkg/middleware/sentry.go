@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 )
@@ -19,12 +18,12 @@ func Sentry(isTestEnv bool, clientOptions sentry.ClientOptions) (middleware, err
 
 	if isTestEnv {
 		return func(next http.Handler) http.Handler {
-			return sentryHandler.Handle(useMockedHub(enrichSentryHub(next)))
+			return sentryHandler.Handle(useMockedHub(next))
 		}, nil
 	}
 
 	return func(next http.Handler) http.Handler {
-		return sentryHandler.Handle(enrichSentryHub(next))
+		return sentryHandler.Handle(next)
 	}, nil
 }
 
@@ -39,16 +38,6 @@ func getSentryHandler(clientOptions sentry.ClientOptions) (*sentryhttp.Handler, 
 	return sentryhttp.New(sentryhttp.Options{
 		Repanic: true,
 	}), nil
-}
-
-func enrichSentryHub(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := httptools.NewResponseWriter(w)
-		next.ServeHTTP(rw, r)
-
-		transaction := sentry.TransactionFromContext(r.Context())
-		transaction.Status = sentry.HTTPtoSpanStatus(rw.StatusCode())
-	})
 }
 
 func useMockedHub(next http.Handler) http.Handler {
