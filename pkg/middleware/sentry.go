@@ -52,7 +52,7 @@ func enrichSentryHub(next http.Handler) http.Handler {
 }
 
 func useMockedHub(next http.Handler) http.Handler {
-	mockedHub := mocks.GetMockedSentryHub()
+	mockedHub := mocks.MockedSentryHub()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sentry.SetHubOnContext(r.Context(), mockedHub)

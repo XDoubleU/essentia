@@ -13,7 +13,7 @@ func TestConnectRetries(t *testing.T) {
 	mockedLogger := mocks.NewMockedLogger()
 
 	_, err := postgres.Connect(
-		mockedLogger.GetLogger(),
+		mockedLogger.Logger(),
 		"",
 		1,
 		"1s",
@@ -23,5 +23,5 @@ func TestConnectRetries(t *testing.T) {
 	)
 
 	assert.NotNil(t, err)
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), "retrying in")
+	assert.Contains(t, mockedLogger.CapturedLogs(), "retrying in")
 }

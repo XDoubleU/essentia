@@ -20,29 +20,29 @@ type TestResponse struct {
 	Message string `json:"message"`
 }
 
-type TestSubjectMsg struct {
-	Subject string `json:"subject"`
+type TestSubscribeMsg struct {
+	Topic string `json:"topic"`
 }
 
-func (s TestSubjectMsg) Validate() *validate.Validator {
+func (s TestSubscribeMsg) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (s TestSubjectMsg) GetSubject() string {
-	return s.Subject
+func (s TestSubscribeMsg) GetTopic() string {
+	return s.Topic
 }
 
 func setup(t *testing.T) http.Handler {
 	t.Helper()
 
-	ws := httptools.CreateWebsocketHandler[TestSubjectMsg]([]string{"http://localhost"})
-	ws.AddSubjectHandler(
+	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg]("http://localhost")
+	ws.AddTopicHandler(
 		"exists",
 		func(
 			_ http.ResponseWriter,
 			r *http.Request,
 			conn *websocket.Conn,
-			_ TestSubjectMsg) {
+			_ TestSubscribeMsg) {
 			err := wsjson.Write(
 				r.Context(),
 				conn,
@@ -50,7 +50,7 @@ func setup(t *testing.T) http.Handler {
 			)
 			require.Nil(t, err)
 
-			var msg TestSubjectMsg
+			var msg TestSubscribeMsg
 			err = wsjson.Read(r.Context(), conn, &msg)
 			require.Nil(t, err)
 
@@ -62,18 +62,18 @@ func setup(t *testing.T) http.Handler {
 			require.Nil(t, err)
 		},
 	)
-	return ws.GetHandler()
+	return ws.Handler()
 }
 
 func TestWebsocketTester(t *testing.T) {
 	tWeb := test.CreateWebsocketTester(setup(t))
-	tWeb.SetInitialMessage(TestSubjectMsg{
-		Subject: "exists",
+	tWeb.SetInitialMessage(TestSubscribeMsg{
+		Topic: "exists",
 	})
 	tWeb.SetParallelOperation(
 		func(t *testing.T, _ *httptest.Server, ws *websocket.Conn) {
-			err := wsjson.Write(context.Background(), ws, TestSubjectMsg{
-				Subject: "exists",
+			err := wsjson.Write(context.Background(), ws, TestSubscribeMsg{
+				Topic: "exists",
 			})
 			require.Nil(t, err)
 		},

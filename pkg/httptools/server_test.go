@@ -30,9 +30,9 @@ func TestServerFunc(t *testing.T) {
 	}()
 
 	mockedLogger := mocks.NewMockedLogger()
-	err := httptools.Serve(mockedLogger.GetLogger(), srv, "test")
+	err := httptools.Serve(mockedLogger.Logger(), srv, "test")
 
 	require.Nil(t, err)
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), "starting")
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), "stopped")
+	assert.Contains(t, mockedLogger.CapturedLogs(), "starting")
+	assert.Contains(t, mockedLogger.CapturedLogs(), "stopped")
 }

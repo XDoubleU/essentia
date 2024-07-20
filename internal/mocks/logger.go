@@ -15,10 +15,10 @@ func NewMockedLogger() MockedLogger {
 	}
 }
 
-func (l *MockedLogger) GetLogger() *log.Logger {
+func (l *MockedLogger) Logger() *log.Logger {
 	return log.New(&l.buf, "", log.LstdFlags)
 }
 
-func (l MockedLogger) GetCapturedLogs() string {
+func (l MockedLogger) CapturedLogs() string {
 	return l.buf.String()
 }

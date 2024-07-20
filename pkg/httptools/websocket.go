@@ -10,16 +10,16 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-// SubjectMessageDto is implemented by all messages
+// SubscribeMessageDto is implemented by all messages
 // used to subscribe to a certain handler of a [WebsocketHandler].
-type SubjectMessageDto interface {
+type SubscribeMessageDto interface {
 	validate.ValidatedType
-	GetSubject() string
+	GetTopic() string
 }
 
 // A WebsocketHandler handles incoming requests to a
 // websocket and makes sure that the right handler is called for each subject.
-type WebsocketHandler[T SubjectMessageDto] struct {
+type WebsocketHandler[T SubscribeMessageDto] struct {
 	allowedOrigins    []string
 	onCloseCallBack   OnCloseCallback
 	subjectHandlerMap map[string]func(
@@ -34,9 +34,7 @@ type WebsocketHandler[T SubjectMessageDto] struct {
 type OnCloseCallback = func(conn *websocket.Conn)
 
 // CreateWebsocketHandler creates a new [WebsocketHandler].
-func CreateWebsocketHandler[T SubjectMessageDto](
-	allowedOrigins []string,
-) WebsocketHandler[T] {
+func CreateWebsocketHandler[T SubscribeMessageDto](allowedOrigins []string) WebsocketHandler[T] {
 	for i, url := range allowedOrigins {
 		if strings.Contains(url, "://") {
 			allowedOrigins[i] = strings.Split(url, "://")[1]
@@ -62,10 +60,10 @@ func (h *WebsocketHandler[T]) SetOnCloseCallback(callback OnCloseCallback) {
 	h.onCloseCallBack = callback
 }
 
-// AddSubjectHandler adds a handler for a
-// specific subject provided by a [SubjectMessageDto].
-func (h *WebsocketHandler[T]) AddSubjectHandler(
-	subject string,
+// AddTopicHandler adds a handler for a
+// specific topic provided by a [SubscribeMessageDto].
+func (h *WebsocketHandler[T]) AddTopicHandler(
+	topic string,
 	handler func(
 		w http.ResponseWriter,
 		r *http.Request,
@@ -73,16 +71,16 @@ func (h *WebsocketHandler[T]) AddSubjectHandler(
 		msg T,
 	),
 ) {
-	_, ok := h.subjectHandlerMap[subject]
+	_, ok := h.topicHandlerMap[topic]
 	if ok {
-		panic("subject and handler already in map")
+		panic(fmt.Sprintf("topic '%s' already has a handler", topic))
 	}
 
-	h.subjectHandlerMap[subject] = handler
+	h.topicHandlerMap[topic] = handler
 }
 
-// GetHandler returns the [http.HandlerFunc] of a [WebsocketHandler].
-func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
+// Handler returns the [http.HandlerFunc] of a [WebsocketHandler].
+func (h WebsocketHandler[T]) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
@@ -113,12 +111,12 @@ func (h WebsocketHandler[T]) GetHandler() http.HandlerFunc {
 			return
 		}
 
-		handler, ok := h.subjectHandlerMap[msg.GetSubject()]
+		handler, ok := h.topicHandlerMap[msg.GetTopic()]
 		if !ok {
 			errorDto := ErrorDto{
 				Status:  0,
-				Error:   "unknown subject",
-				Message: fmt.Sprintf("no handler found for '%s'", msg.GetSubject()),
+				Error:   "unknown topic",
+				Message: fmt.Sprintf("no handler found for '%s'", msg.GetTopic()),
 			}
 			err = wsjson.Write(r.Context(), conn, errorDto)
 			if err != nil {

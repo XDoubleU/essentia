@@ -112,11 +112,11 @@ func TestErrors(t *testing.T) {
 		},
 		req,
 		func(_ http.ResponseWriter, r *http.Request) {
-			assert.False(t, contexttools.GetShowErrors(r))
+			assert.False(t, contexttools.ShowErrors(r))
 		},
 	)
 	testMiddleware(t, showErrors, req, func(_ http.ResponseWriter, r *http.Request) {
-		assert.True(t, contexttools.GetShowErrors(r))
+		assert.True(t, contexttools.ShowErrors(r))
 	})
 }
 
@@ -126,7 +126,7 @@ func TestLogger(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	testMiddleware(
 		t,
-		middleware.Logger(mockedLogger.GetLogger()),
+		middleware.Logger(mockedLogger.Logger()),
 		req,
 		func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -134,10 +134,10 @@ func TestLogger(t *testing.T) {
 	)
 
 	timeStr := time.Now().Format("2006/01/02")
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), timeStr)
+	assert.Contains(t, mockedLogger.CapturedLogs(), timeStr)
 	assert.Contains(
 		t,
-		mockedLogger.GetCapturedLogs(),
+		mockedLogger.CapturedLogs(),
 		fmt.Sprintf("[%d]", http.StatusOK),
 	)
 }
@@ -178,7 +178,7 @@ func TestRecover(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	res := testMiddleware(
 		t,
-		middleware.Recover(mockedLogger.GetLogger()),
+		middleware.Recover(mockedLogger.Logger()),
 		req,
 		func(_ http.ResponseWriter, _ *http.Request) {
 			panic("test")
@@ -187,7 +187,7 @@ func TestRecover(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, "close", res.Header()["Connection"][0])
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), "PANIC")
+	assert.Contains(t, mockedLogger.CapturedLogs(), "PANIC")
 }
 
 func TestSentry(t *testing.T) {
@@ -195,7 +195,7 @@ func TestSentry(t *testing.T) {
 
 	sentryMiddleware, err := middleware.Sentry(
 		true,
-		*mocks.GetMockedSentryClientOptions(),
+		*mocks.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 

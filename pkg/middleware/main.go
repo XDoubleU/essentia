@@ -40,7 +40,7 @@ func Default(
 	sentryClientOptions *sentry.ClientOptions,
 ) ([]alice.Constructor, error) {
 	if isTestEnv {
-		sentryClientOptions = mocks.GetMockedSentryClientOptions()
+		sentryClientOptions = mocks.MockedSentryClientOptions()
 	}
 
 	useSentry := sentryClientOptions != nil
