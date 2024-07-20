@@ -9,7 +9,7 @@ import (
 )
 
 // ErrorMessage is used to describe the expected error in [AddTestCaseErrorMessage].
-type ErrorMessage = map[string]interface{}
+type ErrorMessage = map[string]any
 
 // MatrixTester is used for executing matrix tests.
 type MatrixTester struct {

@@ -4,7 +4,7 @@ import "github.com/getsentry/sentry-go"
 
 const testDsn = "http://whatever@example.com/1337"
 
-func GetMockedSentryClientOptions() *sentry.ClientOptions {
+func MockedSentryClientOptions() *sentry.ClientOptions {
 	//nolint:exhaustruct //other fields are optional
 	return &sentry.ClientOptions{
 		Dsn:       testDsn,
@@ -12,8 +12,8 @@ func GetMockedSentryClientOptions() *sentry.ClientOptions {
 	}
 }
 
-func GetMockedSentryHub() *sentry.Hub {
-	clientOptions := GetMockedSentryClientOptions()
+func MockedSentryHub() *sentry.Hub {
+	clientOptions := MockedSentryClientOptions()
 
 	client, err := sentry.NewClient(*clientOptions)
 	if err != nil {

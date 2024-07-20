@@ -30,7 +30,7 @@ func TestSetup(t *testing.T) {
 	mockedLogger := mocks.NewMockedLogger()
 
 	db, err := postgres.Connect(
-		mockedLogger.GetLogger(),
+		mockedLogger.Logger(),
 		"postgres://postgres@localhost/postgres",
 		1,
 		"1m",
@@ -55,7 +55,7 @@ func TestSetup(t *testing.T) {
 
 	DropTable(ctx, t, mainTestEnv.TestDB)
 
-	assert.Equal(t, "", mockedLogger.GetCapturedLogs())
+	assert.Equal(t, "", mockedLogger.CapturedLogs())
 }
 
 func CreateTable(ctx context.Context, t *testing.T, db postgres.DB) {
@@ -88,7 +88,7 @@ func OperationsInTx(ctx context.Context, t *testing.T, tx postgres.DB) {
 	p := newPair()
 
 	// wrap with span to get some additional coverage
-	sentry.SetHubOnContext(ctx, mocks.GetMockedSentryHub())
+	sentry.SetHubOnContext(ctx, mocks.MockedSentryHub())
 	row := database.WrapWithSpanNoError(
 		ctx,
 		"test-postgresql",

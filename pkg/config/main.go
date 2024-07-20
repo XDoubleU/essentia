@@ -11,8 +11,8 @@ import (
 
 const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
-// GetEnvStr extracts a string environment variable.
-func GetEnvStr(key string, defaultValue string) string {
+// EnvStr extracts a string environment variable.
+func EnvStr(key string, defaultValue string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
 		return defaultValue
@@ -32,9 +32,20 @@ func GetEnvStrArray(key string, defaultValue []string) []string {
 	return strings.Split(strVal, ",")
 }
 
-// GetEnvInt extracts an integer environment variable.
-func GetEnvInt(key string, defaultValue int) int {
-	strVal := GetEnvStr(key, "")
+// EnvStrArray extracts a string
+// array environment variable. The values should be seperated by ','.
+func EnvStrArray(key string, defaultValue []string) []string {
+	strVal := EnvStr(key, "")
+	if len(strVal) == 0 {
+		return defaultValue
+	}
+
+	return strings.Split(strVal, ",")
+}
+
+// EnvInt extracts an integer environment variable.
+func EnvInt(key string, defaultValue int) int {
+	strVal := EnvStr(key, "")
 	if len(strVal) == 0 {
 		return defaultValue
 	}
@@ -47,9 +58,9 @@ func GetEnvInt(key string, defaultValue int) int {
 	return intVal
 }
 
-// GetEnvFloat extracts a float environment variable.
-func GetEnvFloat(key string, defaultValue float64) float64 {
-	strVal := GetEnvStr(key, "")
+// EnvFloat extracts a float environment variable.
+func EnvFloat(key string, defaultValue float64) float64 {
+	strVal := EnvStr(key, "")
 	if len(strVal) == 0 {
 		return defaultValue
 	}
@@ -62,9 +73,9 @@ func GetEnvFloat(key string, defaultValue float64) float64 {
 	return floatVal
 }
 
-// GetEnvBool extracts a boolean environment variable.
-func GetEnvBool(key string, defaultValue bool) bool {
-	strVal := GetEnvStr(key, "")
+// EnvBool extracts a boolean environment variable.
+func EnvBool(key string, defaultValue bool) bool {
+	strVal := EnvStr(key, "")
 	if len(strVal) == 0 {
 		return defaultValue
 	}

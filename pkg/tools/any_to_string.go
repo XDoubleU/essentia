@@ -7,20 +7,14 @@ import (
 
 // AnyToString converts any value to a string.
 func AnyToString(value any) (string, error) {
-	var result string
-
-	var strVal string
-	var int64Val int64
-
-	var ok bool
-
-	if strVal, ok = value.(string); ok {
-		result = strVal
-	} else if int64Val, ok = value.(int64); ok {
-		result = strconv.FormatInt(int64Val, 10)
-	} else {
+	switch value := value.(type) {
+	case string:
+		return value, nil
+	case int:
+		return strconv.Itoa(value), nil
+	case int64:
+		return strconv.FormatInt(value, 10), nil
+	default:
 		return "", errors.New("undefined type")
 	}
-
-	return result, nil
 }

@@ -44,7 +44,7 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
 		sendErrorToSentry(r.Context(), err)
-		contexttools.GetLogger(r).Print(err)
+		contexttools.Logger(r).Print(err)
 	}
 }
 
@@ -53,7 +53,7 @@ func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	sendErrorToSentry(r.Context(), err)
 
 	message := MessageInternalServerError
-	if contexttools.GetShowErrors(r) {
+	if contexttools.ShowErrors(r) {
 		message = err.Error()
 	}
 
