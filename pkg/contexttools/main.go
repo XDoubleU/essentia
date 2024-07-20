@@ -6,20 +6,14 @@ import (
 	"context"
 	"io"
 	"log"
-	"net/http"
 )
 
 // ContextKey is the type used for specifying context keys.
 type ContextKey string
 
-// SetContextValue sets a value by key on the context.
-func SetContextValue(r *http.Request, key ContextKey, value any) *http.Request {
-	return r.WithContext(context.WithValue(r.Context(), key, value))
-}
-
 // GetContextValue returns a value by key from the context.
-func GetContextValue[T any](r *http.Request, key ContextKey) *T {
-	val := r.Context().Value(key)
+func GetContextValue[T any](ctx context.Context, key ContextKey) *T {
+	val := ctx.Value(key)
 	if val == nil {
 		return nil
 	}
@@ -32,14 +26,14 @@ func GetContextValue[T any](r *http.Request, key ContextKey) *T {
 	return &castedValue
 }
 
-// SetLogger sets the logger on the context.
-func SetLogger(r *http.Request, logger *log.Logger) *http.Request {
-	return SetContextValue(r, loggerContextKey, logger)
+// WithLogger sets the logger on the context.
+func WithLogger(ctx context.Context, logger *log.Logger) context.Context {
+	return context.WithValue(ctx, loggerContextKey, logger)
 }
 
 // Logger returns the logger stored in the context or a NullLogger.
-func Logger(r *http.Request) *log.Logger {
-	logger := GetContextValue[*log.Logger](r, loggerContextKey)
+func Logger(ctx context.Context) *log.Logger {
+	logger := GetContextValue[*log.Logger](ctx, loggerContextKey)
 
 	if logger == nil {
 		return log.New(io.Discard, "", 0)
@@ -48,16 +42,16 @@ func Logger(r *http.Request) *log.Logger {
 	return *logger
 }
 
-// SetShowErrors enables showing errors
+// WithShownErrors enables showing errors
 // of [httptools.ServerErrorResponse].
-func SetShowErrors(r *http.Request) *http.Request {
-	return SetContextValue(r, showErrorsContextKey, true)
+func WithShownErrors(ctx context.Context) context.Context {
+	return context.WithValue(ctx, showErrorsContextKey, true)
 }
 
 // ShowErrors returns if errors should be shown
 // in [httptools.ServerErrorResponse.].
-func ShowErrors(r *http.Request) bool {
-	showErrors := GetContextValue[bool](r, showErrorsContextKey)
+func ShowErrors(ctx context.Context) bool {
+	showErrors := GetContextValue[bool](ctx, showErrorsContextKey)
 
 	if showErrors == nil {
 		return false

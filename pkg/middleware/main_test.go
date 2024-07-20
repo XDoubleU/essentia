@@ -112,11 +112,11 @@ func TestErrors(t *testing.T) {
 		},
 		req,
 		func(_ http.ResponseWriter, r *http.Request) {
-			assert.False(t, contexttools.ShowErrors(r))
+			assert.False(t, contexttools.ShowErrors(r.Context()))
 		},
 	)
 	testMiddleware(t, showErrors, req, func(_ http.ResponseWriter, r *http.Request) {
-		assert.True(t, contexttools.ShowErrors(r))
+		assert.True(t, contexttools.ShowErrors(r.Context()))
 	})
 }
 

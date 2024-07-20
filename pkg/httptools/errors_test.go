@@ -10,28 +10,9 @@ import (
 	"github.com/XDoubleU/essentia/pkg/contexttools"
 	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/XDoubleU/essentia/pkg/middleware"
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"nhooyr.io/websocket"
 )
-
-func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
-	t.Helper()
-
-	req, _ := http.NewRequest(http.MethodGet, "", nil)
-	res := httptest.NewRecorder()
-
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
-	)
-	require.Nil(t, err)
-
-	sentryMiddleware(handler).ServeHTTP(res, req)
-
-	return res.Result().StatusCode
-}
 
 func testError(t *testing.T, handler http.HandlerFunc) (int, httptools.ErrorDto) {
 	t.Helper()
@@ -64,43 +45,6 @@ func testErrorWithReq(
 	return res.Result().StatusCode, errorDto
 }
 
-func testErrorWS(
-	t *testing.T,
-	handler func(
-		w http.ResponseWriter,
-		r *http.Request,
-		conn *websocket.Conn,
-		msg TestSubscribeMsg),
-) {
-	t.Helper()
-
-	wsHandler := httptools.CreateWebsocketHandler[TestSubscribeMsg](
-		[]string{"http://localhost"},
-	)
-	wsHandler.AddTopicHandler("topic", handler)
-
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
-	)
-	require.Nil(t, err)
-
-	tWeb := test.CreateWebsocketTester(
-		sentryMiddleware(wsHandler.Handler()),
-	)
-	tWeb.SetInitialMessage(TestSubscribeMsg{Topic: "topic"})
-
-	var errorDto httptools.ErrorDto
-	err = tWeb.Do(t, &errorDto, nil)
-
-	assert.ErrorContains(t, err, "status = StatusInternalError")
-	assert.ErrorContains(
-		t,
-		err,
-		"reason = \"the server encountered a problem and could not process your request\"",
-	)
-}
-
 func TestServerErrorResponseObfuscated(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		httptools.ServerErrorResponse(w, r, errors.New("test"))
@@ -118,7 +62,8 @@ func TestServerErrorResponseShown(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
-	req = contexttools.SetShowErrors(req)
+	req = req.WithContext(contexttools.WithShownErrors(req.Context()))
+
 	statusCode, errorDto := testErrorWithReq(t, handler, req)
 
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
@@ -222,32 +167,4 @@ func TestFailedValidationResponse(t *testing.T) {
 	assert.Equal(t, map[string]any{
 		"field": "invalid value",
 	}, errorDto.Message)
-}
-
-func TestWSUpgradeErrorResponse(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.WSUpgradeErrorResponse(w, r, errors.New("test"))
-	}
-
-	statusCode := testErrorStatusCode(t, handler)
-
-	assert.Equal(t, http.StatusInternalServerError, statusCode)
-}
-
-func TestWSErrorResponse(t *testing.T) {
-	handler := func(
-		w http.ResponseWriter,
-		r *http.Request,
-		conn *websocket.Conn,
-		_ TestSubscribeMsg) {
-		httptools.WSErrorResponse(
-			w,
-			r,
-			conn,
-			func(_ *websocket.Conn) {},
-			errors.New("test"),
-		)
-	}
-
-	testErrorWS(t, handler)
 }

@@ -1,15 +1,13 @@
 package httptools
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/XDoubleU/essentia/internal/shared"
 	"github.com/XDoubleU/essentia/pkg/contexttools"
 	"github.com/XDoubleU/essentia/pkg/tools"
-	"github.com/getsentry/sentry-go"
-	"nhooyr.io/websocket"
 )
 
 var (
@@ -36,24 +34,24 @@ type ErrorDto struct {
 // ErrorResponse is used to handle any kind of error.
 func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	status int, message any) {
-	env := ErrorDto{
+	errorDto := ErrorDto{
 		Status:  status,
 		Error:   http.StatusText(status),
 		Message: message,
 	}
-	err := WriteJSON(w, status, env, nil)
+	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
-		sendErrorToSentry(r.Context(), err)
-		contexttools.Logger(r).Print(err)
+		shared.SendErrorToSentry(r.Context(), err)
+		contexttools.Logger(r.Context()).Print(err)
 	}
 }
 
 // ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	sendErrorToSentry(r.Context(), err)
+	shared.SendErrorToSentry(r.Context(), err)
 
 	message := MessageInternalServerError
-	if contexttools.ShowErrors(r) {
+	if contexttools.ShowErrors(r.Context()) {
 		message = err.Error()
 	}
 
@@ -154,42 +152,4 @@ func FailedValidationResponse(
 	errors map[string]string,
 ) {
 	ErrorResponse(w, r, http.StatusUnprocessableEntity, errors)
-}
-
-// WSErrorResponse is used to handle an error that occured on a Websocket.
-func WSErrorResponse(
-	_ http.ResponseWriter,
-	r *http.Request,
-	conn *websocket.Conn,
-	beforeClosingFunc func(conn *websocket.Conn),
-	err error,
-) {
-	// don't want to capture close errors
-	if websocket.CloseStatus(err) != -1 {
-		return
-	}
-
-	sendErrorToSentry(r.Context(), err)
-
-	if beforeClosingFunc != nil {
-		beforeClosingFunc(conn)
-	}
-
-	conn.Close(websocket.StatusInternalError, MessageInternalServerError)
-}
-
-// WSUpgradeErrorResponse is used to handle an error that
-// occured during the upgrade towards a Websocket.
-func WSUpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	sendErrorToSentry(r.Context(), err)
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
-func sendErrorToSentry(ctx context.Context, err error) {
-	if hub := sentry.GetHubFromContext(ctx); hub != nil {
-		hub.WithScope(func(scope *sentry.Scope) {
-			scope.SetLevel(sentry.LevelError)
-			hub.CaptureException(err)
-		})
-	}
 }

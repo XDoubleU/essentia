@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"net/http"
 	"testing"
 
 	"github.com/XDoubleU/essentia/pkg/contexttools"
@@ -13,33 +12,20 @@ import (
 
 const testContextKey = contexttools.ContextKey("test")
 
-func TestSetContextValue(t *testing.T) {
-	r, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "", nil)
-
-	r = contexttools.SetContextValue(r, testContextKey, true)
-
-	value, _ := r.Context().Value(testContextKey).(bool)
-
-	assert.Equal(t, true, value)
-}
-
 func TestGetContextValue(t *testing.T) {
 	ctx := context.WithValue(
 		context.Background(),
 		testContextKey,
 		true,
 	)
-	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
-	value := contexttools.GetContextValue[bool](r, testContextKey)
+	value := contexttools.GetContextValue[bool](ctx, testContextKey)
 
 	assert.Equal(t, true, *value)
 }
 
 func TestGetContextValueNotPresent(t *testing.T) {
-	r, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, "", nil)
-
-	value := contexttools.GetContextValue[bool](r, testContextKey)
+	value := contexttools.GetContextValue[bool](context.Background(), testContextKey)
 
 	assert.Nil(t, value)
 }
@@ -50,9 +36,8 @@ func TestGetContextValueIncorrectType(t *testing.T) {
 		testContextKey,
 		10,
 	)
-	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
-	value := contexttools.GetContextValue[bool](r, testContextKey)
+	value := contexttools.GetContextValue[bool](ctx, testContextKey)
 
 	assert.Nil(t, value)
 }
@@ -60,12 +45,10 @@ func TestGetContextValueIncorrectType(t *testing.T) {
 func TestSetGetLogger(t *testing.T) {
 	ctx := context.Background()
 
-	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
-
 	logger := log.Default()
-	r = contexttools.SetLogger(r, logger)
+	ctx = contexttools.WithLogger(ctx, logger)
 
-	value := contexttools.Logger(r)
+	value := contexttools.Logger(ctx)
 
 	assert.Equal(t, logger, value)
 }
@@ -73,9 +56,7 @@ func TestSetGetLogger(t *testing.T) {
 func TestGetNullLogger(t *testing.T) {
 	ctx := context.Background()
 
-	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
-
-	value := contexttools.Logger(r)
+	value := contexttools.Logger(ctx)
 
 	assert.Equal(t, io.Discard, value.Writer())
 }
