@@ -1,10 +1,12 @@
-name: Lint & test workflow
+name: Lint & Test Workflow
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'
     
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -40,8 +42,8 @@ jobs:
           --health-retries 5
     strategy:
       matrix:
-        go: [ '1.21', '1.22' ]
-    name: Test with Go v${{ matrix.go }}
+        go: [ 'oldstable', 'stable' ]
+    name: Test with Go version: ${{ matrix.go }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
