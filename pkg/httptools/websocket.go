@@ -20,9 +20,9 @@ type SubscribeMessageDto interface {
 // A WebsocketHandler handles incoming requests to a
 // websocket and makes sure that the right handler is called for each subject.
 type WebsocketHandler[T SubscribeMessageDto] struct {
-	allowedOrigins    []string
-	onCloseCallBack   OnCloseCallback
-	subjectHandlerMap map[string]func(
+	allowedOrigins  []string
+	onCloseCallBack OnCloseCallback
+	topicHandlerMap map[string]func(
 		w http.ResponseWriter,
 		r *http.Request,
 		conn *websocket.Conn,
@@ -34,7 +34,9 @@ type WebsocketHandler[T SubscribeMessageDto] struct {
 type OnCloseCallback = func(conn *websocket.Conn)
 
 // CreateWebsocketHandler creates a new [WebsocketHandler].
-func CreateWebsocketHandler[T SubscribeMessageDto](allowedOrigins []string) WebsocketHandler[T] {
+func CreateWebsocketHandler[T SubscribeMessageDto](
+	allowedOrigins []string,
+) WebsocketHandler[T] {
 	for i, url := range allowedOrigins {
 		if strings.Contains(url, "://") {
 			allowedOrigins[i] = strings.Split(url, "://")[1]
@@ -43,7 +45,7 @@ func CreateWebsocketHandler[T SubscribeMessageDto](allowedOrigins []string) Webs
 
 	return WebsocketHandler[T]{
 		allowedOrigins: allowedOrigins,
-		subjectHandlerMap: make(
+		topicHandlerMap: make(
 			map[string]func(
 				w http.ResponseWriter,
 				r *http.Request,

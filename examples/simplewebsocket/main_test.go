@@ -18,8 +18,8 @@ func TestWebsocket(t *testing.T) {
 	require.Nil(t, err)
 
 	tWeb := test.CreateWebsocketTester(*routes)
-	tWeb.SetInitialMessage(SubjectMessageDto{
-		Subject: "subject",
+	tWeb.SetInitialMessage(SubscribeMessageDto{
+		Topic: "topic",
 	})
 
 	var initialResponse ResponseMessageDto

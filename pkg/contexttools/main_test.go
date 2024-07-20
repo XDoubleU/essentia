@@ -65,7 +65,7 @@ func TestSetGetLogger(t *testing.T) {
 	logger := log.Default()
 	r = contexttools.SetLogger(r, logger)
 
-	value := contexttools.GetLogger(r)
+	value := contexttools.Logger(r)
 
 	assert.Equal(t, logger, value)
 }
@@ -75,7 +75,7 @@ func TestGetNullLogger(t *testing.T) {
 
 	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "", nil)
 
-	value := contexttools.GetLogger(r)
+	value := contexttools.Logger(r)
 
 	assert.Equal(t, io.Discard, value.Writer())
 }

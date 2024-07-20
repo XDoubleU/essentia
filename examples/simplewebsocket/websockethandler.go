@@ -9,20 +9,20 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-type SubjectMessageDto struct {
-	Subject string
+type SubscribeMessageDto struct {
+	Topic string
 }
 
 type ResponseMessageDto struct {
 	Message string
 }
 
-func (msg SubjectMessageDto) Validate() *validate.Validator {
+func (msg SubscribeMessageDto) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (msg SubjectMessageDto) GetSubject() string {
-	return msg.Subject
+func (msg SubscribeMessageDto) GetTopic() string {
+	return msg.Topic
 }
 
 func (app *application) websocketRoutes(mux *http.ServeMux) {
@@ -34,19 +34,19 @@ func (app *application) websocketRoutes(mux *http.ServeMux) {
 
 func (app *application) getWebSocketHandler() http.HandlerFunc {
 
-	wsHandler := httptools.CreateWebsocketHandler[SubjectMessageDto](
+	wsHandler := httptools.CreateWebsocketHandler[SubscribeMessageDto](
 		app.config.AllowedOrigins,
 	)
-	wsHandler.AddSubjectHandler("subject", subjectHandler)
+	wsHandler.AddTopicHandler("topic", topicHandler)
 
-	return wsHandler.GetHandler()
+	return wsHandler.Handler()
 }
 
-func subjectHandler(
+func topicHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 	conn *websocket.Conn,
-	msg SubjectMessageDto,
+	msg SubscribeMessageDto,
 ) {
 	err := wsjson.Write(r.Context(), conn, ResponseMessageDto{
 		Message: "Hello, World!",

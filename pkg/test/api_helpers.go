@@ -16,7 +16,7 @@ func PaginatedEndpointTester(
 ) {
 	t.Helper()
 
-	mt := CreateMatrixTester(baseRequest)
+	mt := CreateMatrixTester()
 
 	pagesAndStatusCodes := map[int]int{
 		-1:          http.StatusBadRequest,
@@ -27,10 +27,12 @@ func PaginatedEndpointTester(
 	}
 
 	for page, statusCode := range pagesAndStatusCodes {
-		query := map[string]string{
+		tReq := baseRequest.Copy()
+		tReq.SetQuery(map[string]string{
 			pageQueryParamName: strconv.Itoa(page),
-		}
-		mt.AddTestCaseStatusCode(query, statusCode)
+		})
+
+		mt.AddTestCase(tReq, NewCaseResponse(statusCode))
 	}
 
 	mt.Do(t)

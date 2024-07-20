@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 )
 
 // Logger is middleware used to add a logger to
@@ -19,7 +19,7 @@ func Logger(logger *log.Logger) middleware {
 
 func loggerHandler(logger *log.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := httptools.NewResponseWriter(w)
+		rw := sentryhttp.NewWrapResponseWriter(w, r.ProtoMajor)
 		t := time.Now()
 
 		r = contexttools.SetLogger(r, logger)
@@ -28,7 +28,7 @@ func loggerHandler(logger *log.Logger, next http.Handler) http.Handler {
 
 		logger.Printf(
 			"[%d] %s in %v",
-			rw.StatusCode(),
+			rw.Status(),
 			r.RequestURI,
 			time.Since(t),
 		)
