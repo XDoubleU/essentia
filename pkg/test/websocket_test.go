@@ -35,9 +35,7 @@ func (s TestSubscribeMsg) GetTopic() string {
 func setup(t *testing.T) http.Handler {
 	t.Helper()
 
-	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg](
-		[]string{"http://localhost"},
-	)
+	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg]("http://localhost")
 	ws.AddTopicHandler(
 		"exists",
 		func(

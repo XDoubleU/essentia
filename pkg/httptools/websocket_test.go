@@ -40,9 +40,7 @@ func emptyHandler(
 func setup(t *testing.T, onCloseCallBackIsCalled *bool) http.Handler {
 	t.Helper()
 
-	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg](
-		[]string{"http://localhost"},
-	)
+	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg]("http://localhost")
 	ws.SetOnCloseCallback(func(_ *websocket.Conn) {
 		*onCloseCallBackIsCalled = true
 	})
@@ -92,7 +90,7 @@ func TestWebSocketUnknownSubject(t *testing.T) {
 }
 
 func TestWebSocketExistingHandler(t *testing.T) {
-	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg]([]string{"localhost"})
+	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg]("localhost")
 	ws.AddTopicHandler(
 		"exists",
 		emptyHandler,

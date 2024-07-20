@@ -21,6 +21,17 @@ func EnvStr(key string, defaultValue string) string {
 	return value
 }
 
+// GetEnvStrArray extracts a string
+// array environment variable. The values should be seperated by ','.
+func GetEnvStrArray(key string, defaultValue []string) []string {
+	strVal := GetEnvStr(key, "")
+	if len(strVal) == 0 {
+		return defaultValue
+	}
+
+	return strings.Split(strVal, ",")
+}
+
 // EnvStrArray extracts a string
 // array environment variable. The values should be seperated by ','.
 func EnvStrArray(key string, defaultValue []string) []string {

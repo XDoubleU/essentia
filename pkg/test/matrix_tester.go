@@ -1,98 +1,82 @@
 package test
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
+	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/stretchr/testify/assert"
 )
 
-// CaseResponse is used to compare to the actual response
-// of a [RequestTester] when used by a [MatrixTester].
-type CaseResponse struct {
-	statusCode int
-	cookies    []*http.Cookie
-	body       *map[string]any
-}
-
-// NewCaseResponse returns a new [CaseResponse].
-func NewCaseResponse(statusCode int) CaseResponse {
-	//nolint:exhaustruct //other fields are optional
-	return CaseResponse{
-		statusCode: statusCode,
-	}
-}
-
-// SetExpectedCookies sets the cookies expected in the response of a test case.
-func (rs *CaseResponse) SetExpectedCookies(cookies []*http.Cookie) {
-	rs.cookies = cookies
-}
-
-// SetExpectedBody sets the body expected in the response of a test case.
-func (rs *CaseResponse) SetExpectedBody(body any) error {
-	var bodyMap map[string]any
-	data, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(data, &bodyMap)
-	if err != nil {
-		return err
-	}
-
-	rs.body = &bodyMap
-
-	return nil
-}
+// ErrorMessage is used to describe the expected error in [AddTestCaseErrorMessage].
+type ErrorMessage = map[string]any
 
 // MatrixTester is used for executing matrix tests.
 type MatrixTester struct {
-	testCases map[*RequestTester]CaseResponse
+	baseRequest       RequestTester
+	errorMessageTests map[*RequestTester]ErrorMessage
+	statusCodeTests   map[*RequestTester]int
 }
 
 // CreateMatrixTester creates a new [MatrixTester].
-func CreateMatrixTester() MatrixTester {
+func CreateMatrixTester(baseRequest RequestTester) MatrixTester {
 	return MatrixTester{
-		testCases: make(map[*RequestTester]CaseResponse),
+		baseRequest:       baseRequest,
+		errorMessageTests: make(map[*RequestTester]ErrorMessage),
+		statusCodeTests:   make(map[*RequestTester]int),
 	}
 }
 
-// AddTestCase adds a test case which consists of
-// a [RequestTester] and a [CaseResponse].
-// When executing [Do] the [RequestTester] will be executed
-// and its response will be compared to the provided [CaseResponse].
-func (mt *MatrixTester) AddTestCase(
-	tReq RequestTester,
-	tRes CaseResponse) {
-	mt.testCases[&tReq] = tRes
+// AddTestCaseErrorMessage adds a testcase where request data is
+// supplied as input and a certain error message is expected as output.
+func (mt *MatrixTester) AddTestCaseErrorMessage(
+	reqData any,
+	errorMessage ErrorMessage,
+) {
+	tReq := mt.baseRequest.Copy()
+	tReq.SetReqData(reqData)
+	mt.errorMessageTests[&tReq] = errorMessage
+}
+
+// AddTestCaseStatusCode adds a testcase where a query is
+// supplied as input and a certain status code is expected as output.
+func (mt *MatrixTester) AddTestCaseStatusCode(query map[string]string, statusCode int) {
+	tReq := mt.baseRequest.Copy()
+	tReq.SetQuery(query)
+	mt.statusCodeTests[&tReq] = statusCode
+}
+
+// AddTestCaseCookieStatusCode adds a testcase where a cookie is
+// supplied as input and a certain status code is expected as output.
+func (mt *MatrixTester) AddTestCaseCookieStatusCode(
+	cookie *http.Cookie,
+	statusCode int,
+) {
+	tReq := mt.baseRequest.Copy()
+
+	if cookie != nil {
+		tReq.AddCookie(cookie)
+	}
+
+	mt.statusCodeTests[&tReq] = statusCode
 }
 
 // Do executes a [MatrixTester].
 func (mt MatrixTester) Do(t *testing.T) {
 	t.Helper()
 
-	for tReq, tRes := range mt.testCases {
-		var rs *http.Response
-		var rsData map[string]any
+	for tReq, errorMsg := range mt.errorMessageTests {
+		var rsData httptools.ErrorDto
+		rs := tReq.Do(t, &rsData)
+		defer rs.Body.Close()
 
-		if tRes.body == nil {
-			rs = tReq.Do(t, nil)
-			defer rs.Body.Close()
-		} else {
-			rs = tReq.Do(t, &rsData)
-			defer rs.Body.Close()
-		}
+		assert.Equal(t, errorMsg, rsData.Message)
+	}
 
-		assert.Equal(t, tRes.statusCode, rs.StatusCode)
+	for tReq, statusCode := range mt.statusCodeTests {
+		rs := tReq.Do(t, nil)
+		defer rs.Body.Close()
 
-		if tRes.cookies != nil {
-			assert.Equal(t, tRes.cookies, rs.Cookies())
-		}
-
-		if rsData != nil {
-			assert.Equal(t, *tRes.body, rsData)
-		}
+		assert.Equal(t, statusCode, rs.StatusCode)
 	}
 }
