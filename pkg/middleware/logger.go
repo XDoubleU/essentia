@@ -22,7 +22,7 @@ func loggerHandler(logger *log.Logger, next http.Handler) http.Handler {
 		rw := sentryhttp.NewWrapResponseWriter(w, r.ProtoMajor)
 		t := time.Now()
 
-		r = contexttools.SetLogger(r, logger)
+		r = r.WithContext(contexttools.WithLogger(r.Context(), logger))
 
 		next.ServeHTTP(rw, r)
 

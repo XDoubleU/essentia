@@ -12,7 +12,7 @@ import (
 func ShowErrors() middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = contexttools.SetShowErrors(r)
+			r = r.WithContext(contexttools.WithShownErrors(r.Context()))
 			next.ServeHTTP(w, r)
 		})
 	}

@@ -3,26 +3,24 @@ package main
 import (
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/XDoubleU/essentia/pkg/validate"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
+	"github.com/XDoubleU/essentia/pkg/wstools"
 )
 
 type SubscribeMessageDto struct {
-	Topic string
+	TopicName string `json:"topicName"`
 }
 
 type ResponseMessageDto struct {
-	Message string
+	Message string `json:"message"`
 }
 
 func (msg SubscribeMessageDto) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (msg SubscribeMessageDto) GetTopic() string {
-	return msg.Topic
+func (msg SubscribeMessageDto) GetTopicName() string {
+	return msg.TopicName
 }
 
 func (app *application) websocketRoutes(mux *http.ServeMux) {
@@ -34,31 +32,14 @@ func (app *application) websocketRoutes(mux *http.ServeMux) {
 
 func (app *application) getWebSocketHandler() http.HandlerFunc {
 
-	wsHandler := httptools.CreateWebsocketHandler[SubscribeMessageDto](
+	wsHandler := wstools.CreateWebSocketHandler[SubscribeMessageDto](
 		app.config.AllowedOrigins,
 	)
-	wsHandler.AddTopicHandler("topic", topicHandler)
+	wsHandler.AddTopic(
+		"topic",
+		ResponseMessageDto{
+			Message: "Hello, World!",
+		})
 
 	return wsHandler.Handler()
-}
-
-func topicHandler(
-	w http.ResponseWriter,
-	r *http.Request,
-	conn *websocket.Conn,
-	msg SubscribeMessageDto,
-) {
-	err := wsjson.Write(r.Context(), conn, ResponseMessageDto{
-		Message: "Hello, World!",
-	})
-	if err != nil {
-		httptools.WSErrorResponse(
-			w,
-			r,
-			conn,
-			nil,
-			err,
-		)
-		return
-	}
 }

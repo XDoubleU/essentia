@@ -1,18 +1,15 @@
 package test_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/XDoubleU/essentia/pkg/validate"
+	"github.com/XDoubleU/essentia/pkg/wstools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 type TestResponse struct {
@@ -21,63 +18,44 @@ type TestResponse struct {
 }
 
 type TestSubscribeMsg struct {
-	Topic string `json:"topic"`
+	TopicName string `json:"topicName"`
 }
 
 func (s TestSubscribeMsg) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (s TestSubscribeMsg) GetTopic() string {
-	return s.Topic
+func (s TestSubscribeMsg) GetTopicName() string {
+	return s.TopicName
 }
 
-func setup(t *testing.T) http.Handler {
+func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	t.Helper()
 
-	ws := httptools.CreateWebsocketHandler[TestSubscribeMsg](
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
 		[]string{"http://localhost"},
 	)
-	ws.AddTopicHandler(
+	topic, err := ws.AddTopic(
 		"exists",
-		func(
-			_ http.ResponseWriter,
-			r *http.Request,
-			conn *websocket.Conn,
-			_ TestSubscribeMsg) {
-			err := wsjson.Write(
-				r.Context(),
-				conn,
-				TestResponse{Ok: true, Message: "initial"},
-			)
-			require.Nil(t, err)
-
-			var msg TestSubscribeMsg
-			err = wsjson.Read(r.Context(), conn, &msg)
-			require.Nil(t, err)
-
-			err = wsjson.Write(
-				r.Context(),
-				conn,
-				TestResponse{Ok: true, Message: "parallel"},
-			)
-			require.Nil(t, err)
-		},
+		TestResponse{Ok: true, Message: "initial"},
 	)
-	return ws.Handler()
+	require.Nil(t, err)
+
+	return ws.Handler(), topic
 }
 
-func TestWebsocketTester(t *testing.T) {
-	tWeb := test.CreateWebsocketTester(setup(t))
+func TestWebSocketTester(t *testing.T) {
+	handler, topic := setup(t)
+	tWeb := test.CreateWebSocketTester(handler)
 	tWeb.SetInitialMessage(TestSubscribeMsg{
-		Topic: "exists",
+		TopicName: "exists",
 	})
 	tWeb.SetParallelOperation(
-		func(t *testing.T, _ *httptest.Server, ws *websocket.Conn) {
-			err := wsjson.Write(context.Background(), ws, TestSubscribeMsg{
-				Topic: "exists",
+		func(_ *testing.T, _ *httptest.Server) {
+			topic.EnqueueMessage(TestResponse{
+				Ok:      true,
+				Message: "parallel",
 			})
-			require.Nil(t, err)
 		},
 	)
 

@@ -1,4 +1,4 @@
 // Package httptools contains several tools for dealing with http
-// such as writing different kinds out content types,
-// error handling and dealing with websockets.
+// such as writing different kinds out content types and
+// error handling.
 package httptools

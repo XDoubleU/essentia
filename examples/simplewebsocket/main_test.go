@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWebsocket(t *testing.T) {
+func TestWebSocket(t *testing.T) {
 	app := NewApp(log.New(io.Discard, "", 0))
 	app.config.Env = TestEnv
 
 	routes, err := app.Routes()
 	require.Nil(t, err)
 
-	tWeb := test.CreateWebsocketTester(*routes)
+	tWeb := test.CreateWebSocketTester(*routes)
 	tWeb.SetInitialMessage(SubscribeMessageDto{
-		Topic: "topic",
+		TopicName: "topic",
 	})
 
 	var initialResponse ResponseMessageDto
