@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         go: [ 'oldstable', 'stable' ]
-    name: Test with Go version: ${{ matrix.go }}
+    name: Test with Go version ${{ matrix.go }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
