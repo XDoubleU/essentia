@@ -9,6 +9,8 @@
 
 **essentia** is a toolkit which contains reusable tools, helpers and such. This allows you to focus on the *essence* of your project. These tools are properly tested so that you can rely on their proper functioning.
 
+I will add some smaller examples here in the near future. For now the larger examples and tests can be used as reference.
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
