@@ -1,4 +1,4 @@
-name: Lint & Test Workflow
+name: lint & test workflow
 
 on:
   push:
