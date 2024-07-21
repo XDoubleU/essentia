@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/test"
-	"github.com/XDoubleU/essentia/pkg/validate"
-	"github.com/XDoubleU/essentia/pkg/wstools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/test"
+	"github.com/xdoubleu/essentia/pkg/validate"
+	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 type TestResponse struct {
@@ -33,6 +33,8 @@ func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	t.Helper()
 
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		1,
+		10,
 		[]string{"http://localhost"},
 	)
 	topic, err := ws.AddTopic(

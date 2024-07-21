@@ -6,8 +6,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/contexttools"
 	"github.com/stretchr/testify/assert"
+	"github.com/xdoubleu/essentia/pkg/contexttools"
 )
 
 const testContextKey = contexttools.ContextKey("test")

@@ -3,10 +3,10 @@ package postgres
 import (
 	"context"
 
-	"github.com/XDoubleU/essentia/pkg/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/xdoubleu/essentia/pkg/database"
 )
 
 // PgxSyncTx uses [database.SyncTx] to make sure

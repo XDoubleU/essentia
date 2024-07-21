@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/XDoubleU/essentia/internal/shared"
-	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/tools"
+	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	"github.com/xdoubleu/essentia/pkg/tools"
 )
 
 var (
@@ -41,14 +41,14 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	}
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
-		shared.SendErrorToSentry(r.Context(), err)
+		sentrytools.SendErrorToSentry(r.Context(), err)
 		contexttools.Logger(r.Context()).Print(err)
 	}
 }
 
 // ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	shared.SendErrorToSentry(r.Context(), err)
+	sentrytools.SendErrorToSentry(r.Context(), err)
 
 	message := MessageInternalServerError
 	if contexttools.ShowErrors(r.Context()) {

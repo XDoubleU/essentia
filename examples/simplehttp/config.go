@@ -1,6 +1,6 @@
 package main
 
-import "github.com/XDoubleU/essentia/pkg/config"
+import "github.com/xdoubleu/essentia/pkg/config"
 
 type Config struct {
 	Env            string
@@ -8,15 +8,10 @@ type Config struct {
 	AllowedOrigins []string
 }
 
-const (
-	ProdEnv = "production"
-	TestEnv = "test"
-)
-
 func NewConfig() Config {
 	var cfg Config
 
-	cfg.Env = config.EnvStr("ENV", ProdEnv)
+	cfg.Env = config.EnvStr("ENV", config.ProdEnv)
 	cfg.Port = config.EnvInt("PORT", 8000)
 	cfg.AllowedOrigins = config.EnvStrArray(
 		"ALLOWED_ORIGINS",

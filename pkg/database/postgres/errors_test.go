@@ -3,12 +3,12 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/database/postgres"
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
+	"github.com/xdoubleu/essentia/pkg/database/postgres"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 )
 
 func newPgError(code string) *pgconn.PgError {

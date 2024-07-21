@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/parse"
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/parse"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func matrixTestHandler(w http.ResponseWriter, r *http.Request) {

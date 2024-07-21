@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/contexttools"
 	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/xdoubleu/essentia/internal/shared"
+	"github.com/xdoubleu/essentia/pkg/contexttools"
 )
 
 // Logger is middleware used to add a logger to
 // the context and log every request and their duration.
-func Logger(logger *log.Logger) middleware {
+func Logger(logger *log.Logger) shared.Middleware {
 	return func(next http.Handler) http.Handler {
 		return loggerHandler(logger, next)
 	}

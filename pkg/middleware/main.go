@@ -1,19 +1,16 @@
 // Package middleware provides configureable middleware and predefined lists,
-// such as [Minimal] and [Default].
+// such as [Minimal], [Default] and [DefaultWithSentry].
 package middleware
 
 import (
 	"log"
-	"net/http"
 	"time"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
 	"github.com/getsentry/sentry-go"
 	"github.com/goddtriffin/helmet"
 	"github.com/justinas/alice"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
 )
-
-type middleware = func(next http.Handler) http.Handler
 
 // Minimal provides a predefined chain of useful middleware.
 // Being:
@@ -32,29 +29,44 @@ func Minimal(logger *log.Logger) []alice.Constructor {
 //   - [helmet.Helmet]
 //   - [CORS]
 //   - [RateLimit]
-//   - [Sentry]
 func Default(
 	logger *log.Logger,
-	isTestEnv bool,
 	allowedOrigins []string,
+) ([]alice.Constructor, error) {
+	return defaultBase(logger, allowedOrigins, nil, nil)
+}
+
+// DefaultWithSentry provides a predefined chain of useful middleware.
+// Being:
+//   - All middleware from [Default]
+//   - [sentrytools.Middleware]
+func DefaultWithSentry(
+	logger *log.Logger,
+	allowedOrigins []string,
+	env string,
+	sentryClientOptions sentry.ClientOptions,
+) ([]alice.Constructor, error) {
+	return defaultBase(logger, allowedOrigins, &env, &sentryClientOptions)
+}
+
+func defaultBase(
+	logger *log.Logger,
+	allowedOrigins []string,
+	env *string,
 	sentryClientOptions *sentry.ClientOptions,
 ) ([]alice.Constructor, error) {
-	if isTestEnv {
-		sentryClientOptions = mocks.MockedSentryClientOptions()
-	}
-
-	useSentry := sentryClientOptions != nil
+	useSentry := env != nil && sentryClientOptions != nil
 
 	helmet := helmet.Default()
 
 	handlers := Minimal(logger)
 	handlers = append(handlers, helmet.Secure)
-	handlers = append(handlers, CORS(allowedOrigins, useSentry))
+	handlers = append(handlers, CORS(allowedOrigins, true))
 	//nolint:mnd//no magic number
 	handlers = append(handlers, RateLimit(10, 30, time.Minute, 3*time.Minute))
 
 	if useSentry {
-		sentryMiddleware, err := Sentry(isTestEnv, *sentryClientOptions)
+		sentryMiddleware, err := sentrytools.Middleware(*env, *sentryClientOptions)
 		if err != nil {
 			return nil, err
 		}

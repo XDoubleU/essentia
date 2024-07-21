@@ -6,13 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/middleware"
-	"github.com/XDoubleU/essentia/pkg/test"
-	"github.com/XDoubleU/essentia/pkg/wstools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/config"
+	"github.com/xdoubleu/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	"github.com/xdoubleu/essentia/pkg/test"
+	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
@@ -21,9 +21,9 @@ func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
 	res := httptest.NewRecorder()
 
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
+	sentryMiddleware, err := sentrytools.Middleware(
+		config.TestEnv,
+		sentrytools.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 
@@ -36,14 +36,16 @@ func setupWS(t *testing.T) http.Handler {
 	t.Helper()
 
 	wsHandler := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		1,
+		10,
 		[]string{"http://localhost"},
 	)
 	_, err := wsHandler.AddTopic("topic", nil)
 	require.Nil(t, err)
 
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
+	sentryMiddleware, err := sentrytools.Middleware(
+		config.TestEnv,
+		sentrytools.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 

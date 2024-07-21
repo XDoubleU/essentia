@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/test"
-	"github.com/XDoubleU/essentia/pkg/validate"
-	"github.com/XDoubleU/essentia/pkg/wstools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/test"
+	"github.com/xdoubleu/essentia/pkg/validate"
+	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 type TestResponse struct {
@@ -32,6 +32,8 @@ func setup(t *testing.T) http.Handler {
 	t.Helper()
 
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		1,
+		10,
 		[]string{"http://localhost"},
 	)
 
@@ -44,7 +46,7 @@ func setup(t *testing.T) http.Handler {
 	return ws.Handler()
 }
 
-func TestWebSocketExistingSubject(t *testing.T) {
+func TestWebSocketExistingTopic(t *testing.T) {
 	wsHandler := setup(t)
 
 	tWeb := test.CreateWebSocketTester(wsHandler)
@@ -57,7 +59,7 @@ func TestWebSocketExistingSubject(t *testing.T) {
 	assert.True(t, initialResponse.Ok)
 }
 
-func TestWebSocketUnknownSubject(t *testing.T) {
+func TestWebSocketUnknownTopic(t *testing.T) {
 	wsHandler := setup(t)
 
 	tWeb := test.CreateWebSocketTester(wsHandler)
@@ -72,7 +74,7 @@ func TestWebSocketUnknownSubject(t *testing.T) {
 }
 
 func TestWebSocketExistingHandler(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg]([]string{"localhost"})
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10, []string{"localhost"})
 	topic, err := ws.AddTopic(
 		"exists",
 		nil,

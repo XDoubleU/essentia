@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 )
 
 // A RequestTester is used to test a certain HTTP request.

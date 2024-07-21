@@ -4,10 +4,12 @@ import (
 	"log"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/xdoubleu/essentia/internal/shared"
 )
 
 // Recover is middleware used to recover from a panic.
-func Recover(logger *log.Logger) middleware {
+func Recover(logger *log.Logger) shared.Middleware {
 	return func(next http.Handler) http.Handler {
 		return recoverHandler(logger, next)
 	}

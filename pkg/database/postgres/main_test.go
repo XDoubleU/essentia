@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/database"
-	"github.com/XDoubleU/essentia/pkg/database/postgres"
 	"github.com/getsentry/sentry-go"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/internal/mocks"
+	"github.com/xdoubleu/essentia/pkg/database"
+	"github.com/xdoubleu/essentia/pkg/database/postgres"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
 )
 
 type pair struct {
@@ -88,7 +89,7 @@ func OperationsInTx(ctx context.Context, t *testing.T, tx postgres.DB) {
 	p := newPair()
 
 	// wrap with span to get some additional coverage
-	sentry.SetHubOnContext(ctx, mocks.MockedSentryHub())
+	sentry.SetHubOnContext(ctx, sentrytools.MockedSentryHub())
 	row := database.WrapWithSpanNoError(
 		ctx,
 		"test-postgresql",
