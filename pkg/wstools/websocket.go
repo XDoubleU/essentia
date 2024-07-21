@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/XDoubleU/essentia/pkg/validate"
+	"github.com/xdoubleu/essentia/pkg/validate"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )
@@ -20,12 +20,16 @@ type SubscribeMessageDto interface {
 // A WebSocketHandler handles incoming requests to a
 // websocket and makes sure subscriptions are made to the right topics.
 type WebSocketHandler[T SubscribeMessageDto] struct {
-	allowedOrigins []string
-	topicMap       map[string]*Topic
+	maxTopicWorkers        int
+	topicChannelBufferSize int
+	allowedOrigins         []string
+	topicMap               map[string]*Topic
 }
 
 // CreateWebSocketHandler creates a new [WebSocketHandler].
 func CreateWebSocketHandler[T SubscribeMessageDto](
+	maxTopicWorkers int,
+	topicChannelBufferSize int,
 	allowedOrigins []string,
 ) WebSocketHandler[T] {
 	for i, url := range allowedOrigins {
@@ -35,8 +39,10 @@ func CreateWebSocketHandler[T SubscribeMessageDto](
 	}
 
 	return WebSocketHandler[T]{
-		allowedOrigins: allowedOrigins,
-		topicMap:       make(map[string]*Topic),
+		maxTopicWorkers:        maxTopicWorkers,
+		topicChannelBufferSize: topicChannelBufferSize,
+		allowedOrigins:         allowedOrigins,
+		topicMap:               make(map[string]*Topic),
 	}
 }
 
@@ -51,7 +57,7 @@ func (h *WebSocketHandler[T]) AddTopic(
 		return nil, fmt.Errorf("topic '%s' has already been added", topicName)
 	}
 
-	topic := NewTopic(onSubscribeMessage)
+	topic := NewTopic(h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeMessage)
 	h.topicMap[topicName] = topic
 
 	return topic, nil

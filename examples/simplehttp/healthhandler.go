@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 )
 
 func (app *application) healthRoutes(mux *http.ServeMux) {

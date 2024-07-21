@@ -3,10 +3,10 @@ package postgres
 import (
 	"errors"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 )
 
 // PgxErrorToHTTPError converts a database error

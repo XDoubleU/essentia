@@ -3,8 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/middleware"
+	"github.com/getsentry/sentry-go"
 	"github.com/justinas/alice"
+	"github.com/xdoubleu/essentia/pkg/middleware"
 )
 
 func (app application) Routes() (*http.Handler, error) {
@@ -12,11 +13,11 @@ func (app application) Routes() (*http.Handler, error) {
 
 	app.healthRoutes(mux)
 
-	middleware, err := middleware.Default(
+	middleware, err := middleware.DefaultWithSentry(
 		app.logger,
-		app.config.Env == TestEnv,
 		app.config.AllowedOrigins,
-		nil,
+		app.config.Env,
+		sentry.ClientOptions{},
 	)
 	if err != nil {
 		return nil, err

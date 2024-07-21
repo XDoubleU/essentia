@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+const (
+	// ProdEnv can be used as value when reading out the type of environment.
+	ProdEnv string = "production"
+	// TestEnv can be used as value when reading out the type of environment.
+	TestEnv string = "test"
+	// DevEnv can be used as value when reading out the type of environment.
+	DevEnv string = "development"
+)
+
 const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
 // EnvStr extracts a string environment variable.

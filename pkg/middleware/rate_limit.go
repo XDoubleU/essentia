@@ -6,7 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/internal/shared"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 	"golang.org/x/time/rate"
 )
 
@@ -21,7 +22,7 @@ func RateLimit(
 	bucketSize int,
 	cleanupTimer time.Duration,
 	removeAfter time.Duration,
-) middleware {
+) shared.Middleware {
 	var (
 		mu      sync.RWMutex
 		clients = make(map[string]*client)

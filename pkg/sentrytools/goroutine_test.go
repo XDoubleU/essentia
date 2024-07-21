@@ -1,4 +1,4 @@
-package goroutine_test
+package sentrytools_test
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/goroutine"
 	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
 )
 
 func TestSentryErrorHandler(t *testing.T) {
@@ -28,7 +28,7 @@ func TestSentryErrorHandler(t *testing.T) {
 	wg.Add(1)
 
 	go func() {
-		goroutine.SentryErrorHandler(
+		sentrytools.GoRoutineErrorHandler(
 			name,
 			testFunc,
 		)

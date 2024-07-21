@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/httptools"
 )
 
 type application struct {

@@ -8,12 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/middleware"
-	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/internal/mocks"
+	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/middleware"
 )
 
 func testCORSHeaders(
@@ -188,23 +186,4 @@ func TestRecover(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, "close", res.Header()["Connection"][0])
 	assert.Contains(t, mockedLogger.CapturedLogs(), "PANIC")
-}
-
-func TestSentry(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
-	)
-	require.Nil(t, err)
-
-	testMiddleware(
-		t,
-		sentryMiddleware,
-		req,
-		func(_ http.ResponseWriter, r *http.Request) {
-			assert.NotNil(t, sentry.GetHubFromContext(r.Context()))
-		},
-	)
 }

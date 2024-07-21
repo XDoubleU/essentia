@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/XDoubleU/essentia/pkg/validate"
-	"github.com/XDoubleU/essentia/pkg/wstools"
+	"github.com/xdoubleu/essentia/pkg/validate"
+	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 type SubscribeMessageDto struct {
@@ -33,6 +33,8 @@ func (app *application) websocketRoutes(mux *http.ServeMux) {
 func (app *application) getWebSocketHandler() http.HandlerFunc {
 
 	wsHandler := wstools.CreateWebSocketHandler[SubscribeMessageDto](
+		1,
+		10,
 		app.config.AllowedOrigins,
 	)
 	wsHandler.AddTopic(

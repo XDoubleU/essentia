@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"github.com/rs/cors"
+	"github.com/xdoubleu/essentia/internal/shared"
 )
 
 // CORS is middleware used to apply CORS settings.
-func CORS(allowedOrigins []string, useSentry bool) middleware {
+func CORS(allowedOrigins []string, useSentry bool) shared.Middleware {
 	allowedHeaders := []string{"content-type"}
 	if useSentry {
 		allowedHeaders = append(allowedHeaders, "baggage", "sentry-trace")

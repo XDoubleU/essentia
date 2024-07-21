@@ -6,12 +6,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/middleware"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/config"
+	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
 )
 
 func testError(t *testing.T, handler http.HandlerFunc) (int, httptools.ErrorDto) {
@@ -30,9 +30,9 @@ func testErrorWithReq(
 
 	res := httptest.NewRecorder()
 
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.MockedSentryClientOptions(),
+	sentryMiddleware, err := sentrytools.Middleware(
+		config.TestEnv,
+		sentrytools.MockedSentryClientOptions(),
 	)
 	require.Nil(t, err)
 
