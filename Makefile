@@ -28,4 +28,4 @@ test/cov: test/cov/report
 	make test/cov/open
 
 test/cov/open:
-	CMD /C start chrome /new-tab %CD%/coverage.html
+	open ./coverage.html
