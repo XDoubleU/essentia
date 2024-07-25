@@ -24,7 +24,7 @@ func recoverHandler(logger *slog.Logger, next http.Handler) http.Handler {
 				logger.ErrorContext(
 					r.Context(),
 					"PANIC",
-					slog.String("error", err.(string)),
+					slog.Any("error", err),
 					slog.String("stacktrace", string(debug.Stack())),
 				)
 			}

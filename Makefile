@@ -20,6 +20,9 @@ test:
 test/v:
 	go test ./... -v 
 
+test/race:
+	go test ./... -race
+
 test/cov/report:
 	go test ./... -coverpkg=./... -covermode=set -coverprofile=coverage.out
 

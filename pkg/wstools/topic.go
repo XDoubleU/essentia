@@ -8,14 +8,14 @@ import (
 // Topic is used to efficiently send messages
 // to [Subscriber]s in a WebSocket.
 type Topic struct {
-	pool               *wsinternal.TopicWorkerPool
+	pool               *wsinternal.WorkerPool
 	onSubscribeMessage any
 }
 
 // NewTopic creates a new [Topic].
 func NewTopic(maxWorkers int, channelBufferSize int, onSubscribMessage any) *Topic {
 	return &Topic{
-		pool: wsinternal.NewTopicWorkerPool(
+		pool: wsinternal.NewWorkerPool(
 			maxWorkers,
 			channelBufferSize,
 		),
