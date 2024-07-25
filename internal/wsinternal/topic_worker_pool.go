@@ -1,10 +1,9 @@
-package wstools
+package wsinternal
 
-import (
-	"context"
-
-	"nhooyr.io/websocket"
-)
+type Subscriber interface {
+	ID() string
+	ExecuteCallback(msg any)
+}
 
 // TopicWorkerPool is used to divide [Subscriber]s between [TopicWorker]s.
 // This prevents one [TopicWorker] of being very busy with sending messages.
@@ -42,27 +41,15 @@ func (pool *TopicWorkerPool) Active() bool {
 }
 
 // AddSubscriber adds a [Subscriber] to the [TopicWorkerPool].
-func (pool *TopicWorkerPool) AddSubscriber(
-	ctx context.Context,
-	topic *Topic,
-	conn *websocket.Conn,
-) Subscriber {
-	sub := Subscriber{
-		ctx:   context.WithoutCancel(ctx),
-		topic: topic,
-		conn:  conn,
-	}
-
+func (pool *TopicWorkerPool) AddSubscriber(sub Subscriber) {
 	pool.subscribers = append(pool.subscribers, sub)
-
-	return sub
 }
 
 // RemoveSubscriber removes a [Subscriber] from the [TopicWorkerPool].
 func (pool *TopicWorkerPool) RemoveSubscriber(sub Subscriber) {
 	var i int
 	for i = range pool.subscribers {
-		if pool.subscribers[i].conn != sub.conn {
+		if pool.subscribers[i].ID() != sub.ID() {
 			continue
 		}
 		break

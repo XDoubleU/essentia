@@ -2,7 +2,7 @@ package mocks
 
 import (
 	"bytes"
-	"log"
+	"log/slog"
 )
 
 type MockedLogger struct {
@@ -15,8 +15,8 @@ func NewMockedLogger() MockedLogger {
 	}
 }
 
-func (l *MockedLogger) Logger() *log.Logger {
-	return log.New(&l.buf, "", log.LstdFlags)
+func (l *MockedLogger) Logger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(&l.buf, nil))
 }
 
 func (l MockedLogger) CapturedLogs() string {

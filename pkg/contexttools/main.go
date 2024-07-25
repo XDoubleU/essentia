@@ -4,8 +4,9 @@ package contexttools
 
 import (
 	"context"
-	"io"
-	"log"
+	"log/slog"
+
+	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
 // ContextKey is the type used for specifying context keys.
@@ -27,16 +28,16 @@ func GetContextValue[T any](ctx context.Context, key ContextKey) *T {
 }
 
 // WithLogger sets the logger on the context.
-func WithLogger(ctx context.Context, logger *log.Logger) context.Context {
+func WithLogger(ctx context.Context, logger *slog.Logger) context.Context {
 	return context.WithValue(ctx, loggerContextKey, logger)
 }
 
-// Logger returns the logger stored in the context or a NullLogger.
-func Logger(ctx context.Context) *log.Logger {
-	logger := GetContextValue[*log.Logger](ctx, loggerContextKey)
+// Logger returns the logger stored in the context or a NopLogger.
+func Logger(ctx context.Context) *slog.Logger {
+	logger := GetContextValue[*slog.Logger](ctx, loggerContextKey)
 
 	if logger == nil {
-		return log.New(io.Discard, "", 0)
+		return logging.NewNopLogger()
 	}
 
 	return *logger

@@ -2,19 +2,21 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/xdoubleu/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/pkg/logging"
+	"github.com/xdoubleu/essentia/pkg/sentrytools"
 )
 
 type application struct {
-	logger *log.Logger
+	logger *slog.Logger
 	config Config
 }
 
-func NewApp(logger *log.Logger) application {
+func NewApp(logger *slog.Logger) application {
 	return application{
 		logger: logger,
 		config: NewConfig(),
@@ -22,13 +24,13 @@ func NewApp(logger *log.Logger) application {
 }
 
 func main() {
-	logger := log.Default()
+	logger := slog.New(sentrytools.NewSentryLogHandler())
 
 	app := NewApp(logger)
 
 	routes, err := app.Routes()
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error("failed to setup routes", logging.ErrAttr(err))
 		return
 	}
 
@@ -42,6 +44,6 @@ func main() {
 
 	err = httptools.Serve(logger, srv, app.config.Env)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error("failed to serve server", logging.ErrAttr(err))
 	}
 }

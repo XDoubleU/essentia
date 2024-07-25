@@ -3,7 +3,7 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -16,7 +16,7 @@ import (
 // Being:
 //   - [Logger]
 //   - [Recover]
-func Minimal(logger *log.Logger) []alice.Constructor {
+func Minimal(logger *slog.Logger) []alice.Constructor {
 	return []alice.Constructor{
 		Logger(logger),
 		Recover(logger),
@@ -30,7 +30,7 @@ func Minimal(logger *log.Logger) []alice.Constructor {
 //   - [CORS]
 //   - [RateLimit]
 func Default(
-	logger *log.Logger,
+	logger *slog.Logger,
 	allowedOrigins []string,
 ) ([]alice.Constructor, error) {
 	return defaultBase(logger, allowedOrigins, nil, nil)
@@ -41,7 +41,7 @@ func Default(
 //   - All middleware from [Default]
 //   - [sentrytools.Middleware]
 func DefaultWithSentry(
-	logger *log.Logger,
+	logger *slog.Logger,
 	allowedOrigins []string,
 	env string,
 	sentryClientOptions sentry.ClientOptions,
@@ -50,7 +50,7 @@ func DefaultWithSentry(
 }
 
 func defaultBase(
-	logger *log.Logger,
+	logger *slog.Logger,
 	allowedOrigins []string,
 	env *string,
 	sentryClientOptions *sentry.ClientOptions,

@@ -2,12 +2,12 @@ package contexttools_test
 
 import (
 	"context"
-	"io"
-	"log"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
 const testContextKey = contexttools.ContextKey("test")
@@ -45,7 +45,7 @@ func TestGetContextValueIncorrectType(t *testing.T) {
 func TestSetGetLogger(t *testing.T) {
 	ctx := context.Background()
 
-	logger := log.Default()
+	logger := slog.Default()
 	ctx = contexttools.WithLogger(ctx, logger)
 
 	value := contexttools.Logger(ctx)
@@ -58,5 +58,5 @@ func TestGetNullLogger(t *testing.T) {
 
 	value := contexttools.Logger(ctx)
 
-	assert.Equal(t, io.Discard, value.Writer())
+	assert.Equal(t, logging.NewNopLogger(), value)
 }

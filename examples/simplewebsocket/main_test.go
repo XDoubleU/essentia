@@ -1,18 +1,17 @@
 package main
 
 import (
-	"io"
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xdoubleu/essentia/pkg/config"
+	"github.com/xdoubleu/essentia/pkg/logging"
 	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func TestWebSocket(t *testing.T) {
-	app := NewApp(log.New(io.Discard, "", 0))
+	app := NewApp(logging.NewNopLogger())
 	app.config.Env = config.TestEnv
 
 	routes, err := app.Routes()

@@ -3,7 +3,7 @@ package httptools
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,13 +13,13 @@ import (
 
 // Serve calls [http.Server.ListenAndServe] with some more fluff
 // around it to handle unexpected shutdowns nicely.
-func Serve(logger *log.Logger, srv *http.Server, environment string) error {
+func Serve(logger *slog.Logger, srv *http.Server, environment string) error {
 	go func() {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		s := <-quit
 
-		logger.Printf("shutting down server %s", s.String())
+		logger.Info("shutting down server", slog.String("server", s.String()))
 
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
@@ -31,14 +31,14 @@ func Serve(logger *log.Logger, srv *http.Server, environment string) error {
 		srv.Shutdown(ctx)
 	}()
 
-	logger.Printf("starting %s server on %s", environment, srv.Addr)
+	slog.Info("starting server", slog.String("env", environment), slog.String("addr", srv.Addr))
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
-	logger.Printf("stopped server %s", srv.Addr)
+	slog.Info("stopped server", slog.String("addr", srv.Addr))
 
 	return nil
 }

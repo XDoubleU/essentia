@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/xdoubleu/essentia/pkg/contexttools"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	"github.com/xdoubleu/essentia/pkg/logging"
 	"github.com/xdoubleu/essentia/pkg/tools"
 )
 
@@ -41,14 +41,13 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	}
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
-		sentrytools.SendErrorToSentry(r.Context(), err)
-		contexttools.Logger(r.Context()).Print(err)
+		contexttools.Logger(r.Context()).ErrorContext(r.Context(), "failed to write JSON", logging.ErrAttr(err))
 	}
 }
 
 // ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	sentrytools.SendErrorToSentry(r.Context(), err)
+	contexttools.Logger(r.Context()).ErrorContext(r.Context(), "server error occurred", logging.ErrAttr(err))
 
 	message := MessageInternalServerError
 	if contexttools.ShowErrors(r.Context()) {

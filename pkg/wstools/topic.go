@@ -3,20 +3,21 @@ package wstools
 import (
 	"context"
 
+	"github.com/xdoubleu/essentia/internal/wsinternal"
 	"nhooyr.io/websocket"
 )
 
 // Topic is used to efficiently send messages
 // to [Subscriber]s in a WebSocket.
 type Topic struct {
-	pool               *TopicWorkerPool
+	pool               *wsinternal.TopicWorkerPool
 	onSubscribeMessage any
 }
 
 // NewTopic creates a new [Topic].
 func NewTopic(maxWorkers int, channelBufferSize int, onSubscribMessage any) *Topic {
 	return &Topic{
-		pool:               NewTopicWorkerPool(maxWorkers, channelBufferSize),
+		pool:               wsinternal.NewTopicWorkerPool(maxWorkers, channelBufferSize),
 		onSubscribeMessage: onSubscribMessage,
 	}
 }
@@ -26,10 +27,11 @@ func NewTopic(maxWorkers int, channelBufferSize int, onSubscribMessage any) *Top
 // If no message handling go routine was
 // running this will be started now.
 func (t *Topic) Subscribe(ctx context.Context, conn *websocket.Conn) {
-	sub := t.pool.AddSubscriber(ctx, t, conn)
+	sub := NewSubscriber(ctx, t, conn)
+	t.pool.AddSubscriber(sub)
 
 	if t.onSubscribeMessage != nil {
-		sub.SendMessage(t.onSubscribeMessage)
+		sub.ExecuteCallback(t.onSubscribeMessage)
 	}
 
 	t.pool.Start()

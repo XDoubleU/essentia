@@ -1,4 +1,4 @@
-package wstools
+package wsinternal
 
 import (
 	"math"
@@ -32,7 +32,7 @@ func (worker *TopicWorker) HandleMessages() {
 		msg := <-worker.pool.c
 
 		for _, sub := range worker.pool.subscribers[lowerBound:upperBound] {
-			sub.SendMessage(msg)
+			sub.ExecuteCallback(msg)
 		}
 
 		lowerBound, upperBound = worker.getBounds()
