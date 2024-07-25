@@ -19,6 +19,7 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cookie != nil && cookie.Value == "value" {
+		http.SetCookie(w, &http.Cookie{Name: "cookie2", Value: cookie.Value})
 		httptools.UnauthorizedResponse(w, r, "unauthorized")
 		return
 	}
@@ -90,7 +91,10 @@ func TestMatrixTester(t *testing.T) {
 	tReq3 := baseRequest.Copy()
 	tReq3.AddCookie(&http.Cookie{Name: "cookie", Value: "value"})
 
-	mt.AddTestCase(tReq3, test.NewCaseResponse(http.StatusUnauthorized))
+	tRes3 := test.NewCaseResponse(http.StatusUnauthorized)
+	tRes3.SetExpectedCookies([]*http.Cookie{{Name: "cookie2", Value: "value"}})
+
+	mt.AddTestCase(tReq3, tRes3)
 
 	mt.Do(t)
 }

@@ -21,6 +21,7 @@ func ignoreValue(_ string, err error) error {
 
 func TestAnyToString(t *testing.T) {
 	assert.Equal(t, "string", ignoreError(tools.AnyToString("string")))
+	assert.Equal(t, "1", ignoreError(tools.AnyToString(1)))
 	assert.Equal(t, "1", ignoreError(tools.AnyToString(int64(1))))
 	assert.Error(
 		t,

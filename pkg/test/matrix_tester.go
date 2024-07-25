@@ -88,7 +88,15 @@ func (mt MatrixTester) Do(t *testing.T) {
 		assert.Equal(t, tRes.statusCode, rs.StatusCode)
 
 		if tRes.cookies != nil {
-			assert.Equal(t, tRes.cookies, rs.Cookies())
+			for _, cookie := range tRes.cookies {
+				found := false
+
+				for _, acCookie := range rs.Cookies() {
+					found = cookie.String() == acCookie.String()
+				}
+
+				assert.True(t, found)
+			}
 		}
 
 		if rsData != nil {
