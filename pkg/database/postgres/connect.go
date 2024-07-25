@@ -58,7 +58,11 @@ func Connect(
 			break
 		}
 
-		logger.Warn("can't connect to database", logging.ErrAttr(err), slog.String("retry_in", sleepBeforeRetry.String()))
+		logger.Warn(
+			"can't connect to database",
+			logging.ErrAttr(err),
+			slog.String("retry_in", sleepBeforeRetry.String()),
+		)
 		time.Sleep(sleepBeforeRetry)
 	}
 

@@ -17,15 +17,17 @@ type Subscriber struct {
 	conn  *websocket.Conn
 }
 
-func NewSubscriber(ctx context.Context, topic *Topic, conn *websocket.Conn) Subscriber {
+// NewSubscriber returns a new [Subscriber].
+func NewSubscriber(topic *Topic, conn *websocket.Conn) Subscriber {
 	return Subscriber{
 		id:    uuid.NewString(),
-		ctx:   ctx,
+		ctx:   context.Background(),
 		topic: topic,
 		conn:  conn,
 	}
 }
 
+// ID returns the id of a [Subscriber].
 func (sub Subscriber) ID() string {
 	return sub.id
 }

@@ -31,14 +31,18 @@ func Serve(logger *slog.Logger, srv *http.Server, environment string) error {
 		srv.Shutdown(ctx)
 	}()
 
-	slog.Info("starting server", slog.String("env", environment), slog.String("addr", srv.Addr))
+	logger.Info(
+		"starting server",
+		slog.String("env", environment),
+		slog.String("addr", srv.Addr),
+	)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
-	slog.Info("stopped server", slog.String("addr", srv.Addr))
+	logger.Info("stopped server", slog.String("addr", srv.Addr))
 
 	return nil
 }

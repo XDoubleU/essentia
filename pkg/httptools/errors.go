@@ -41,13 +41,15 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	}
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
-		contexttools.Logger(r.Context()).ErrorContext(r.Context(), "failed to write JSON", logging.ErrAttr(err))
+		contexttools.Logger(r.Context()).
+			ErrorContext(r.Context(), "failed to write JSON", logging.ErrAttr(err))
 	}
 }
 
 // ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	contexttools.Logger(r.Context()).ErrorContext(r.Context(), "server error occurred", logging.ErrAttr(err))
+	contexttools.Logger(r.Context()).
+		ErrorContext(r.Context(), "server error occurred", logging.ErrAttr(err))
 
 	message := MessageInternalServerError
 	if contexttools.ShowErrors(r.Context()) {

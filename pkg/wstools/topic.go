@@ -1,8 +1,6 @@
 package wstools
 
 import (
-	"context"
-
 	"github.com/xdoubleu/essentia/internal/wsinternal"
 	"nhooyr.io/websocket"
 )
@@ -17,7 +15,10 @@ type Topic struct {
 // NewTopic creates a new [Topic].
 func NewTopic(maxWorkers int, channelBufferSize int, onSubscribMessage any) *Topic {
 	return &Topic{
-		pool:               wsinternal.NewTopicWorkerPool(maxWorkers, channelBufferSize),
+		pool: wsinternal.NewTopicWorkerPool(
+			maxWorkers,
+			channelBufferSize,
+		),
 		onSubscribeMessage: onSubscribMessage,
 	}
 }
@@ -26,8 +27,8 @@ func NewTopic(maxWorkers int, channelBufferSize int, onSubscribMessage any) *Top
 // If configured a message will be sent on subscribing.
 // If no message handling go routine was
 // running this will be started now.
-func (t *Topic) Subscribe(ctx context.Context, conn *websocket.Conn) {
-	sub := NewSubscriber(ctx, t, conn)
+func (t *Topic) Subscribe(conn *websocket.Conn) {
+	sub := NewSubscriber(t, conn)
 	t.pool.AddSubscriber(sub)
 
 	if t.onSubscribeMessage != nil {

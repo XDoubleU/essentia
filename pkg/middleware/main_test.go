@@ -131,12 +131,12 @@ func TestLogger(t *testing.T) {
 		},
 	)
 
-	timeStr := time.Now().Format("2006/01/02")
+	timeStr := time.Now().Format("2006-01-02")
 	assert.Contains(t, mockedLogger.CapturedLogs(), timeStr)
 	assert.Contains(
 		t,
 		mockedLogger.CapturedLogs(),
-		fmt.Sprintf("[%d]", http.StatusOK),
+		fmt.Sprintf("status=%d", http.StatusOK),
 	)
 }
 

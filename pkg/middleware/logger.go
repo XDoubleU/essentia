@@ -27,6 +27,11 @@ func loggerHandler(logger *slog.Logger, next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, r)
 
-		slog.Info("processed request", slog.Int("status", rw.Status()), slog.String("endpoint", r.RequestURI), slog.Duration("duration", time.Since(t)))
+		logger.Info(
+			"processed request",
+			slog.Int("status", rw.Status()),
+			slog.String("endpoint", r.RequestURI),
+			slog.Duration("duration", time.Since(t)),
+		)
 	})
 }

@@ -6,7 +6,6 @@ import (
 	"runtime/debug"
 
 	"github.com/xdoubleu/essentia/internal/shared"
-	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
 // Recover is middleware used to recover from a panic.
@@ -22,7 +21,12 @@ func recoverHandler(logger *slog.Logger, next http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				w.Header().Set("connection", "close")
 				w.WriteHeader(http.StatusInternalServerError)
-				logger.ErrorContext(r.Context(), "PANIC", logging.ErrAttr(err.(error)), slog.String("stacktrace", string(debug.Stack())))
+				logger.ErrorContext(
+					r.Context(),
+					"PANIC",
+					slog.String("error", err.(string)),
+					slog.String("stacktrace", string(debug.Stack())),
+				)
 			}
 		}()
 

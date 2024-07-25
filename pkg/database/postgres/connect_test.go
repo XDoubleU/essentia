@@ -23,5 +23,5 @@ func TestConnectRetries(t *testing.T) {
 	)
 
 	assert.NotNil(t, err)
-	assert.Contains(t, mockedLogger.CapturedLogs(), "retrying in")
+	assert.Contains(t, mockedLogger.CapturedLogs(), "retry_in")
 }

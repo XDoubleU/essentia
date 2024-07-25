@@ -98,6 +98,6 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 			return
 		}
 
-		topic.Subscribe(r.Context(), conn)
+		topic.Subscribe(conn)
 	}
 }

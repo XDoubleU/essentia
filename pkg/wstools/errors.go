@@ -25,14 +25,16 @@ func ErrorResponse(
 	}
 	err := wsjson.Write(ctx, conn, errorDto)
 	if err != nil {
-		contexttools.Logger(ctx).ErrorContext(ctx, "failed to write JSON", logging.ErrAttr(err))
+		contexttools.Logger(ctx).
+			ErrorContext(ctx, "failed to write JSON", logging.ErrAttr(err))
 	}
 }
 
 // ServerErrorResponse is used to handle
 // internal server errors that occured on a WebSocket.
 func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
-	contexttools.Logger(ctx).ErrorContext(ctx, "server error occurred", logging.ErrAttr(err))
+	contexttools.Logger(ctx).
+		ErrorContext(ctx, "server error occurred", logging.ErrAttr(err))
 
 	message := httptools.MessageInternalServerError
 	if contexttools.ShowErrors(ctx) {
@@ -45,7 +47,8 @@ func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
 // UpgradeErrorResponse is used to handle an error that
 // occured during the upgrade towards a WebSocket.
 func UpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	contexttools.Logger(r.Context()).ErrorContext(r.Context(), "WS upgrade error occurred", logging.ErrAttr(err))
+	contexttools.Logger(r.Context()).
+		ErrorContext(r.Context(), "WS upgrade error occurred", logging.ErrAttr(err))
 	w.WriteHeader(http.StatusInternalServerError)
 }
 

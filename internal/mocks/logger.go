@@ -16,7 +16,10 @@ func NewMockedLogger() MockedLogger {
 }
 
 func (l *MockedLogger) Logger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(&l.buf, nil))
+	//nolint:exhaustruct //other fields are optional
+	return slog.New(slog.NewTextHandler(&l.buf, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
 }
 
 func (l MockedLogger) CapturedLogs() string {
