@@ -35,7 +35,7 @@ func TestSetup(t *testing.T) {
 		"postgres://postgres@localhost/postgres",
 		1,
 		"1m",
-		"5",
+		5,
 		15*time.Second,
 		30*time.Second,
 	)

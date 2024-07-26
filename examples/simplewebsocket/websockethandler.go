@@ -19,7 +19,7 @@ func (msg SubscribeMessageDto) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (msg SubscribeMessageDto) GetTopicName() string {
+func (msg SubscribeMessageDto) Topic() string {
 	return msg.TopicName
 }
 

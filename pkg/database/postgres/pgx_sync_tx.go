@@ -52,6 +52,10 @@ func (tx PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.R
 		args...)
 }
 
+func (tx PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
+	return tx.syncTx.Tx.Begin(ctx)
+}
+
 // Rollback is used to rollback a [PgxSyncTx].
 func (tx PgxSyncTx) Rollback(ctx context.Context) error {
 	return tx.syncTx.Rollback(ctx)

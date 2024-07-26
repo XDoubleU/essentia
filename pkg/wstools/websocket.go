@@ -14,7 +14,7 @@ import (
 // used to subscribe to a certain handler of a [WebSocketHandler].
 type SubscribeMessageDto interface {
 	validate.ValidatedType
-	GetTopicName() string
+	Topic() string
 }
 
 // A WebSocketHandler handles incoming requests to a
@@ -87,13 +87,13 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 			return
 		}
 
-		topic, ok := h.topicMap[msg.GetTopicName()]
+		topic, ok := h.topicMap[msg.Topic()]
 		if !ok {
 			ErrorResponse(
 				r.Context(),
 				conn,
 				http.StatusBadRequest,
-				fmt.Sprintf("topic '%s' doesn't exist", msg.GetTopicName()),
+				fmt.Sprintf("topic '%s' doesn't exist", msg.Topic()),
 			)
 			return
 		}

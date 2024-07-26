@@ -24,7 +24,7 @@ func (s TestSubscribeMsg) Validate() *validate.Validator {
 	return validate.New()
 }
 
-func (s TestSubscribeMsg) GetTopicName() string {
+func (s TestSubscribeMsg) Topic() string {
 	return s.TopicName
 }
 

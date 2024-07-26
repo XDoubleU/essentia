@@ -21,4 +21,5 @@ type DB interface {
 		optionsAndArgs ...any,
 	) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, optionsAndArgs ...any) pgx.Row
+	Begin(ctx context.Context) (pgx.Tx, error)
 }

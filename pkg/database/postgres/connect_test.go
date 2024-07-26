@@ -17,7 +17,7 @@ func TestConnectRetries(t *testing.T) {
 		"",
 		1,
 		"1s",
-		"1",
+		1,
 		200*time.Millisecond,
 		time.Second,
 	)
