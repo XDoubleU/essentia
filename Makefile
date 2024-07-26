@@ -24,7 +24,7 @@ test/race:
 	go test ./... -race
 
 test/cov/report:
-	go test ./... -coverpkg=./... -covermode=set -coverprofile=coverage.out
+	go test ./... -coverpkg=./... -covermode=atomic -coverprofile=coverage.out -race
 
 test/cov: test/cov/report
 	go tool cover -html=coverage.out -o=coverage.html
