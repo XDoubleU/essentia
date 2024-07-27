@@ -9,7 +9,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/goddtriffin/helmet"
 	"github.com/justinas/alice"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 // Minimal provides a predefined chain of useful middleware.

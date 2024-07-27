@@ -1,4 +1,4 @@
-package wstools
+package ws
 
 import (
 	"fmt"
@@ -47,7 +47,8 @@ func CreateWebSocketHandler[T SubscribeMessageDto](
 }
 
 // AddTopic adds a topic to which can be subscribed using a [SubscribeMessageDto].
-// The onSubscribeCallback is called for each new subscriber to fetch data to send them back.
+// The onSubscribeCallback is called for each
+// new subscriber to fetch data to send them back.
 func (h *WebSocketHandler[T]) AddTopic(
 	topicName string,
 	onSubscribeCallback OnSubscribeCallback,
@@ -57,7 +58,12 @@ func (h *WebSocketHandler[T]) AddTopic(
 		return nil, fmt.Errorf("topic '%s' has already been added", topicName)
 	}
 
-	topic := NewTopic(topicName, h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeCallback)
+	topic := NewTopic(
+		topicName,
+		h.maxTopicWorkers,
+		h.topicChannelBufferSize,
+		onSubscribeCallback,
+	)
 	h.topicMap[topicName] = topic
 
 	return topic, nil

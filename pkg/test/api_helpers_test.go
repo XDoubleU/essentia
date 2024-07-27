@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"github.com/xdoubleu/essentia/pkg/parse"
 	"github.com/xdoubleu/essentia/pkg/test"
 )

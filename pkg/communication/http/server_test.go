@@ -1,4 +1,4 @@
-package httptools_test
+package http_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xdoubleu/essentia/internal/mocks"
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
 func TestServerFunc(t *testing.T) {

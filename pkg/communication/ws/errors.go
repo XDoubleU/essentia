@@ -1,11 +1,11 @@
-package wstools
+package ws
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/xdoubleu/essentia/pkg/contexttools"
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
@@ -18,7 +18,7 @@ func ErrorResponse(
 	status int,
 	message any,
 ) {
-	errorDto := httptools.NewErrorDto(status, message)
+	errorDto := errortools.NewErrorDto(status, message)
 	err := wsjson.Write(ctx, conn, errorDto)
 	if err != nil {
 		contexttools.Logger(ctx).
@@ -32,7 +32,7 @@ func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
 	contexttools.Logger(ctx).
 		ErrorContext(ctx, "server error occurred", logging.ErrAttr(err))
 
-	message := httptools.MessageInternalServerError
+	message := errortools.MessageInternalServerError
 	if contexttools.ShowErrors(ctx) {
 		message = err.Error()
 	}

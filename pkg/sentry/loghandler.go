@@ -1,4 +1,4 @@
-package sentrytools
+package sentry
 
 import (
 	"context"
@@ -8,44 +8,44 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-// SentryLogHandler is used for capturing logs and sending these to Sentry.
-type SentryLogHandler struct {
+// LogHandler is used for capturing logs and sending these to Sentry.
+type LogHandler struct {
 	attrs  []slog.Attr
 	groups []string
 }
 
-// NewSentryLogHandler returns a new [SentryLogHandler].
-func NewSentryLogHandler() slog.Handler {
-	return &SentryLogHandler{
+// NewLogHandler returns a new [SentryLogHandler].
+func NewLogHandler() slog.Handler {
+	return &LogHandler{
 		attrs:  []slog.Attr{},
 		groups: []string{},
 	}
 }
 
 // Enabled checks if logs are enabled in
-// a [SentryLogHandler] for a certain [slog.Level].
-func (l *SentryLogHandler) Enabled(_ context.Context, level slog.Level) bool {
+// a [LogHandler] for a certain [slog.Level].
+func (l *LogHandler) Enabled(_ context.Context, level slog.Level) bool {
 	return level >= slog.LevelError
 }
 
 // WithAttrs adds [[]slog.Attr] to a [SentryLogHandler].
-func (l *SentryLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &SentryLogHandler{
+func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &LogHandler{
 		attrs:  append(l.attrs, attrs...),
 		groups: l.groups,
 	}
 }
 
 // WithGroup adds a group to a [SentryLogHandler].
-func (l *SentryLogHandler) WithGroup(name string) slog.Handler {
-	return &SentryLogHandler{
+func (l *LogHandler) WithGroup(name string) slog.Handler {
+	return &LogHandler{
 		attrs:  l.attrs,
 		groups: append(l.groups, name),
 	}
 }
 
 // Handle handles a [slog.Record] by a [SentryLogHandler].
-func (l *SentryLogHandler) Handle(ctx context.Context, record slog.Record) error {
+func (l *LogHandler) Handle(ctx context.Context, record slog.Record) error {
 	sendErrorToSentry(ctx, errors.New(record.Message))
 	return nil
 }

@@ -30,7 +30,12 @@ func Connect(
 	sleepBeforeRetry time.Duration,
 	maxRetryDuration time.Duration,
 ) (*pgxpool.Pool, error) {
-	connString, err := setupConnString(dsn, maxConns, maxIdleTime, strconv.Itoa(connectTimeout))
+	connString, err := setupConnString(
+		dsn,
+		maxConns,
+		maxIdleTime,
+		strconv.Itoa(connectTimeout),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package httptools_test
+package http_test
 
 import (
 	"errors"
@@ -8,13 +8,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"github.com/xdoubleu/essentia/pkg/config"
 	"github.com/xdoubleu/essentia/pkg/contexttools"
-	"github.com/xdoubleu/essentia/pkg/httptools"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
-func testError(t *testing.T, handler http.HandlerFunc) (int, httptools.ErrorDto) {
+func testError(t *testing.T, handler http.HandlerFunc) (int, errortools.ErrorDto) {
 	t.Helper()
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
@@ -25,7 +26,7 @@ func testErrorWithReq(
 	t *testing.T,
 	handler http.HandlerFunc,
 	req *http.Request,
-) (int, httptools.ErrorDto) {
+) (int, errortools.ErrorDto) {
 	t.Helper()
 
 	res := httptest.NewRecorder()
@@ -38,7 +39,7 @@ func testErrorWithReq(
 
 	sentryMiddleware(handler).ServeHTTP(res, req)
 
-	var errorDto httptools.ErrorDto
+	var errorDto errortools.ErrorDto
 	err = httptools.ReadJSON(res.Result().Body, &errorDto)
 	require.Nil(t, err)
 
@@ -53,7 +54,7 @@ func TestServerErrorResponseObfuscated(t *testing.T) {
 	statusCode, errorDto := testError(t, handler)
 
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
-	assert.Equal(t, httptools.MessageInternalServerError, errorDto.Message)
+	assert.Equal(t, errortools.MessageInternalServerError, errorDto.Message)
 }
 
 func TestServerErrorResponseShown(t *testing.T) {
@@ -89,7 +90,7 @@ func TestRateLimitExceededResponse(t *testing.T) {
 	statusCode, errorDto := testError(t, handler)
 
 	assert.Equal(t, http.StatusTooManyRequests, statusCode)
-	assert.Equal(t, httptools.MessageTooManyRequests, errorDto.Message)
+	assert.Equal(t, errortools.MessageTooManyRequests, errorDto.Message)
 }
 
 func TestUnauthorizedResponse(t *testing.T) {
@@ -111,7 +112,7 @@ func TestForbiddenResponse(t *testing.T) {
 	statusCode, errorDto := testError(t, handler)
 
 	assert.Equal(t, http.StatusForbidden, statusCode)
-	assert.Equal(t, httptools.MessageForbidden, errorDto.Message)
+	assert.Equal(t, errortools.MessageForbidden, errorDto.Message)
 }
 
 func TestConflictResponse(t *testing.T) {
@@ -119,7 +120,7 @@ func TestConflictResponse(t *testing.T) {
 		httptools.ConflictResponse(
 			w,
 			r,
-			httptools.ErrResourceUniqueValue,
+			errortools.ErrResourceUniqueValue,
 			"resource",
 			"value",
 			"field",
@@ -139,7 +140,7 @@ func TestNotFoundResponse(t *testing.T) {
 		httptools.NotFoundResponse(
 			w,
 			r,
-			httptools.ErrResourceNotFound,
+			errortools.ErrResourceNotFound,
 			"resource",
 			"value",
 			"field",

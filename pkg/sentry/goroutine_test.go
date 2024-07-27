@@ -1,4 +1,4 @@
-package sentrytools_test
+package sentry_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 func TestSentryErrorHandler(t *testing.T) {

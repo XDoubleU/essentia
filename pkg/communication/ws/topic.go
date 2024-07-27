@@ -1,10 +1,12 @@
-package wstools
+package ws
 
 import (
 	"github.com/xdoubleu/essentia/internal/wsinternal"
 	"nhooyr.io/websocket"
 )
 
+// OnSubscribeCallback is called to fetch data that
+// should be returned when a new subscriber is added to a topic.
 type OnSubscribeCallback = func(topic *Topic) any
 
 // Topic is used to efficiently send messages
@@ -16,7 +18,12 @@ type Topic struct {
 }
 
 // NewTopic creates a new [Topic].
-func NewTopic(name string, maxWorkers int, channelBufferSize int, onSubscribeCallback OnSubscribeCallback) *Topic {
+func NewTopic(
+	name string,
+	maxWorkers int,
+	channelBufferSize int,
+	onSubscribeCallback OnSubscribeCallback,
+) *Topic {
 	return &Topic{
 		Name: name,
 		pool: wsinternal.NewWorkerPool(

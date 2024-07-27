@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"github.com/xdoubleu/essentia/pkg/logging"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 type application struct {
@@ -24,7 +24,7 @@ func NewApp(logger *slog.Logger) application {
 }
 
 func main() {
-	logger := slog.New(sentrytools.NewSentryLogHandler())
+	logger := slog.New(sentrytools.NewLogHandler())
 	app := NewApp(logger)
 
 	srv := &http.Server{

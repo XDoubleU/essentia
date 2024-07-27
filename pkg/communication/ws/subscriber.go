@@ -1,4 +1,4 @@
-package wstools
+package ws
 
 import (
 	"context"

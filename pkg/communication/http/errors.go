@@ -1,4 +1,4 @@
-package httptools
+package http
 
 import (
 	"errors"
@@ -6,43 +6,15 @@ import (
 	"net/http"
 
 	"github.com/xdoubleu/essentia/pkg/contexttools"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
 	"github.com/xdoubleu/essentia/pkg/tools"
 )
 
-var (
-	// ErrResourceNotFound is an error with value "resource not found".
-	ErrResourceNotFound = errors.New("resource not found")
-	// ErrResourceUniqueValue is an error with value "resource unique value already used".
-	ErrResourceUniqueValue = errors.New("resource unique value already used")
-)
-
-//nolint:lll // can't make these lines shorter
-const (
-	MessageInternalServerError = "the server encountered a problem and could not process your request"
-	MessageTooManyRequests     = "rate limit exceeded"
-	MessageForbidden           = "user has no access to this resource"
-)
-
-// ErrorDto is used to return the error back to the client.
-type ErrorDto struct {
-	Status  int    `json:"status"`
-	Error   string `json:"error"`
-	Message any    `json:"message"`
-} //	@name	ErrorDto
-
-func NewErrorDto(status int, message any) ErrorDto {
-	return ErrorDto{
-		Status:  status,
-		Error:   http.StatusText(status),
-		Message: message,
-	}
-}
-
 // ErrorResponse is used to handle any kind of error.
 func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	status int, message any) {
-	errorDto := NewErrorDto(status, message)
+	errorDto := errortools.NewErrorDto(status, message)
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
 		contexttools.Logger(r.Context()).
@@ -55,7 +27,7 @@ func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	contexttools.Logger(r.Context()).
 		ErrorContext(r.Context(), "server error occurred", logging.ErrAttr(err))
 
-	message := MessageInternalServerError
+	message := errortools.MessageInternalServerError
 	if contexttools.ShowErrors(r.Context()) {
 		message = err.Error()
 	}
@@ -72,7 +44,7 @@ func BadRequestResponse(w http.ResponseWriter,
 // RateLimitExceededResponse is used to handle an error when the rate limit is exceeded.
 func RateLimitExceededResponse(w http.ResponseWriter,
 	r *http.Request) {
-	ErrorResponse(w, r, http.StatusTooManyRequests, MessageTooManyRequests)
+	ErrorResponse(w, r, http.StatusTooManyRequests, errortools.MessageTooManyRequests)
 }
 
 // UnauthorizedResponse is used to handle an error when a user
@@ -85,7 +57,7 @@ func UnauthorizedResponse(w http.ResponseWriter,
 // ForbiddenResponse is used to handle an error when a user
 // isn't authorized to access a certain resource.
 func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
-	ErrorResponse(w, r, http.StatusForbidden, MessageForbidden)
+	ErrorResponse(w, r, http.StatusForbidden, errortools.MessageForbidden)
 }
 
 // ConflictResponse is used to handle an error when a resource already exists.
@@ -103,7 +75,7 @@ func ConflictResponse(
 		return
 	}
 
-	if err == nil || errors.Is(err, ErrResourceUniqueValue) {
+	if err == nil || errors.Is(err, errortools.ErrResourceUniqueValue) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,
@@ -133,7 +105,7 @@ func NotFoundResponse(
 		return
 	}
 
-	if err == nil || errors.Is(err, ErrResourceNotFound) {
+	if err == nil || errors.Is(err, errortools.ErrResourceNotFound) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' doesn't exist",
 			resourceName,

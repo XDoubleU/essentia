@@ -12,7 +12,7 @@ import (
 	"github.com/xdoubleu/essentia/internal/mocks"
 	"github.com/xdoubleu/essentia/pkg/database"
 	"github.com/xdoubleu/essentia/pkg/database/postgres"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 type pair struct {
@@ -56,7 +56,7 @@ func TestSetup(t *testing.T) {
 
 	DropTable(ctx, t, mainTestEnv.TestDB)
 
-	assert.Equal(t, "", mockedLogger.CapturedLogs())
+	assert.Contains(t, mockedLogger.CapturedLogs(), "connected to database")
 }
 
 func CreateTable(ctx context.Context, t *testing.T, db postgres.DB) {

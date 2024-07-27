@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/parse"
 	"github.com/xdoubleu/essentia/pkg/test"
 )
@@ -71,7 +72,12 @@ func TestMatrixTester(t *testing.T) {
 	})
 
 	tRes1 := test.NewCaseResponse(http.StatusBadRequest)
-	tRes1.SetExpectedBody(httptools.NewErrorDto(http.StatusBadRequest, map[string]any{"message": "test"}))
+	tRes1.SetExpectedBody(
+		errortools.NewErrorDto(
+			http.StatusBadRequest,
+			map[string]any{"message": "test"},
+		),
+	)
 
 	mt.AddTestCase(tReq1, tRes1)
 

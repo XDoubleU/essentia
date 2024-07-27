@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/xdoubleu/essentia/internal/shared"
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"golang.org/x/time/rate"
 )
 

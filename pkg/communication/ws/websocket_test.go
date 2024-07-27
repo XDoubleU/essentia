@@ -1,4 +1,4 @@
-package wstools_test
+package ws_test
 
 import (
 	"net/http"
@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	wstools "github.com/xdoubleu/essentia/pkg/communication/ws"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/test"
 	"github.com/xdoubleu/essentia/pkg/validate"
-	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 type TestResponse struct {
@@ -65,7 +65,7 @@ func TestWebSocketUnknownTopic(t *testing.T) {
 	tWeb := test.CreateWebSocketTester(wsHandler)
 	tWeb.SetInitialMessage(TestSubscribeMsg{TopicName: "unknown"})
 
-	var initialResponse httptools.ErrorDto
+	var initialResponse errortools.ErrorDto
 	err := tWeb.Do(t, &initialResponse, nil)
 
 	require.Nil(t, err)

@@ -1,4 +1,4 @@
-package sentrytools
+package sentry
 
 import (
 	"context"

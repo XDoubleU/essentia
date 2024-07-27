@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/xdoubleu/essentia/pkg/database/postgres"
-	"github.com/xdoubleu/essentia/pkg/httptools"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
 )
 
 func newPgError(code string) *pgconn.PgError {
@@ -24,8 +24,8 @@ func TestErrResourceNotFound(t *testing.T) {
 		newPgError(pgerrcode.ForeignKeyViolation),
 	)
 
-	assert.ErrorIs(t, err1, httptools.ErrResourceNotFound)
-	assert.ErrorIs(t, err2, httptools.ErrResourceNotFound)
+	assert.ErrorIs(t, err1, errortools.ErrResourceNotFound)
+	assert.ErrorIs(t, err2, errortools.ErrResourceNotFound)
 }
 
 func TestErrResourceUniqueValue(t *testing.T) {
@@ -33,5 +33,5 @@ func TestErrResourceUniqueValue(t *testing.T) {
 		newPgError(pgerrcode.UniqueViolation),
 	)
 
-	assert.ErrorIs(t, err, httptools.ErrResourceUniqueValue)
+	assert.ErrorIs(t, err, errortools.ErrResourceUniqueValue)
 }

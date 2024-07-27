@@ -52,6 +52,7 @@ func (tx PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.R
 		args...)
 }
 
+// Begin is used to begin a [pgx.Tx].
 func (tx PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 	return tx.syncTx.Tx.Begin(ctx)
 }

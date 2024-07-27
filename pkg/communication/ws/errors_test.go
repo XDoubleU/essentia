@@ -1,4 +1,4 @@
-package wstools_test
+package ws_test
 
 import (
 	"errors"
@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	wstools "github.com/xdoubleu/essentia/pkg/communication/ws"
 	"github.com/xdoubleu/essentia/pkg/config"
-	"github.com/xdoubleu/essentia/pkg/httptools"
-	"github.com/xdoubleu/essentia/pkg/sentrytools"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 	"github.com/xdoubleu/essentia/pkg/test"
-	"github.com/xdoubleu/essentia/pkg/wstools"
 )
 
 func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
@@ -68,7 +68,7 @@ func TestErrorResponse(t *testing.T) {
 	tWeb := test.CreateWebSocketTester(handler)
 	tWeb.SetInitialMessage(TestSubscribeMsg{TopicName: "unknown"})
 
-	var errorDto httptools.ErrorDto
+	var errorDto errortools.ErrorDto
 	err := tWeb.Do(t, &errorDto, nil)
 	require.Nil(t, err)
 
