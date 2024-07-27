@@ -39,7 +39,7 @@ func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	)
 	topic, err := ws.AddTopic(
 		"exists",
-		TestResponse{Ok: true, Message: "initial"},
+		func(_ *wstools.Topic) any { return TestResponse{Ok: true, Message: "initial"} },
 	)
 	require.Nil(t, err)
 
@@ -54,7 +54,7 @@ func TestWebSocketTester(t *testing.T) {
 	})
 	tWeb.SetParallelOperation(
 		func(_ *testing.T, _ *httptest.Server) {
-			topic.EnqueueMessage(TestResponse{
+			topic.EnqueueEvent(TestResponse{
 				Ok:      true,
 				Message: "parallel",
 			})

@@ -32,11 +32,12 @@ func (sub Subscriber) ID() string {
 	return sub.id
 }
 
-// ExecuteCallback sends a message to this [Subscriber].
+// OnEventCallback is called when a
+// new event is pushed to [Subscriber].
 // If the connection would be closed,
 // [UnSubscribe] will be called.
-func (sub Subscriber) ExecuteCallback(msg any) {
-	err := wsjson.Write(sub.ctx, sub.conn, msg)
+func (sub Subscriber) OnEventCallback(event any) {
+	err := wsjson.Write(sub.ctx, sub.conn, event)
 	if err == nil {
 		return
 	}

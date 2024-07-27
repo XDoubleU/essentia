@@ -29,7 +29,11 @@ func (sub TestSubscriber) ID() string {
 	return sub.id
 }
 
-func (sub *TestSubscriber) ExecuteCallback(msg any) {
+func (sub *TestSubscriber) OnSubscribeCallback() any {
+	return nil
+}
+
+func (sub *TestSubscriber) OnEventCallback(msg any) {
 	sub.outputMu.Lock()
 	defer sub.outputMu.Unlock()
 
@@ -56,10 +60,10 @@ func TestBasic(t *testing.T) {
 	time.Sleep(sleep)
 	require.True(t, wp.Active())
 
-	msg := "Hello, World!"
-	wp.EnqueueMessage(msg)
+	event := "Hello, World!"
+	wp.EnqueueEvent(event)
 	time.Sleep(sleep)
-	assert.Equal(t, msg, tSub.Output())
+	assert.Equal(t, event, tSub.Output())
 
 	wp.RemoveSubscriber(tSub)
 	time.Sleep(sleep)
@@ -75,10 +79,10 @@ func TestMoreWorkersThanSubs(t *testing.T) {
 	time.Sleep(sleep)
 	require.True(t, wp.Active())
 
-	msg := "Hello, World!"
-	wp.EnqueueMessage(msg)
+	event := "Hello, World!"
+	wp.EnqueueEvent(event)
 	time.Sleep(sleep)
-	assert.Equal(t, msg, tSub.Output())
+	assert.Equal(t, event, tSub.Output())
 
 	wp.RemoveSubscriber(tSub)
 	time.Sleep(sleep)
@@ -97,11 +101,11 @@ func TestAddRemoveSubscriberWhileWorkersActive(t *testing.T) {
 	tSub2 := NewTestSubscriber()
 	wp.AddSubscriber(tSub2)
 
-	msg := "Hello, World!"
-	wp.EnqueueMessage(msg)
+	event := "Hello, World!"
+	wp.EnqueueEvent(event)
 	time.Sleep(sleep)
-	assert.Equal(t, msg, tSub.Output())
-	assert.Equal(t, msg, tSub2.Output())
+	assert.Equal(t, event, tSub.Output())
+	assert.Equal(t, event, tSub2.Output())
 
 	wp.RemoveSubscriber(tSub2)
 	time.Sleep(sleep)
@@ -121,10 +125,10 @@ func work(t *testing.T, wp *wsinternal.WorkerPool, nr int) {
 	time.Sleep(sleep)
 	require.True(t, wp.Active())
 
-	msg := "Hello, World!"
-	wp.EnqueueMessage(msg)
+	event := "Hello, World!"
+	wp.EnqueueEvent(event)
 	time.Sleep(sleep)
-	assert.Equal(t, msg, tSub.Output())
+	assert.Equal(t, event, tSub.Output())
 
 	wp.RemoveSubscriber(tSub)
 	time.Sleep(sleep)

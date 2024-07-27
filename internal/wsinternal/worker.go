@@ -44,7 +44,7 @@ func (worker *Worker) Active() bool {
 	return worker.active
 }
 
-func (worker *Worker) EnqueueMessage(msg any) {
+func (worker *Worker) EnqueueEvent(msg any) {
 	if !worker.Active() {
 		return
 	}
@@ -82,10 +82,16 @@ func (worker *Worker) Start() {
 			break
 		}
 
-		msg := <-worker.c
+		event := <-worker.c
+
+		// stop has been called from pool
+		if event == stopEvent {
+			worker.boundsMu.RUnlock()
+			break
+		}
 
 		// subscribers have been updated, have to update bounds
-		if msg == subscribersUpdatedMsg {
+		if event == subscribersUpdatedEvent {
 			worker.boundsMu.RUnlock()
 			worker.calculateBounds()
 			continue
@@ -101,7 +107,7 @@ func (worker *Worker) Start() {
 		}
 
 		for _, sub := range worker.pool.subscribers[worker.lowerBound:worker.upperBound] {
-			sub.ExecuteCallback(msg)
+			sub.OnEventCallback(event)
 		}
 
 		worker.pool.subscribersMu.RUnlock()

@@ -4,10 +4,11 @@ import "sync"
 
 type Subscriber interface {
 	ID() string
-	ExecuteCallback(msg any)
+	OnEventCallback(event any)
 }
 
-const subscribersUpdatedMsg = "subscribers_updated"
+const subscribersUpdatedEvent = "subscribers_updated"
+const stopEvent = "stop"
 
 // WorkerPool is used to divide [Subscriber]s between [Worker]s.
 // This prevents one [Worker] of being very busy.
@@ -47,7 +48,7 @@ func (pool *WorkerPool) AddSubscriber(sub Subscriber) {
 	defer pool.subscribersMu.Unlock()
 
 	pool.subscribers = append(pool.subscribers, sub)
-	pool.EnqueueMessage(subscribersUpdatedMsg)
+	pool.EnqueueEvent(subscribersUpdatedEvent)
 }
 
 // RemoveSubscriber removes a [Subscriber] from the [WorkerPool].
@@ -67,7 +68,7 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 	pool.subscribers[i] = pool.subscribers[len(pool.subscribers)-1]
 	pool.subscribers = pool.subscribers[:len(pool.subscribers)-1]
 
-	pool.EnqueueMessage(subscribersUpdatedMsg)
+	pool.EnqueueEvent(subscribersUpdatedEvent)
 }
 
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
@@ -77,10 +78,17 @@ func (pool *WorkerPool) Start() {
 	}
 }
 
-// EnqueueMessage puts a message on the [Worker] channels.
-func (pool *WorkerPool) EnqueueMessage(msg any) {
+// EnqueueEvent puts an event on the [Worker] channels.
+func (pool *WorkerPool) EnqueueEvent(event any) {
 	for i := range pool.workers {
-		pool.workers[i].EnqueueMessage(msg)
+		pool.workers[i].EnqueueEvent(event)
+	}
+}
+
+// Stop stops all workers.
+func (pool *WorkerPool) Stop() {
+	for i := range pool.workers {
+		pool.workers[i].EnqueueEvent(stopEvent)
 	}
 }
 

@@ -65,6 +65,7 @@ func Connect(
 		return nil, fmt.Errorf("can't connect to database (%w)", err)
 	}
 
+	logger.Info("connected to database")
 	return db, nil
 }
 

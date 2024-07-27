@@ -47,17 +47,17 @@ func CreateWebSocketHandler[T SubscribeMessageDto](
 }
 
 // AddTopic adds a topic to which can be subscribed using a [SubscribeMessageDto].
-// The optional onSubscribeMessage is sent to each new subscriber.
+// The onSubscribeCallback is called for each new subscriber to fetch data to send them back.
 func (h *WebSocketHandler[T]) AddTopic(
 	topicName string,
-	onSubscribeMessage any,
+	onSubscribeCallback OnSubscribeCallback,
 ) (*Topic, error) {
 	_, ok := h.topicMap[topicName]
 	if ok {
 		return nil, fmt.Errorf("topic '%s' has already been added", topicName)
 	}
 
-	topic := NewTopic(topicName, h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeMessage)
+	topic := NewTopic(topicName, h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeCallback)
 	h.topicMap[topicName] = topic
 
 	return topic, nil
@@ -65,11 +65,12 @@ func (h *WebSocketHandler[T]) AddTopic(
 
 // RemoveTopic removes a topic to which can be subscribed using a [SubscribeMessageDto].
 func (h *WebSocketHandler[T]) RemoveTopic(topic *Topic) error {
-	//todo make sure all workers are stopped to prevent leaks
 	_, ok := h.topicMap[topic.Name]
 	if !ok {
 		return fmt.Errorf("topic '%s' doesn't exist", topic.Name)
 	}
+
+	topic.StopPool()
 	delete(h.topicMap, topic.Name)
 	return nil
 }

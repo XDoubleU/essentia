@@ -25,7 +25,7 @@ func (db SpanDB) Exec(
 	sql string,
 	arguments ...any,
 ) (pgconn.CommandTag, error) {
-	return database.WrapWithSpan(ctx, db.dbName, db.Exec, sql, arguments...)
+	return database.WrapWithSpan(ctx, db.dbName, db.DB.Exec, sql, arguments...)
 }
 
 func (db SpanDB) Query(
@@ -33,7 +33,7 @@ func (db SpanDB) Query(
 	sql string,
 	optionsAndArgs ...any,
 ) (pgx.Rows, error) {
-	return database.WrapWithSpan(ctx, db.dbName, db.Query, sql, optionsAndArgs...)
+	return database.WrapWithSpan(ctx, db.dbName, db.DB.Query, sql, optionsAndArgs...)
 }
 
 func (db SpanDB) QueryRow(
@@ -41,7 +41,7 @@ func (db SpanDB) QueryRow(
 	sql string,
 	optionsAndArgs ...any,
 ) pgx.Row {
-	return database.WrapWithSpanNoError(ctx, db.dbName, db.QueryRow, sql, optionsAndArgs...)
+	return database.WrapWithSpanNoError(ctx, db.dbName, db.DB.QueryRow, sql, optionsAndArgs...)
 }
 
 func (db SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {

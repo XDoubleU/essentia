@@ -5,23 +5,25 @@ import (
 	"nhooyr.io/websocket"
 )
 
+type OnSubscribeCallback = func(topic *Topic) any
+
 // Topic is used to efficiently send messages
 // to [Subscriber]s in a WebSocket.
 type Topic struct {
-	Name               string
-	pool               *wsinternal.WorkerPool
-	onSubscribeMessage any
+	Name                string
+	pool                *wsinternal.WorkerPool
+	onSubscribeCallback OnSubscribeCallback
 }
 
 // NewTopic creates a new [Topic].
-func NewTopic(name string, maxWorkers int, channelBufferSize int, onSubscribMessage any) *Topic {
+func NewTopic(name string, maxWorkers int, channelBufferSize int, onSubscribeCallback OnSubscribeCallback) *Topic {
 	return &Topic{
 		Name: name,
 		pool: wsinternal.NewWorkerPool(
 			maxWorkers,
 			channelBufferSize,
 		),
-		onSubscribeMessage: onSubscribMessage,
+		onSubscribeCallback: onSubscribeCallback,
 	}
 }
 
@@ -33,8 +35,9 @@ func (t *Topic) Subscribe(conn *websocket.Conn) {
 	sub := NewSubscriber(t, conn)
 	t.pool.AddSubscriber(sub)
 
-	if t.onSubscribeMessage != nil {
-		sub.ExecuteCallback(t.onSubscribeMessage)
+	if t.onSubscribeCallback != nil {
+		event := t.onSubscribeCallback(t)
+		sub.OnEventCallback(event)
 	}
 
 	t.pool.Start()
@@ -45,7 +48,12 @@ func (t *Topic) UnSubscribe(sub Subscriber) {
 	t.pool.RemoveSubscriber(sub)
 }
 
-// EnqueueMessage enqueues a message if there are subscribers on this [Topic].
-func (t *Topic) EnqueueMessage(msg any) {
-	t.pool.EnqueueMessage(msg)
+// EnqueueEvent enqueues an event if there are subscribers on this [Topic].
+func (t *Topic) EnqueueEvent(msg any) {
+	t.pool.EnqueueEvent(msg)
+}
+
+// StopPool stops the used [wsinternal.WorkerPool].
+func (t *Topic) StopPool() {
+	t.pool.Stop()
 }

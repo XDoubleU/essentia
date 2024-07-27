@@ -15,11 +15,9 @@ type MainTestEnv[TDB any, TTx MinimalDBTx] struct {
 func CreateMainTestEnv[TDB any, TTx MinimalDBTx](
 	testDB TDB,
 	beginTxFunc func(ctx context.Context, db TDB) TTx,
-) MainTestEnv[TDB, TTx] {
-	mainTestEnv := MainTestEnv[TDB, TTx]{
+) *MainTestEnv[TDB, TTx] {
+	return &MainTestEnv[TDB, TTx]{
 		TestDB:      testDB,
 		beginTxFunc: beginTxFunc,
 	}
-
-	return mainTestEnv
 }
