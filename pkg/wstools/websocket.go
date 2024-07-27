@@ -57,10 +57,21 @@ func (h *WebSocketHandler[T]) AddTopic(
 		return nil, fmt.Errorf("topic '%s' has already been added", topicName)
 	}
 
-	topic := NewTopic(h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeMessage)
+	topic := NewTopic(topicName, h.maxTopicWorkers, h.topicChannelBufferSize, onSubscribeMessage)
 	h.topicMap[topicName] = topic
 
 	return topic, nil
+}
+
+// RemoveTopic removes a topic to which can be subscribed using a [SubscribeMessageDto].
+func (h *WebSocketHandler[T]) RemoveTopic(topic *Topic) error {
+	//todo make sure all workers are stopped to prevent leaks
+	_, ok := h.topicMap[topic.Name]
+	if !ok {
+		return fmt.Errorf("topic '%s' doesn't exist", topic.Name)
+	}
+	delete(h.topicMap, topic.Name)
+	return nil
 }
 
 // Handler returns the [http.HandlerFunc] of a [WebSocketHandler].

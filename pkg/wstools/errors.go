@@ -18,11 +18,7 @@ func ErrorResponse(
 	status int,
 	message any,
 ) {
-	errorDto := httptools.ErrorDto{
-		Status:  status,
-		Error:   http.StatusText(status),
-		Message: message,
-	}
+	errorDto := httptools.NewErrorDto(status, message)
 	err := wsjson.Write(ctx, conn, errorDto)
 	if err != nil {
 		contexttools.Logger(ctx).

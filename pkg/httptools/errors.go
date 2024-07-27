@@ -31,14 +31,18 @@ type ErrorDto struct {
 	Message any    `json:"message"`
 } //	@name	ErrorDto
 
-// ErrorResponse is used to handle any kind of error.
-func ErrorResponse(w http.ResponseWriter, r *http.Request,
-	status int, message any) {
-	errorDto := ErrorDto{
+func NewErrorDto(status int, message any) ErrorDto {
+	return ErrorDto{
 		Status:  status,
 		Error:   http.StatusText(status),
 		Message: message,
 	}
+}
+
+// ErrorResponse is used to handle any kind of error.
+func ErrorResponse(w http.ResponseWriter, r *http.Request,
+	status int, message any) {
+	errorDto := NewErrorDto(status, message)
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
 		contexttools.Logger(r.Context()).

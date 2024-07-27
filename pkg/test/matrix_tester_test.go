@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/xdoubleu/essentia/pkg/httptools"
 	"github.com/xdoubleu/essentia/pkg/parse"
 	"github.com/xdoubleu/essentia/pkg/test"
@@ -72,12 +71,7 @@ func TestMatrixTester(t *testing.T) {
 	})
 
 	tRes1 := test.NewCaseResponse(http.StatusBadRequest)
-	err := tRes1.SetExpectedBody(httptools.ErrorDto{
-		Status:  http.StatusBadRequest,
-		Error:   http.StatusText(http.StatusBadRequest),
-		Message: map[string]any{"message": "test"},
-	})
-	require.Nil(t, err)
+	tRes1.SetExpectedBody(httptools.NewErrorDto(http.StatusBadRequest, map[string]any{"message": "test"}))
 
 	mt.AddTestCase(tReq1, tRes1)
 

@@ -30,21 +30,19 @@ func (rs *CaseResponse) SetExpectedCookies(cookies []*http.Cookie) {
 }
 
 // SetExpectedBody sets the body expected in the response of a test case.
-func (rs *CaseResponse) SetExpectedBody(body any) error {
+func (rs *CaseResponse) SetExpectedBody(body any) {
 	var bodyMap map[string]any
 	data, err := json.Marshal(body)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	err = json.Unmarshal(data, &bodyMap)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	rs.body = &bodyMap
-
-	return nil
 }
 
 // MatrixTester is used for executing matrix tests.

@@ -27,21 +27,15 @@ func main() {
 	logger := slog.New(sentrytools.NewSentryLogHandler())
 	app := NewApp(logger)
 
-	routes, err := app.Routes()
-	if err != nil {
-		logger.Error("failed to setup routes", logging.ErrAttr(err))
-		return
-	}
-
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.Port),
-		Handler:      *routes,
+		Handler:      app.Routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,  //nolint:gomnd //no magic number
 		WriteTimeout: 10 * time.Second, //nolint:gomnd //no magic number
 	}
 
-	err = httptools.Serve(logger, srv, app.config.Env)
+	err := httptools.Serve(logger, srv, app.config.Env)
 	if err != nil {
 		logger.Error("failed to serve server", logging.ErrAttr(err))
 	}

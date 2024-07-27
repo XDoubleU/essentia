@@ -14,16 +14,13 @@ func TestWebSocket(t *testing.T) {
 	app := NewApp(logging.NewNopLogger())
 	app.config.Env = config.TestEnv
 
-	routes, err := app.Routes()
-	require.Nil(t, err)
-
-	tWeb := test.CreateWebSocketTester(*routes)
+	tWeb := test.CreateWebSocketTester(app.Routes())
 	tWeb.SetInitialMessage(SubscribeMessageDto{
 		TopicName: "topic",
 	})
 
 	var initialResponse ResponseMessageDto
-	err = tWeb.Do(t, &initialResponse, nil)
+	err := tWeb.Do(t, &initialResponse, nil)
 	require.Nil(t, err)
 
 	assert.Equal(t, "Hello, World!", initialResponse.Message)
