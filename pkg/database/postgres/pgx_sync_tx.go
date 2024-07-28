@@ -5,7 +5,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/xdoubleu/essentia/pkg/database"
 )
 
@@ -16,7 +15,7 @@ type PgxSyncTx struct {
 }
 
 // CreatePgxSyncTx returns a [pgx.Tx] which works concurrently.
-func CreatePgxSyncTx(ctx context.Context, db *pgxpool.Pool) PgxSyncTx {
+func CreatePgxSyncTx(ctx context.Context, db DB) PgxSyncTx {
 	syncTx := database.CreateSyncTx(ctx, db.Begin)
 
 	return PgxSyncTx{
