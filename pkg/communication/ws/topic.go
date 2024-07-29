@@ -56,8 +56,8 @@ func (t *Topic) UnSubscribe(sub Subscriber) {
 }
 
 // EnqueueEvent enqueues an event if there are subscribers on this [Topic].
-func (t *Topic) EnqueueEvent(msg any) {
-	t.pool.EnqueueEvent(msg)
+func (t *Topic) EnqueueEvent(event any) {
+	t.pool.EnqueueEvent(event)
 }
 
 // StopPool stops the used [wsinternal.WorkerPool].

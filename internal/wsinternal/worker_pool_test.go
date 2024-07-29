@@ -33,11 +33,11 @@ func (sub *TestSubscriber) OnSubscribeCallback() any {
 	return nil
 }
 
-func (sub *TestSubscriber) OnEventCallback(msg any) {
+func (sub *TestSubscriber) OnEventCallback(event any) {
 	sub.outputMu.Lock()
 	defer sub.outputMu.Unlock()
 
-	if v, ok := msg.(string); ok {
+	if v, ok := event.(string); ok {
 		sub.output = v
 	}
 }

@@ -44,7 +44,7 @@ func (worker *Worker) Active() bool {
 	return worker.active
 }
 
-func (worker *Worker) EnqueueEvent(msg any) {
+func (worker *Worker) EnqueueEvent(event any) {
 	if !worker.Active() {
 		return
 	}
@@ -52,7 +52,7 @@ func (worker *Worker) EnqueueEvent(msg any) {
 	worker.cMu.Lock()
 	defer worker.cMu.Unlock()
 
-	worker.c <- msg
+	worker.c <- event
 }
 
 // Start makes [Worker] start doing work.

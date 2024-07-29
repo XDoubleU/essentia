@@ -58,6 +58,19 @@ func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 	return queryFunc(ctx, sql, args...)
 }
 
+// WrapInSyncTxNoQuery is used to make sure a
+// transactional, non-query, database action can run concurrently.
+func WrapInSyncTxNoQuery[TTx MinimalDBTx, TResult any](
+	ctx context.Context,
+	tx SyncTx[TTx],
+	queryFunc func(ctx context.Context) (TResult, error),
+) (TResult, error) {
+	waitOnLock(tx.mu)
+	defer tx.mu.Unlock()
+
+	return queryFunc(ctx)
+}
+
 // WrapInSyncTxNoError is used to make sure a
 // transactional database action can run concurrently.
 // The executed database action shouldn't return an error.
