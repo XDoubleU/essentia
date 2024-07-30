@@ -59,3 +59,7 @@ func (db SpanDB) QueryRow(
 func (db SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
 	return db.DB.Begin(ctx)
 }
+
+func (db SpanDB) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	return db.DB.SendBatch(ctx, b)
+}

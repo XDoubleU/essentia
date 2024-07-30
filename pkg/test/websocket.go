@@ -30,7 +30,7 @@ type ParallelOperation = func(t *testing.T, ts *httptest.Server)
 func CreateWebSocketTester(handler http.Handler) WebSocketTester {
 	return WebSocketTester{
 		handler:           handler,
-		timeout:           10 * time.Second, //nolint:mnd //no magic number
+		timeout:           5 * time.Second, //nolint:mnd //no magic number
 		sleep:             time.Second,
 		initialMsg:        nil,
 		parallelOperation: nil,

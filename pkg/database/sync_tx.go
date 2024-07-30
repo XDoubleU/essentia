@@ -48,21 +48,6 @@ func CreateSyncTx[TTx MinimalDBTx](
 func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
 	tx SyncTx[TTx],
-	queryFunc func(ctx context.Context, sql string, args ...any) (TResult, error),
-	sql string,
-	args ...any,
-) (TResult, error) {
-	waitOnLock(tx.mu)
-	defer tx.mu.Unlock()
-
-	return queryFunc(ctx, sql, args...)
-}
-
-// WrapInSyncTxNoQuery is used to make sure a
-// transactional, non-query, database action can run concurrently.
-func WrapInSyncTxNoQuery[TTx MinimalDBTx, TResult any](
-	ctx context.Context,
-	tx SyncTx[TTx],
 	queryFunc func(ctx context.Context) (TResult, error),
 ) (TResult, error) {
 	waitOnLock(tx.mu)
@@ -77,14 +62,12 @@ func WrapInSyncTxNoQuery[TTx MinimalDBTx, TResult any](
 func WrapInSyncTxNoError[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
 	tx SyncTx[TTx],
-	queryFunc func(ctx context.Context, sql string, args ...any) TResult,
-	sql string,
-	args ...any,
+	queryFunc func(ctx context.Context) TResult,
 ) TResult {
 	waitOnLock(tx.mu)
 	defer tx.mu.Unlock()
 
-	return queryFunc(ctx, sql, args...)
+	return queryFunc(ctx)
 }
 
 // Rollback is used to rollback the wrapped transaction.

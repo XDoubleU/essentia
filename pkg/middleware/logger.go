@@ -7,7 +7,7 @@ import (
 
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/xdoubleu/essentia/internal/shared"
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/context"
 )
 
 // Logger is middleware used to add a logger to
@@ -23,7 +23,7 @@ func loggerHandler(logger *slog.Logger, next http.Handler) http.Handler {
 		rw := sentryhttp.NewWrapResponseWriter(w, r.ProtoMajor)
 		t := time.Now()
 
-		r = r.WithContext(contexttools.WithLogger(r.Context(), logger))
+		r = r.WithContext(context.WithLogger(r.Context(), logger))
 
 		next.ServeHTTP(rw, r)
 

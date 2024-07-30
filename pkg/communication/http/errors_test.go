@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"github.com/xdoubleu/essentia/pkg/config"
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
@@ -63,7 +63,7 @@ func TestServerErrorResponseShown(t *testing.T) {
 	}
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
-	req = req.WithContext(contexttools.WithShownErrors(req.Context()))
+	req = req.WithContext(context.WithShownErrors(req.Context()))
 
 	statusCode, errorDto := testErrorWithReq(t, handler, req)
 

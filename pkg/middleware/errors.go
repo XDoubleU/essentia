@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/xdoubleu/essentia/internal/shared"
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/context"
 )
 
 // ShowErrors is middleware used to show errors.
@@ -13,7 +13,7 @@ import (
 func ShowErrors() shared.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(contexttools.WithShownErrors(r.Context()))
+			r = r.WithContext(context.WithShownErrors(r.Context()))
 			next.ServeHTTP(w, r)
 		})
 	}

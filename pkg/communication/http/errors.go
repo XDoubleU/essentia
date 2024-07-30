@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	"github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
 	"github.com/xdoubleu/essentia/pkg/tools"
@@ -17,18 +17,18 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request,
 	errorDto := errortools.NewErrorDto(status, message)
 	err := WriteJSON(w, status, errorDto, nil)
 	if err != nil {
-		contexttools.Logger(r.Context()).
+		context.Logger(r.Context()).
 			ErrorContext(r.Context(), "failed to write JSON", logging.ErrAttr(err))
 	}
 }
 
 // ServerErrorResponse is used to handle internal server errors.
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	contexttools.Logger(r.Context()).
+	context.Logger(r.Context()).
 		ErrorContext(r.Context(), "server error occurred", logging.ErrAttr(err))
 
 	message := errortools.MessageInternalServerError
-	if contexttools.ShowErrors(r.Context()) {
+	if context.ShowErrors(r.Context()) {
 		message = err.Error()
 	}
 

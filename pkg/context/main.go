@@ -1,6 +1,6 @@
-// Package contexttools provides functions which can be used to
+// Package context provides functions which can be used to
 // set/get values to/from [context.Context].
-package contexttools
+package context
 
 import (
 	"context"

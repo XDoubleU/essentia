@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	contexttools "github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
 	"nhooyr.io/websocket"

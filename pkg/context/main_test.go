@@ -1,4 +1,4 @@
-package contexttools_test
+package context_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xdoubleu/essentia/pkg/contexttools"
+	contexttools "github.com/xdoubleu/essentia/pkg/context"
 	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
