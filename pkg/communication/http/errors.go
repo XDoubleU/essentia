@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/xdoubleu/essentia/internal/shared"
 	"github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
-	"github.com/xdoubleu/essentia/pkg/tools"
 )
 
 // ErrorResponse is used to handle any kind of error.
@@ -69,7 +69,7 @@ func ConflictResponse(
 	identifierValue any,
 	jsonField string,
 ) {
-	value, err2 := tools.AnyToString(identifierValue)
+	value, err2 := shared.AnyToString(identifierValue)
 	if err2 != nil {
 		ServerErrorResponse(w, r, err2)
 		return
@@ -99,7 +99,7 @@ func NotFoundResponse(
 	identifierValue any,
 	jsonField string,
 ) {
-	value, err2 := tools.AnyToString(identifierValue)
+	value, err2 := shared.AnyToString(identifierValue)
 	if err2 != nil {
 		ServerErrorResponse(w, r, err2)
 		return

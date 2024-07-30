@@ -24,13 +24,13 @@ func NewCaseResponse(statusCode int) CaseResponse {
 	}
 }
 
-// SetExpectedCookies sets the cookies expected in the response of a test case.
-func (rs *CaseResponse) SetExpectedCookies(cookies []*http.Cookie) {
+// SetCookies sets the cookies expected in the response of a test case.
+func (rs *CaseResponse) SetCookies(cookies []*http.Cookie) {
 	rs.cookies = cookies
 }
 
-// SetExpectedBody sets the body expected in the response of a test case.
-func (rs *CaseResponse) SetExpectedBody(body any) {
+// SetBody sets the body expected in the response of a test case.
+func (rs *CaseResponse) SetBody(body any) {
 	var bodyMap map[string]any
 	data, err := json.Marshal(body)
 	if err != nil {

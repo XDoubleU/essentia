@@ -67,12 +67,12 @@ func TestMatrixTester(t *testing.T) {
 	mt := test.CreateMatrixTester()
 
 	tReq1 := baseRequest.Copy()
-	tReq1.SetReqData(map[string]string{
+	tReq1.SetBody(map[string]string{
 		"test": "error",
 	})
 
 	tRes1 := test.NewCaseResponse(http.StatusBadRequest)
-	tRes1.SetExpectedBody(
+	tRes1.SetBody(
 		errortools.NewErrorDto(
 			http.StatusBadRequest,
 			map[string]any{"message": "test"},
@@ -92,7 +92,7 @@ func TestMatrixTester(t *testing.T) {
 	tReq3.AddCookie(&http.Cookie{Name: "cookie", Value: "value"})
 
 	tRes3 := test.NewCaseResponse(http.StatusUnauthorized)
-	tRes3.SetExpectedCookies([]*http.Cookie{{Name: "cookie2", Value: "value"}})
+	tRes3.SetCookies([]*http.Cookie{{Name: "cookie2", Value: "value"}})
 
 	mt.AddTestCase(tReq3, tRes3)
 

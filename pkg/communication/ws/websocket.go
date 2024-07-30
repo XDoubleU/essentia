@@ -69,6 +69,28 @@ func (h *WebSocketHandler[T]) AddTopic(
 	return topic, nil
 }
 
+// UpdateTopicName updates the name of a topic without losing its subscribers.
+func (h *WebSocketHandler[T]) UpdateTopicName(
+	topic *Topic,
+	newName string,
+) (*Topic, error) {
+	newTopic, ok := h.topicMap[topic.Name]
+	if !ok {
+		return nil, fmt.Errorf("topic '%s' doesn't exist", topic.Name)
+	}
+
+	_, ok = h.topicMap[newName]
+	if ok {
+		return nil, fmt.Errorf("topic '%s' already exists", newName)
+	}
+
+	newTopic.Name = newName
+	delete(h.topicMap, topic.Name)
+	h.topicMap[newTopic.Name] = newTopic
+
+	return newTopic, nil
+}
+
 // RemoveTopic removes a topic to which can be subscribed using a [SubscribeMessageDto].
 func (h *WebSocketHandler[T]) RemoveTopic(topic *Topic) error {
 	_, ok := h.topicMap[topic.Name]

@@ -1,4 +1,5 @@
-package tools
+// Package time provides helpers for dealing with time.
+package time
 
 import "time"
 
@@ -28,9 +29,9 @@ func EndOfDay(dateTime time.Time) time.Time {
 	return output
 }
 
-// TimeZoneIndependentTimeNow returns the time in the
-// provided time zone but changes the time zone to UTC.
-func TimeZoneIndependentTimeNow(locationTimeZone string) time.Time {
+// NowTimeZoneIndependent returns the time in the
+// provided time zone but forces the time zone to UTC.
+func NowTimeZoneIndependent(locationTimeZone string) time.Time {
 	timeZone, _ := time.LoadLocation(locationTimeZone)
 	utcTimeZone, _ := time.LoadLocation("UTC")
 	now := time.Now().In(timeZone)

@@ -10,7 +10,7 @@ import (
 	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
-const testContextKey = contexttools.ContextKey("test")
+const testContextKey = contexttools.Key("test")
 
 func TestGetContextValue(t *testing.T) {
 	ctx := context.WithValue(
@@ -19,13 +19,13 @@ func TestGetContextValue(t *testing.T) {
 		true,
 	)
 
-	value := contexttools.GetContextValue[bool](ctx, testContextKey)
+	value := contexttools.GetValue[bool](ctx, testContextKey)
 
 	assert.Equal(t, true, *value)
 }
 
 func TestGetContextValueNotPresent(t *testing.T) {
-	value := contexttools.GetContextValue[bool](context.Background(), testContextKey)
+	value := contexttools.GetValue[bool](context.Background(), testContextKey)
 
 	assert.Nil(t, value)
 }
@@ -37,7 +37,7 @@ func TestGetContextValueIncorrectType(t *testing.T) {
 		10,
 	)
 
-	value := contexttools.GetContextValue[bool](ctx, testContextKey)
+	value := contexttools.GetValue[bool](ctx, testContextKey)
 
 	assert.Nil(t, value)
 }

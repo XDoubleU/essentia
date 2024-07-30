@@ -54,12 +54,13 @@ func (db SpanDB) QueryRow(
 		optionsAndArgs...)
 }
 
+// SendBatch is used to wrap SendBatch in a [sentry.Span].
+func (db SpanDB) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	return db.DB.SendBatch(ctx, b)
+}
+
 // Begin doesn't wrap Begin in a [sentry.Span] as
 // this makes little sense for starting a transaction.
 func (db SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
 	return db.DB.Begin(ctx)
-}
-
-func (db SpanDB) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
-	return db.DB.SendBatch(ctx, b)
 }

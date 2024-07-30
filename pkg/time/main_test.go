@@ -1,11 +1,11 @@
-package tools_test
+package time_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/xdoubleu/essentia/pkg/tools"
+	timetools "github.com/xdoubleu/essentia/pkg/time"
 )
 
 func TestStartOfDay(t *testing.T) {
@@ -18,7 +18,7 @@ func TestStartOfDay(t *testing.T) {
 		now.Location(),
 	)
 
-	assert.Equal(t, startOfDay, tools.StartOfDay(now))
+	assert.Equal(t, startOfDay, timetools.StartOfDay(now))
 }
 
 func TestEndOfDay(t *testing.T) {
@@ -31,14 +31,14 @@ func TestEndOfDay(t *testing.T) {
 		now.Location(),
 	)
 
-	assert.Equal(t, endOfDay, tools.EndOfDay(now))
+	assert.Equal(t, endOfDay, timetools.EndOfDay(now))
 }
 
-func TestTimeZoneIndependentTimeNow(t *testing.T) {
+func TestNowTimeZoneIndependent(t *testing.T) {
 	now := time.Now()
 
 	utcTimeZone, _ := time.LoadLocation("UTC")
-	result := tools.TimeZoneIndependentTimeNow(now.Location().String())
+	result := timetools.NowTimeZoneIndependent(now.Location().String())
 
 	expected := time.Date(
 		now.Year(),

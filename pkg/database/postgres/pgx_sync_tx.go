@@ -29,9 +29,13 @@ func (tx PgxSyncTx) Exec(
 	sql string,
 	args ...any,
 ) (pgconn.CommandTag, error) {
-	return database.WrapInSyncTx(ctx, tx.syncTx, func(ctx context.Context) (pgconn.CommandTag, error) {
-		return tx.syncTx.Tx.Exec(ctx, sql, args...)
-	})
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgconn.CommandTag, error) {
+			return tx.syncTx.Tx.Exec(ctx, sql, args...)
+		},
+	)
 }
 
 // Query is used to wrap [pgx.Tx.Query] in a [database.SyncTx].
@@ -40,29 +44,46 @@ func (tx PgxSyncTx) Query(
 	sql string,
 	args ...any,
 ) (pgx.Rows, error) {
-	return database.WrapInSyncTx(ctx, tx.syncTx, func(ctx context.Context) (pgx.Rows, error) {
-		return tx.syncTx.Tx.Query(ctx, sql, args...)
-	})
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgx.Rows, error) {
+			return tx.syncTx.Tx.Query(ctx, sql, args...)
+		},
+	)
 }
 
 // QueryRow is used to wrap [pgx.Tx.QueryRow] in a [database.SyncTx].
 func (tx PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
-	return database.WrapInSyncTxNoError(ctx, tx.syncTx, func(ctx context.Context) pgx.Row {
-		return tx.syncTx.Tx.QueryRow(ctx, sql, args...)
-	})
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) pgx.Row {
+			return tx.syncTx.Tx.QueryRow(ctx, sql, args...)
+		},
+	)
 }
 
-// Begin is used to begin a [pgx.Tx].
+// Begin is used to wrap [pgx.Tx.Begin] in a [database.SyncTx].
 func (tx PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
-	return database.WrapInSyncTx(ctx, tx.syncTx, func(ctx context.Context) (pgx.Tx, error) {
-		return tx.syncTx.Tx.Begin(ctx)
-	})
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgx.Tx, error) {
+			return tx.syncTx.Tx.Begin(ctx)
+		},
+	)
 }
 
+// SendBatch is used to wrap [pgx.Tx.SendBatch] in a [database.SyncTx].
 func (tx PgxSyncTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
-	return database.WrapInSyncTxNoError(ctx, tx.syncTx, func(ctx context.Context) pgx.BatchResults {
-		return tx.syncTx.Tx.SendBatch(ctx, b)
-	})
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) pgx.BatchResults {
+			return tx.syncTx.Tx.SendBatch(ctx, b)
+		},
+	)
 }
 
 // Rollback is used to rollback a [PgxSyncTx].

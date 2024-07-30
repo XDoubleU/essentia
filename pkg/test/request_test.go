@@ -42,7 +42,7 @@ func TestRequestTester(t *testing.T) {
 		1,
 	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
 
 	var rsData map[string]string
 	rs := tReq.Do(t, &rsData)
@@ -60,7 +60,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 
 	tReq := test.CreateRequestTester(nil, http.MethodGet, "/test/%d", 1)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
 	tReq.SetTestServer(ts)
 
 	var rsData map[string]string

@@ -1,4 +1,4 @@
 package context
 
-const showErrorsContextKey = ContextKey("show_errors")
-const loggerContextKey = ContextKey("logger")
+const showErrorsContextKey = Key("show_errors")
+const loggerContextKey = Key("logger")
