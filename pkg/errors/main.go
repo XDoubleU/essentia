@@ -13,6 +13,8 @@ var (
 	// ErrResourceUniqueValue is an error with value "resource unique value already used".
 	ErrResourceConflict = errors.New("resource conflicts with existing resource")
 	ErrFailedValidation = errors.New("failed validation")
+	ErrUnauthorized     = errors.New("unauthorized")
+	ErrBadRequest       = errors.New("bad request")
 )
 
 //nolint:lll // can't make these lines shorter
