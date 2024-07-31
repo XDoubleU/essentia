@@ -120,7 +120,7 @@ func TestConflictResponse(t *testing.T) {
 		httptools.ConflictResponse(
 			w,
 			r,
-			errortools.ErrResourceUniqueValue,
+			errortools.ErrResourceConflict,
 			"resource",
 			"value",
 			"field",

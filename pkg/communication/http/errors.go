@@ -75,7 +75,7 @@ func ConflictResponse(
 		return
 	}
 
-	if err == nil || errors.Is(err, errortools.ErrResourceUniqueValue) {
+	if err == nil || errors.Is(err, errortools.ErrResourceConflict) {
 		message := fmt.Sprintf(
 			"%s with %s '%s' already exists",
 			resourceName,

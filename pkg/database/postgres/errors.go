@@ -19,7 +19,7 @@ func PgxErrorToHTTPError(err error) error {
 	case errors.Is(err, pgx.ErrNoRows), pgxError.Code == pgerrcode.ForeignKeyViolation:
 		return errortools.ErrResourceNotFound
 	case pgxError.Code == pgerrcode.UniqueViolation:
-		return errortools.ErrResourceUniqueValue
+		return errortools.ErrResourceConflict
 	default:
 		return err
 	}

@@ -11,7 +11,8 @@ var (
 	// ErrResourceNotFound is an error with value "resource not found".
 	ErrResourceNotFound = errors.New("resource not found")
 	// ErrResourceUniqueValue is an error with value "resource unique value already used".
-	ErrResourceUniqueValue = errors.New("resource unique value already used")
+	ErrResourceConflict = errors.New("resource conflicts with existing resource")
+	ErrFailedValidation = errors.New("failed validation")
 )
 
 //nolint:lll // can't make these lines shorter

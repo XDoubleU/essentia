@@ -28,10 +28,10 @@ func TestErrResourceNotFound(t *testing.T) {
 	assert.ErrorIs(t, err2, errortools.ErrResourceNotFound)
 }
 
-func TestErrResourceUniqueValue(t *testing.T) {
+func TestErrResourceConflict(t *testing.T) {
 	err := postgres.PgxErrorToHTTPError(
 		newPgError(pgerrcode.UniqueViolation),
 	)
 
-	assert.ErrorIs(t, err, errortools.ErrResourceUniqueValue)
+	assert.ErrorIs(t, err, errortools.ErrResourceConflict)
 }
