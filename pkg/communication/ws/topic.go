@@ -7,7 +7,7 @@ import (
 
 // OnSubscribeCallback is called to fetch data that
 // should be returned when a new subscriber is added to a topic.
-type OnSubscribeCallback = func(topic *Topic) any
+type OnSubscribeCallback = func(topic *Topic) (any, error)
 
 // Topic is used to efficiently send messages
 // to [Subscriber]s in a WebSocket.
@@ -38,16 +38,22 @@ func NewTopic(
 // If configured a message will be sent on subscribing.
 // If no message handling go routine was
 // running this will be started now.
-func (t *Topic) Subscribe(conn *websocket.Conn) {
+func (t *Topic) Subscribe(conn *websocket.Conn) error {
 	sub := NewSubscriber(t, conn)
 	t.pool.AddSubscriber(sub)
 
 	if t.onSubscribeCallback != nil {
-		event := t.onSubscribeCallback(t)
+		event, err := t.onSubscribeCallback(t)
+		if err != nil {
+			return err
+		}
+
 		sub.OnEventCallback(event)
 	}
 
 	t.pool.Start()
+
+	return nil
 }
 
 // UnSubscribe unsubscribes a [Subscriber] from this [Topic].

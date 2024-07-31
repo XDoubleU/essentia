@@ -39,7 +39,7 @@ func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	)
 	topic, err := ws.AddTopic(
 		"exists",
-		func(_ *wstools.Topic) any { return TestResponse{Ok: true, Message: "initial"} },
+		func(_ *wstools.Topic) (any, error) { return TestResponse{Ok: true, Message: "initial"}, nil },
 	)
 	require.Nil(t, err)
 

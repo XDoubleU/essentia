@@ -39,10 +39,10 @@ func (app *application) getWebSocketHandler() http.HandlerFunc {
 	)
 	wsHandler.AddTopic(
 		"topic",
-		func(_ *wstools.Topic) any {
+		func(_ *wstools.Topic) (any, error) {
 			return ResponseMessageDto{
 				Message: "Hello, World!",
-			}
+			}, nil
 		})
 
 	return wsHandler.Handler()
