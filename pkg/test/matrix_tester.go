@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
 // CaseResponse is used to compare to the actual response
@@ -76,10 +77,11 @@ func (mt MatrixTester) Do(t *testing.T) {
 		var rsData map[string]any
 
 		if tRes.body == nil {
-			rs = tReq.Do(t, nil)
+			rs = tReq.Do(t, nil, nil)
 			defer rs.Body.Close()
 		} else {
-			rs = tReq.Do(t, &rsData)
+			//todo dynamic content type adapter
+			rs = tReq.Do(t, &rsData, httptools.ReadJSON)
 			defer rs.Body.Close()
 		}
 

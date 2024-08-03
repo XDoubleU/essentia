@@ -9,18 +9,28 @@ import (
 
 // WriteCSV writes the provided data as a CSV file with
 // the provided filename to a [http.ResponseWriter].
-func WriteCSV(w http.ResponseWriter, filename string, data [][]string) error {
+func WriteCSV(w http.ResponseWriter, filename string, headers []string, data [][]string) error {
+	output := [][]string{}
+	output = append(output, headers)
+	output = append(output, data...)
+
 	w.Header().Set("content-type", "text/csv")
 	w.Header().
 		Set("content-disposition", fmt.Sprintf("attachment;filename=%s.csv", filename))
 
 	csvWriter := csv.NewWriter(w)
 
-	return csvWriter.WriteAll(data)
+	return csvWriter.WriteAll(output)
 }
 
 // ReadCSV reads the returned CSV file from a [http.Response.Body].
-func ReadCSV(body io.Reader) ([][]string, error) {
+func ReadCSV(body io.Reader, dst any) error {
 	csvReader := csv.NewReader(body)
-	return csvReader.ReadAll()
+	csvData, err := csvReader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	dst = csvData
+	return nil
 }

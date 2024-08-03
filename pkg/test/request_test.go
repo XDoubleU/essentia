@@ -45,7 +45,7 @@ func TestRequestTester(t *testing.T) {
 	tReq.SetBody(reqData)
 
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	rs := tReq.Do(t, &rsData, httptools.ReadJSON)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -64,7 +64,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 	tReq.SetTestServer(ts)
 
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	rs := tReq.Do(t, &rsData, httptools.ReadJSON)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -76,6 +76,6 @@ func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"handler nor test server has been set",
-		func() { tReq.Do(t, nil) },
+		func() { tReq.Do(t, nil, nil) },
 	)
 }

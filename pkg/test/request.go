@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
+
+type ContentTypeAdapter = func(body io.Reader, rsData any) error
 
 // A RequestTester is used to test a certain HTTP request.
 type RequestTester struct {
@@ -70,9 +71,9 @@ func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
-// Do executes a [RequestTester] returning the response of the request
+// Do executes a [RequestTester] returning the response of a request
 // and providing the returned data to rsData.
-func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
+func (tReq RequestTester) Do(t *testing.T, rsData any, contentTypeAdapter ContentTypeAdapter) *http.Response {
 	t.Helper()
 
 	var body []byte
@@ -130,8 +131,8 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 		return nil
 	}
 
-	if rsData != nil {
-		err = httptools.ReadJSON(rs.Body, &rsData)
+	if rsData != nil && contentTypeAdapter != nil {
+		err = contentTypeAdapter(rs.Body, &rsData)
 		if err != nil {
 			t.Errorf("error when parsing response: %v", err)
 			t.FailNow()

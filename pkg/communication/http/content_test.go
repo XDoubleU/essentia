@@ -13,27 +13,28 @@ import (
 func TestCSV(t *testing.T) {
 	res := httptest.NewRecorder()
 
+	headers := []string{"h1", "h2"}
 	data := [][]string{
-		{
-			"h1",
-			"h2",
-		},
 		{
 			"c11",
 			"c12",
 		},
 	}
+	expectedOutput := [][]string{}
+	expectedOutput = append(expectedOutput, headers)
+	expectedOutput = append(expectedOutput, data...)
 
 	writeCSV := func(w http.ResponseWriter, _ *http.Request) {
-		err := httptools.WriteCSV(w, "test", data)
+		err := httptools.WriteCSV(w, "test", headers, data)
 		require.Nil(t, err)
 	}
 	http.HandlerFunc(writeCSV).ServeHTTP(res, nil)
 
-	records, err := httptools.ReadCSV(res.Body)
+	var records [][]string
+	err := httptools.ReadCSV(res.Body, &records)
 
 	require.Nil(t, err)
-	assert.Equal(t, data, records)
+	assert.Equal(t, expectedOutput, records)
 }
 
 func TestJSON(t *testing.T) {
