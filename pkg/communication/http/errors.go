@@ -2,14 +2,29 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/xdoubleu/essentia/internal/shared"
 	"github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
 )
+
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	notFoundError := errortools.NotFoundError{}
+	conflictError := errortools.ConflictError{}
+	badRequestError := errortools.BadRequestError{}
+
+	switch {
+	case errors.As(err, &badRequestError):
+		BadRequestResponse(w, r, badRequestError)
+	case errors.As(err, &notFoundError):
+		NotFoundResponse(w, r, notFoundError)
+	case errors.As(err, &conflictError):
+		ConflictResponse(w, r, conflictError)
+	default:
+		ServerErrorResponse(w, r, err)
+	}
+}
 
 // ErrorResponse is used to handle any kind of error.
 func ErrorResponse(w http.ResponseWriter, r *http.Request,
@@ -64,62 +79,22 @@ func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
 func ConflictResponse(
 	w http.ResponseWriter,
 	r *http.Request,
-	err error,
-	resourceName string,
-	identifierValue any,
-	jsonField string,
+	err errortools.ConflictError,
 ) {
-	value, err2 := shared.AnyToString(identifierValue)
-	if err2 != nil {
-		ServerErrorResponse(w, r, err2)
-		return
-	}
-
-	if err == nil || errors.Is(err, errortools.ErrResourceConflict) {
-		message := fmt.Sprintf(
-			"%s with %s '%s' already exists",
-			resourceName,
-			jsonField,
-			value,
-		)
-		err := make(map[string]string)
-		err[jsonField] = message
-		ErrorResponse(w, r, http.StatusConflict, err)
-	} else {
-		ServerErrorResponse(w, r, err)
-	}
+	outputErr := make(map[string]string)
+	outputErr[err.JsonField] = err.Error()
+	ErrorResponse(w, r, http.StatusNotFound, err)
 }
 
 // NotFoundResponse is used to handle an error when a resource wasn't found.
 func NotFoundResponse(
 	w http.ResponseWriter,
 	r *http.Request,
-	err error,
-	resourceName string,
-	identifierValue any,
-	jsonField string,
+	err errortools.NotFoundError,
 ) {
-	value, err2 := shared.AnyToString(identifierValue)
-	if err2 != nil {
-		ServerErrorResponse(w, r, err2)
-		return
-	}
-
-	if err == nil || errors.Is(err, errortools.ErrResourceNotFound) {
-		message := fmt.Sprintf(
-			"%s with %s '%s' doesn't exist",
-			resourceName,
-			jsonField,
-			value,
-		)
-
-		err := make(map[string]string)
-		err[jsonField] = message
-
-		ErrorResponse(w, r, http.StatusNotFound, err)
-	} else {
-		ServerErrorResponse(w, r, err)
-	}
+	outputErr := make(map[string]string)
+	outputErr[err.JsonField] = err.Error()
+	ErrorResponse(w, r, http.StatusNotFound, err)
 }
 
 // FailedValidationResponse is used to handle an error of a [validate.Validator].

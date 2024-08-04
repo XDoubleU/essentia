@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	errortools "github.com/xdoubleu/essentia/pkg/errors"
+	"github.com/xdoubleu/essentia/pkg/database"
 )
 
 // PgxErrorToHTTPError converts a database error
@@ -17,9 +17,9 @@ func PgxErrorToHTTPError(err error) error {
 
 	switch {
 	case errors.Is(err, pgx.ErrNoRows), pgxError.Code == pgerrcode.ForeignKeyViolation:
-		return errortools.ErrResourceNotFound
+		return database.ErrResourceNotFound
 	case pgxError.Code == pgerrcode.UniqueViolation:
-		return errortools.ErrResourceConflict
+		return database.ErrResourceConflict
 	default:
 		return err
 	}

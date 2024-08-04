@@ -73,7 +73,7 @@ func TestServerErrorResponseShown(t *testing.T) {
 
 func TestBadRequestResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.BadRequestResponse(w, r, errors.New("test"))
+		httptools.BadRequestResponse(w, r, errortools.NewBadRequestError(errors.New("test")))
 	}
 
 	statusCode, errorDto := testError(t, handler)
@@ -120,10 +120,7 @@ func TestConflictResponse(t *testing.T) {
 		httptools.ConflictResponse(
 			w,
 			r,
-			errortools.ErrResourceConflict,
-			"resource",
-			"value",
-			"field",
+			errortools.NewConflictError("resource", "value", "field"),
 		)
 	}
 
@@ -140,10 +137,7 @@ func TestNotFoundResponse(t *testing.T) {
 		httptools.NotFoundResponse(
 			w,
 			r,
-			errortools.ErrResourceNotFound,
-			"resource",
-			"value",
-			"field",
+			errortools.NewNotFoundError("resource", "value", "field"),
 		)
 	}
 
