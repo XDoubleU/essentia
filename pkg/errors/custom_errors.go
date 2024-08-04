@@ -9,7 +9,6 @@ import (
 
 var (
 	ErrFailedValidation = errors.New("failed validation")
-	ErrUnauthorized     = errors.New("unauthorized")
 )
 
 type NotFoundError struct {
@@ -25,6 +24,10 @@ type ConflictError struct {
 }
 
 type BadRequestError struct {
+	err error
+}
+
+type UnauthorizedError struct {
 	err error
 }
 
@@ -79,5 +82,15 @@ func NewBadRequestError(err error) BadRequestError {
 }
 
 func (err BadRequestError) Error() string {
-	return err.Error()
+	return err.err.Error()
+}
+
+func NewUnauthorizedError(err error) UnauthorizedError {
+	return UnauthorizedError{
+		err: err,
+	}
+}
+
+func (err UnauthorizedError) Error() string {
+	return err.err.Error()
 }

@@ -9,12 +9,17 @@ import (
 	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+func HandleError(w http.ResponseWriter, r *http.Request, err error, validationErrors map[string]string) {
 	notFoundError := errortools.NotFoundError{}
 	conflictError := errortools.ConflictError{}
 	badRequestError := errortools.BadRequestError{}
+	unauthorizedError := errortools.UnauthorizedError{}
 
 	switch {
+	case errors.As(err, &unauthorizedError):
+		UnauthorizedResponse(w, r, unauthorizedError)
+	case errors.Is(err, errortools.ErrFailedValidation):
+		FailedValidationResponse(w, r, validationErrors)
 	case errors.As(err, &badRequestError):
 		BadRequestResponse(w, r, badRequestError)
 	case errors.As(err, &notFoundError):
@@ -65,8 +70,8 @@ func RateLimitExceededResponse(w http.ResponseWriter,
 // UnauthorizedResponse is used to handle an error when a user
 // isn't authorized.
 func UnauthorizedResponse(w http.ResponseWriter,
-	r *http.Request, message string) {
-	ErrorResponse(w, r, http.StatusUnauthorized, message)
+	r *http.Request, err errortools.UnauthorizedError) {
+	ErrorResponse(w, r, http.StatusUnauthorized, err.Error())
 }
 
 // ForbiddenResponse is used to handle an error when a user
@@ -83,7 +88,7 @@ func ConflictResponse(
 ) {
 	outputErr := make(map[string]string)
 	outputErr[err.JsonField] = err.Error()
-	ErrorResponse(w, r, http.StatusNotFound, err)
+	ErrorResponse(w, r, http.StatusConflict, outputErr)
 }
 
 // NotFoundResponse is used to handle an error when a resource wasn't found.
@@ -94,7 +99,7 @@ func NotFoundResponse(
 ) {
 	outputErr := make(map[string]string)
 	outputErr[err.JsonField] = err.Error()
-	ErrorResponse(w, r, http.StatusNotFound, err)
+	ErrorResponse(w, r, http.StatusNotFound, outputErr)
 }
 
 // FailedValidationResponse is used to handle an error of a [validate.Validator].
