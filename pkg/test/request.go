@@ -9,19 +9,23 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
+// A ContentTypeAdapter is used to be able to parse different kinds of response data.
 type ContentTypeAdapter = func(body io.Reader, rsData any) error
 
 // A RequestTester is used to test a certain HTTP request.
 type RequestTester struct {
-	handler http.Handler
-	ts      *httptest.Server
-	method  string
-	path    string
-	body    any
-	query   map[string]string
-	cookies []*http.Cookie
+	handler            http.Handler
+	ts                 *httptest.Server
+	contentTypeAdapter ContentTypeAdapter
+	method             string
+	path               string
+	body               any
+	query              map[string]string
+	cookies            []*http.Cookie
 }
 
 // CreateRequestTester creates a new [RequestTester].
@@ -41,12 +45,20 @@ func CreateRequestTester(
 	return RequestTester{
 		handler,
 		nil,
+		httptools.ReadJSON,
 		method,
 		path,
 		nil,
 		make(map[string]string),
 		[]*http.Cookie{},
 	}
+}
+
+// SetContentTypeAdapter sets the [ContentTypeAdapter] of a [RequestTester].
+func (tReq *RequestTester) SetContentTypeAdapter(
+	contentTypeAdapter ContentTypeAdapter,
+) {
+	tReq.contentTypeAdapter = contentTypeAdapter
 }
 
 // SetTestServer sets the test server of a [RequestTester].
@@ -73,7 +85,7 @@ func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 
 // Do executes a [RequestTester] returning the response of a request
 // and providing the returned data to rsData.
-func (tReq RequestTester) Do(t *testing.T, rsData any, contentTypeAdapter ContentTypeAdapter) *http.Response {
+func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	t.Helper()
 
 	var body []byte
@@ -131,8 +143,8 @@ func (tReq RequestTester) Do(t *testing.T, rsData any, contentTypeAdapter Conten
 		return nil
 	}
 
-	if rsData != nil && contentTypeAdapter != nil {
-		err = contentTypeAdapter(rs.Body, &rsData)
+	if rsData != nil {
+		err = tReq.contentTypeAdapter(rs.Body, &rsData)
 		if err != nil {
 			t.Errorf("error when parsing response: %v", err)
 			t.FailNow()
@@ -146,12 +158,13 @@ func (tReq RequestTester) Do(t *testing.T, rsData any, contentTypeAdapter Conten
 // Copy creates a copy of a [RequestTester] in order to easily test similar requests.
 func (tReq RequestTester) Copy() RequestTester {
 	return RequestTester{
-		handler: tReq.handler,
-		ts:      tReq.ts,
-		method:  tReq.method,
-		path:    tReq.path,
-		body:    tReq.body,
-		query:   tReq.query,
-		cookies: tReq.cookies,
+		handler:            tReq.handler,
+		ts:                 tReq.ts,
+		contentTypeAdapter: tReq.contentTypeAdapter,
+		method:             tReq.method,
+		path:               tReq.path,
+		body:               tReq.body,
+		query:              tReq.query,
+		cookies:            tReq.cookies,
 	}
 }

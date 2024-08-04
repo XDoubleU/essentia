@@ -11,7 +11,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-var cleanerActive bool
+var cleanerActive bool //nolint: gochecknoglobals //need this
 
 type client struct {
 	limiter  *rate.Limiter

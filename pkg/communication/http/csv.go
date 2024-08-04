@@ -9,7 +9,12 @@ import (
 
 // WriteCSV writes the provided data as a CSV file with
 // the provided filename to a [http.ResponseWriter].
-func WriteCSV(w http.ResponseWriter, filename string, headers []string, data [][]string) error {
+func WriteCSV(
+	w http.ResponseWriter,
+	filename string,
+	headers []string,
+	data [][]string,
+) error {
 	output := [][]string{}
 	output = append(output, headers)
 	output = append(output, data...)
@@ -24,13 +29,13 @@ func WriteCSV(w http.ResponseWriter, filename string, headers []string, data [][
 }
 
 // ReadCSV reads the returned CSV file from a [http.Response.Body].
-func ReadCSV(body io.Reader, dst any) error {
+func ReadCSV(body io.Reader, dst *[][]string) error {
 	csvReader := csv.NewReader(body)
 	csvData, err := csvReader.ReadAll()
 	if err != nil {
 		return err
 	}
 
-	dst = csvData
+	*dst = csvData
 	return nil
 }

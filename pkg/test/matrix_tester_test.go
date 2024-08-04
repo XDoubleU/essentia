@@ -20,7 +20,11 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 
 	if cookie != nil && cookie.Value == "value" {
 		http.SetCookie(w, &http.Cookie{Name: "cookie2", Value: cookie.Value})
-		httptools.UnauthorizedResponse(w, r, "unauthorized")
+		httptools.UnauthorizedResponse(
+			w,
+			r,
+			errortools.NewUnauthorizedError(errors.New("unauthorized")),
+		)
 		return
 	}
 
@@ -71,13 +75,10 @@ func TestMatrixTester(t *testing.T) {
 		"test": "error",
 	})
 
-	tRes1 := test.NewCaseResponse(http.StatusBadRequest)
-	tRes1.SetBody(
-		errortools.NewErrorDto(
-			http.StatusBadRequest,
-			map[string]any{"message": "test"},
-		),
-	)
+	tRes1 := test.NewCaseResponse(http.StatusBadRequest, nil, errortools.NewErrorDto(
+		http.StatusBadRequest,
+		map[string]any{"message": "test"},
+	))
 
 	mt.AddTestCase(tReq1, tRes1)
 
@@ -86,13 +87,16 @@ func TestMatrixTester(t *testing.T) {
 		"param": "value",
 	})
 
-	mt.AddTestCase(tReq2, test.NewCaseResponse(http.StatusForbidden))
+	mt.AddTestCase(tReq2, test.NewCaseResponse(http.StatusForbidden, nil, nil))
 
 	tReq3 := baseRequest.Copy()
 	tReq3.AddCookie(&http.Cookie{Name: "cookie", Value: "value"})
 
-	tRes3 := test.NewCaseResponse(http.StatusUnauthorized)
-	tRes3.SetCookies([]*http.Cookie{{Name: "cookie2", Value: "value"}})
+	tRes3 := test.NewCaseResponse(
+		http.StatusUnauthorized,
+		[]*http.Cookie{{Name: "cookie2", Value: "value"}},
+		nil,
+	)
 
 	mt.AddTestCase(tReq3, tRes3)
 

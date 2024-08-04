@@ -32,7 +32,7 @@ func PaginatedEndpointTester(
 			pageQueryParamName: strconv.Itoa(page),
 		})
 
-		mt.AddTestCase(tReq, NewCaseResponse(statusCode))
+		mt.AddTestCase(tReq, NewCaseResponse(statusCode, nil, nil))
 	}
 
 	mt.Do(t)

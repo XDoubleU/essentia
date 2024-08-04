@@ -73,7 +73,11 @@ func TestServerErrorResponseShown(t *testing.T) {
 
 func TestBadRequestResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.BadRequestResponse(w, r, errortools.NewBadRequestError(errors.New("test")))
+		httptools.BadRequestResponse(
+			w,
+			r,
+			errortools.NewBadRequestError(errors.New("test")),
+		)
 	}
 
 	statusCode, errorDto := testError(t, handler)
@@ -95,7 +99,11 @@ func TestRateLimitExceededResponse(t *testing.T) {
 
 func TestUnauthorizedResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.UnauthorizedResponse(w, r, errortools.NewUnauthorizedError(errors.New("test")))
+		httptools.UnauthorizedResponse(
+			w,
+			r,
+			errortools.NewUnauthorizedError(errors.New("test")),
+		)
 	}
 
 	statusCode, errorDto := testError(t, handler)

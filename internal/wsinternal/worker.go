@@ -12,9 +12,7 @@ type Worker struct {
 	activeMu   *sync.RWMutex
 	lowerBound int
 	upperBound int
-	boundsMu   *sync.RWMutex
 	c          chan any
-	cMu        *sync.RWMutex
 	pool       *WorkerPool
 }
 
@@ -26,12 +24,10 @@ func NewWorker(id int, channelBufferSize int, pool *WorkerPool) Worker {
 		activeMu:   &sync.RWMutex{},
 		lowerBound: -1,
 		upperBound: -1,
-		boundsMu:   &sync.RWMutex{},
 		c: make(
 			chan any,
 			channelBufferSize,
 		),
-		cMu:  &sync.RWMutex{},
 		pool: pool,
 	}
 	return worker
@@ -48,9 +44,6 @@ func (worker *Worker) EnqueueEvent(event any) {
 	if !worker.Active() {
 		return
 	}
-
-	worker.cMu.Lock()
-	defer worker.cMu.Unlock()
 
 	worker.c <- event
 }
@@ -73,12 +66,9 @@ func (worker *Worker) Start() {
 	worker.calculateBounds()
 
 	for {
-		worker.boundsMu.RLock()
-
 		// no subscribers so stop worker
 		// if lock is free no one is currently checking current state
 		if worker.upperBound == 0 && worker.activeMu.TryLock() {
-			worker.boundsMu.RUnlock()
 			break
 		}
 
@@ -86,13 +76,11 @@ func (worker *Worker) Start() {
 
 		// stop has been called from pool
 		if event == stopEvent {
-			worker.boundsMu.RUnlock()
 			break
 		}
 
 		// subscribers have been updated, have to update bounds
 		if event == subscribersUpdatedEvent {
-			worker.boundsMu.RUnlock()
 			worker.calculateBounds()
 			continue
 		}
@@ -102,7 +90,6 @@ func (worker *Worker) Start() {
 		// no work so check again later
 		if worker.upperBound > len(worker.pool.subscribers) {
 			worker.pool.subscribersMu.RUnlock()
-			worker.boundsMu.RUnlock()
 			continue
 		}
 
@@ -111,7 +98,6 @@ func (worker *Worker) Start() {
 		}
 
 		worker.pool.subscribersMu.RUnlock()
-		worker.boundsMu.RUnlock()
 	}
 
 	worker.active = false
@@ -119,9 +105,6 @@ func (worker *Worker) Start() {
 }
 
 func (worker *Worker) calculateBounds() {
-	worker.boundsMu.Lock()
-	defer worker.boundsMu.Unlock()
-
 	worker.pool.subscribersMu.RLock()
 	defer worker.pool.subscribersMu.RUnlock()
 

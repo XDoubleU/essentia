@@ -9,10 +9,20 @@ import (
 	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error, validationErrors map[string]string) {
+// HandleError is used to translate errors to the right HTTP response.
+func HandleError(
+	w http.ResponseWriter,
+	r *http.Request,
+	err error,
+	validationErrors map[string]string,
+) {
+	//nolint:exhaustruct //fields are not needed here
 	notFoundError := errortools.NotFoundError{}
+	//nolint:exhaustruct //fields are not needed here
 	conflictError := errortools.ConflictError{}
+
 	badRequestError := errortools.BadRequestError{}
+
 	unauthorizedError := errortools.UnauthorizedError{}
 
 	switch {
@@ -87,7 +97,7 @@ func ConflictResponse(
 	err errortools.ConflictError,
 ) {
 	outputErr := make(map[string]string)
-	outputErr[err.JsonField] = err.Error()
+	outputErr[err.JSONField] = err.Error()
 	ErrorResponse(w, r, http.StatusConflict, outputErr)
 }
 
@@ -98,7 +108,7 @@ func NotFoundResponse(
 	err errortools.NotFoundError,
 ) {
 	outputErr := make(map[string]string)
-	outputErr[err.JsonField] = err.Error()
+	outputErr[err.JSONField] = err.Error()
 	ErrorResponse(w, r, http.StatusNotFound, outputErr)
 }
 

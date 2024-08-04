@@ -138,6 +138,9 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 			return
 		}
 
-		topic.Subscribe(conn)
+		err = topic.Subscribe(conn)
+		if err != nil {
+			ServerErrorResponse(r.Context(), conn, err)
+		}
 	}
 }

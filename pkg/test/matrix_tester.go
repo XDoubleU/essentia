@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
 // CaseResponse is used to compare to the actual response
@@ -18,32 +17,30 @@ type CaseResponse struct {
 }
 
 // NewCaseResponse returns a new [CaseResponse].
-func NewCaseResponse(statusCode int) CaseResponse {
-	//nolint:exhaustruct //other fields are optional
-	return CaseResponse{
+func NewCaseResponse(statusCode int, cookies []*http.Cookie, body any) CaseResponse {
+	caseResponse := CaseResponse{
 		statusCode: statusCode,
-	}
-}
-
-// SetCookies sets the cookies expected in the response of a test case.
-func (rs *CaseResponse) SetCookies(cookies []*http.Cookie) {
-	rs.cookies = cookies
-}
-
-// SetBody sets the body expected in the response of a test case.
-func (rs *CaseResponse) SetBody(body any) {
-	var bodyMap map[string]any
-	data, err := json.Marshal(body)
-	if err != nil {
-		panic(err)
+		cookies:    nil,
+		body:       nil,
 	}
 
-	err = json.Unmarshal(data, &bodyMap)
-	if err != nil {
-		panic(err)
+	if cookies != nil {
+		caseResponse.cookies = cookies
 	}
 
-	rs.body = &bodyMap
+	if body != nil {
+		data, err := json.Marshal(body)
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal(data, &caseResponse.body)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return caseResponse
 }
 
 // MatrixTester is used for executing matrix tests.
@@ -77,11 +74,10 @@ func (mt MatrixTester) Do(t *testing.T) {
 		var rsData map[string]any
 
 		if tRes.body == nil {
-			rs = tReq.Do(t, nil, nil)
+			rs = tReq.Do(t, nil)
 			defer rs.Body.Close()
 		} else {
-			//todo dynamic content type adapter
-			rs = tReq.Do(t, &rsData, httptools.ReadJSON)
+			rs = tReq.Do(t, &rsData)
 			defer rs.Body.Close()
 		}
 
