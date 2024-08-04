@@ -1,24 +1,20 @@
 package main
 
 import (
-	"io"
-	"log"
 	"net/http"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/config"
+	"github.com/xdoubleu/essentia/pkg/logging"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func TestHealth(t *testing.T) {
-	app := NewApp(log.New(io.Discard, "", 0))
-	app.config.Env = TestEnv
+	app := NewApp(logging.NewNopLogger())
+	app.config.Env = config.TestEnv
 
-	routes, err := app.Routes()
-	require.Nil(t, err)
-
-	tReq := test.CreateRequestTester(*routes, http.MethodGet, "/health")
+	tReq := test.CreateRequestTester(app.Routes(), http.MethodGet, "/health")
 	rs := tReq.Do(t, nil)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)

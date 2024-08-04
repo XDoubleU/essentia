@@ -4,50 +4,50 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/xdoubleu/essentia/pkg/config"
 )
 
 const existingKey, nonExistingKey = "key", "non_key"
 
-func TestGetEnvStr(t *testing.T) {
+func TestEnvStr(t *testing.T) {
 	expected, def := "string", ""
 
 	t.Setenv(existingKey, expected)
 
-	exists := config.GetEnvStr(existingKey, def)
-	notExists := config.GetEnvStr(nonExistingKey, def)
+	exists := config.EnvStr(existingKey, def)
+	notExists := config.EnvStr(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
 }
 
-func TestGetEnvStrArray(t *testing.T) {
+func TestEnvStrArray(t *testing.T) {
 	rawExpected := "string1,string2"
 	expected, def := []string{"string1", "string2"}, []string{""}
 
 	t.Setenv(existingKey, rawExpected)
 
-	exists := config.GetEnvStrArray(existingKey, def)
-	notExists := config.GetEnvStrArray(nonExistingKey, def)
+	exists := config.EnvStrArray(existingKey, def)
+	notExists := config.EnvStrArray(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
 }
 
-func TestGetEnvInt(t *testing.T) {
+func TestEnvInt(t *testing.T) {
 	expected, def := 14, 0
 
 	t.Setenv(existingKey, strconv.Itoa(expected))
 
-	exists := config.GetEnvInt(existingKey, def)
-	notExists := config.GetEnvInt(nonExistingKey, def)
+	exists := config.EnvInt(existingKey, def)
+	notExists := config.EnvInt(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
 }
 
-func TestGetEnvIntWrong(t *testing.T) {
+func TestEnvIntWrong(t *testing.T) {
 	expected, def := "string", 0
 
 	t.Setenv(existingKey, expected)
@@ -55,23 +55,23 @@ func TestGetEnvIntWrong(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to int",
-		func() { config.GetEnvInt(existingKey, def) },
+		func() { config.EnvInt(existingKey, def) },
 	)
 }
 
-func TestGetEnvFloat(t *testing.T) {
+func TestEnvFloat(t *testing.T) {
 	expected, def := 14.0, 0.0
 
 	t.Setenv(existingKey, strconv.FormatFloat(expected, 'f', -1, 64))
 
-	exists := config.GetEnvFloat(existingKey, def)
-	notExists := config.GetEnvFloat(nonExistingKey, def)
+	exists := config.EnvFloat(existingKey, def)
+	notExists := config.EnvFloat(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
 }
 
-func TestGetEnvFloatWrong(t *testing.T) {
+func TestEnvFloatWrong(t *testing.T) {
 	expected, def := "string", 0.0
 
 	t.Setenv(existingKey, expected)
@@ -79,23 +79,23 @@ func TestGetEnvFloatWrong(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to float64",
-		func() { config.GetEnvFloat(existingKey, def) },
+		func() { config.EnvFloat(existingKey, def) },
 	)
 }
 
-func TestGetEnvBool(t *testing.T) {
+func TestEnvBool(t *testing.T) {
 	expected, def := true, false
 
 	t.Setenv(existingKey, strconv.FormatBool(expected))
 
-	exists := config.GetEnvBool(existingKey, def)
-	notExists := config.GetEnvBool(nonExistingKey, def)
+	exists := config.EnvBool(existingKey, def)
+	notExists := config.EnvBool(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
 }
 
-func TestGetEnvBoolWrong(t *testing.T) {
+func TestEnvBoolWrong(t *testing.T) {
 	expected, def := "string", false
 
 	t.Setenv(existingKey, expected)
@@ -103,6 +103,6 @@ func TestGetEnvBoolWrong(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to bool",
-		func() { config.GetEnvBool(existingKey, def) },
+		func() { config.EnvBool(existingKey, def) },
 	)
 }

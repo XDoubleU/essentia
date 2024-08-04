@@ -1,36 +1,37 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/xdoubleu/essentia/internal/shared"
+	"github.com/xdoubleu/essentia/pkg/context"
 )
 
 // Logger is middleware used to add a logger to
 // the context and log every request and their duration.
-func Logger(logger *log.Logger) middleware {
+func Logger(logger *slog.Logger) shared.Middleware {
 	return func(next http.Handler) http.Handler {
 		return loggerHandler(logger, next)
 	}
 }
 
-func loggerHandler(logger *log.Logger, next http.Handler) http.Handler {
+func loggerHandler(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := httptools.NewResponseWriter(w)
+		rw := sentryhttp.NewWrapResponseWriter(w, r.ProtoMajor)
 		t := time.Now()
 
-		r = contexttools.SetLogger(r, logger)
+		r = r.WithContext(context.WithLogger(r.Context(), logger))
 
 		next.ServeHTTP(rw, r)
 
-		logger.Printf(
-			"[%d] %s in %v",
-			rw.StatusCode(),
-			r.RequestURI,
-			time.Since(t),
+		logger.Info(
+			"processed request",
+			slog.Int("status", rw.Status()),
+			slog.String("endpoint", r.RequestURI),
+			slog.Duration("duration", time.Since(t)),
 		)
 	})
 }

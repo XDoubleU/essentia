@@ -5,22 +5,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
+
+// A ContentTypeAdapter is used to be able to parse different kinds of response data.
+type ContentTypeAdapter = func(body io.Reader, rsData any) error
 
 // A RequestTester is used to test a certain HTTP request.
 type RequestTester struct {
-	handler http.Handler
-	ts      *httptest.Server
-	method  string
-	path    string
-	reqData any
-	query   map[string]string
-	cookies []*http.Cookie
+	handler            http.Handler
+	ts                 *httptest.Server
+	contentTypeAdapter ContentTypeAdapter
+	method             string
+	path               string
+	body               any
+	query              map[string]string
+	cookies            []*http.Cookie
 }
 
 // CreateRequestTester creates a new [RequestTester].
@@ -40,6 +45,7 @@ func CreateRequestTester(
 	return RequestTester{
 		handler,
 		nil,
+		httptools.ReadJSON,
 		method,
 		path,
 		nil,
@@ -48,15 +54,22 @@ func CreateRequestTester(
 	}
 }
 
+// SetContentTypeAdapter sets the [ContentTypeAdapter] of a [RequestTester].
+func (tReq *RequestTester) SetContentTypeAdapter(
+	contentTypeAdapter ContentTypeAdapter,
+) {
+	tReq.contentTypeAdapter = contentTypeAdapter
+}
+
 // SetTestServer sets the test server of a [RequestTester].
 // This allows to reuse existing test servers.
 func (tReq *RequestTester) SetTestServer(ts *httptest.Server) {
 	tReq.ts = ts
 }
 
-// SetReqData sets the request data, or body, of a [RequestTester].
-func (tReq *RequestTester) SetReqData(reqData any) {
-	tReq.reqData = reqData
+// SetBody sets the request body of a [RequestTester].
+func (tReq *RequestTester) SetBody(body any) {
+	tReq.body = body
 }
 
 // SetQuery sets the query of a [RequestTester].
@@ -70,7 +83,7 @@ func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
-// Do executes a [RequestTester] returning the response of the request
+// Do executes a [RequestTester] returning the response of a request
 // and providing the returned data to rsData.
 func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	t.Helper()
@@ -87,10 +100,10 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 		panic("handler nor test server has been set")
 	}
 
-	if tReq.reqData != nil {
-		body, err = json.Marshal(tReq.reqData)
+	if tReq.body != nil {
+		body, err = json.Marshal(tReq.body)
 		if err != nil {
-			t.Errorf("error when marshalling reqData: %v", err)
+			t.Errorf("error when marshalling body: %v", err)
 			t.FailNow()
 			return nil
 		}
@@ -131,7 +144,7 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 	}
 
 	if rsData != nil {
-		err = httptools.ReadJSON(rs.Body, &rsData)
+		err = tReq.contentTypeAdapter(rs.Body, &rsData)
 		if err != nil {
 			t.Errorf("error when parsing response: %v", err)
 			t.FailNow()
@@ -145,12 +158,13 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 // Copy creates a copy of a [RequestTester] in order to easily test similar requests.
 func (tReq RequestTester) Copy() RequestTester {
 	return RequestTester{
-		handler: tReq.handler,
-		ts:      tReq.ts,
-		method:  tReq.method,
-		path:    tReq.path,
-		reqData: tReq.reqData,
-		query:   tReq.query,
-		cookies: tReq.cookies,
+		handler:            tReq.handler,
+		ts:                 tReq.ts,
+		contentTypeAdapter: tReq.contentTypeAdapter,
+		method:             tReq.method,
+		path:               tReq.path,
+		body:               tReq.body,
+		query:              tReq.query,
+		cookies:            tReq.cookies,
 	}
 }

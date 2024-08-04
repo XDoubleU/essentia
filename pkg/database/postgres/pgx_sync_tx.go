@@ -3,10 +3,9 @@ package postgres
 import (
 	"context"
 
-	"github.com/XDoubleU/essentia/pkg/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/xdoubleu/essentia/pkg/database"
 )
 
 // PgxSyncTx uses [database.SyncTx] to make sure
@@ -16,7 +15,7 @@ type PgxSyncTx struct {
 }
 
 // CreatePgxSyncTx returns a [pgx.Tx] which works concurrently.
-func CreatePgxSyncTx(ctx context.Context, db *pgxpool.Pool) PgxSyncTx {
+func CreatePgxSyncTx(ctx context.Context, db DB) PgxSyncTx {
 	syncTx := database.CreateSyncTx(ctx, db.Begin)
 
 	return PgxSyncTx{
@@ -30,7 +29,13 @@ func (tx PgxSyncTx) Exec(
 	sql string,
 	args ...any,
 ) (pgconn.CommandTag, error) {
-	return database.WrapInSyncTx(ctx, tx.syncTx, tx.syncTx.Tx.Exec, sql, args...)
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgconn.CommandTag, error) {
+			return tx.syncTx.Tx.Exec(ctx, sql, args...)
+		},
+	)
 }
 
 // Query is used to wrap [pgx.Tx.Query] in a [database.SyncTx].
@@ -39,7 +44,13 @@ func (tx PgxSyncTx) Query(
 	sql string,
 	args ...any,
 ) (pgx.Rows, error) {
-	return database.WrapInSyncTx(ctx, tx.syncTx, tx.syncTx.Tx.Query, sql, args...)
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgx.Rows, error) {
+			return tx.syncTx.Tx.Query(ctx, sql, args...)
+		},
+	)
 }
 
 // QueryRow is used to wrap [pgx.Tx.QueryRow] in a [database.SyncTx].
@@ -47,9 +58,32 @@ func (tx PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.R
 	return database.WrapInSyncTxNoError(
 		ctx,
 		tx.syncTx,
-		tx.syncTx.Tx.QueryRow,
-		sql,
-		args...)
+		func(ctx context.Context) pgx.Row {
+			return tx.syncTx.Tx.QueryRow(ctx, sql, args...)
+		},
+	)
+}
+
+// Begin is used to wrap [pgx.Tx.Begin] in a [database.SyncTx].
+func (tx PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgx.Tx, error) {
+			return tx.syncTx.Tx.Begin(ctx)
+		},
+	)
+}
+
+// SendBatch is used to wrap [pgx.Tx.SendBatch] in a [database.SyncTx].
+func (tx PgxSyncTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) pgx.BatchResults {
+			return tx.syncTx.Tx.SendBatch(ctx, b)
+		},
+	)
 }
 
 // Rollback is used to rollback a [PgxSyncTx].

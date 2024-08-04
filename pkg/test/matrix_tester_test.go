@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/parse"
-	"github.com/XDoubleU/essentia/pkg/test"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	errortools "github.com/xdoubleu/essentia/pkg/errors"
+	"github.com/xdoubleu/essentia/pkg/parse"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +19,12 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cookie != nil && cookie.Value == "value" {
-		httptools.UnauthorizedResponse(w, r, "unauthorized")
+		http.SetCookie(w, &http.Cookie{Name: "cookie2", Value: cookie.Value})
+		httptools.UnauthorizedResponse(
+			w,
+			r,
+			errortools.NewUnauthorizedError(errors.New("unauthorized")),
+		)
 		return
 	}
 
@@ -57,25 +63,42 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestMatrixTester(t *testing.T) {
-	tReq := test.CreateRequestTester(
+	baseRequest := test.CreateRequestTester(
 		http.HandlerFunc(matrixTestHandler),
 		http.MethodGet,
 		"",
 	)
-	mt := test.CreateMatrixTester(tReq)
+	mt := test.CreateMatrixTester()
 
-	mt.AddTestCaseErrorMessage(map[string]string{
+	tReq1 := baseRequest.Copy()
+	tReq1.SetBody(map[string]string{
 		"test": "error",
-	}, map[string]any{"message": "test"})
+	})
 
-	mt.AddTestCaseStatusCode(map[string]string{
+	tRes1 := test.NewCaseResponse(http.StatusBadRequest, nil, errortools.NewErrorDto(
+		http.StatusBadRequest,
+		map[string]any{"message": "test"},
+	))
+
+	mt.AddTestCase(tReq1, tRes1)
+
+	tReq2 := baseRequest.Copy()
+	tReq2.SetQuery(map[string]string{
 		"param": "value",
-	}, http.StatusForbidden)
+	})
 
-	mt.AddTestCaseCookieStatusCode(
-		&http.Cookie{Name: "cookie", Value: "value"},
+	mt.AddTestCase(tReq2, test.NewCaseResponse(http.StatusForbidden, nil, nil))
+
+	tReq3 := baseRequest.Copy()
+	tReq3.AddCookie(&http.Cookie{Name: "cookie", Value: "value"})
+
+	tRes3 := test.NewCaseResponse(
 		http.StatusUnauthorized,
+		[]*http.Cookie{{Name: "cookie2", Value: "value"}},
+		nil,
 	)
+
+	mt.AddTestCase(tReq3, tRes3)
 
 	mt.Do(t)
 }

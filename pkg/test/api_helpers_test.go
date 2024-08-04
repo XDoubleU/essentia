@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/parse"
-	"github.com/XDoubleU/essentia/pkg/test"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	"github.com/xdoubleu/essentia/pkg/errors"
+	"github.com/xdoubleu/essentia/pkg/parse"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func paginatedEndpointHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +17,7 @@ func paginatedEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	page, err := parse.RequiredQueryParam(r, "page", parse.IntFunc(true, false))
 	if err != nil {
-		httptools.BadRequestResponse(w, r, err)
+		httptools.BadRequestResponse(w, r, errors.NewBadRequestError(err))
 		return
 	}
 

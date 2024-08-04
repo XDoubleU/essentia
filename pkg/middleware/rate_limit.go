@@ -6,9 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	"github.com/xdoubleu/essentia/internal/shared"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"golang.org/x/time/rate"
 )
+
+var cleanerActive bool //nolint: gochecknoglobals //need this
 
 type client struct {
 	limiter  *rate.Limiter
@@ -21,33 +24,36 @@ func RateLimit(
 	bucketSize int,
 	cleanupTimer time.Duration,
 	removeAfter time.Duration,
-) middleware {
+) shared.Middleware {
 	var (
 		mu      sync.RWMutex
 		clients = make(map[string]*client)
 	)
 
-	go func() {
-		for {
-			time.Sleep(cleanupTimer)
+	if !cleanerActive {
+		cleanerActive = true
+		go func() {
+			for {
+				time.Sleep(cleanupTimer)
 
-			mu.RLock()
+				mu.RLock()
 
-			for ip, client := range clients {
-				if time.Since(client.lastSeen) > removeAfter {
-					mu.RUnlock()
-					mu.Lock()
+				for ip, client := range clients {
+					if time.Since(client.lastSeen) > removeAfter {
+						mu.RUnlock()
+						mu.Lock()
 
-					delete(clients, ip)
+						delete(clients, ip)
 
-					mu.Unlock()
-					mu.RLock()
+						mu.Unlock()
+						mu.RLock()
+					}
 				}
-			}
 
-			mu.RUnlock()
-		}
-	}()
+				mu.RUnlock()
+			}
+		}()
+	}
 
 	return func(next http.Handler) http.Handler {
 		return rateLimit(&mu, clients, rps, bucketSize, next)

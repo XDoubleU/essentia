@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func TestRequestTester(t *testing.T) {
 		1,
 	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
 
 	var rsData map[string]string
 	rs := tReq.Do(t, &rsData)
@@ -60,7 +60,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 
 	tReq := test.CreateRequestTester(nil, http.MethodGet, "/test/%d", 1)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
 	tReq.SetTestServer(ts)
 
 	var rsData map[string]string
