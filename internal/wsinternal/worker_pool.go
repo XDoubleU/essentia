@@ -1,6 +1,7 @@
 package wsinternal
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -79,7 +80,7 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
-		sentry.GoRoutineErrorHandler(fmt.Sprintf("Worker %d", i), pool.workers[i].Start)
+		sentry.GoRoutineErrorHandler(fmt.Sprintf("Worker %d", i), context.Background(), pool.workers[i].Start)
 	}
 }
 

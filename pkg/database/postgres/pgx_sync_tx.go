@@ -75,13 +75,13 @@ func (tx PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 	)
 }
 
-// SendBatch is used to wrap [pgx.Tx.SendBatch] in a [database.SyncTx].
-func (tx PgxSyncTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+// Ping is used to wrap [pgx.Tx.Conn.Ping] in a [database.SyncTx].
+func (tx PgxSyncTx) Ping(ctx context.Context) error {
 	return database.WrapInSyncTxNoError(
 		ctx,
 		tx.syncTx,
-		func(ctx context.Context) pgx.BatchResults {
-			return tx.syncTx.Tx.SendBatch(ctx, b)
+		func(ctx context.Context) error {
+			return tx.syncTx.Tx.Conn().Ping(ctx)
 		},
 	)
 }
