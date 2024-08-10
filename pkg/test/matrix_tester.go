@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
 // CaseResponse is used to compare to the actual response
@@ -74,10 +75,12 @@ func (mt MatrixTester) Do(t *testing.T) {
 		var rsData map[string]any
 
 		if tRes.body == nil {
-			rs = tReq.Do(t, nil)
+			rs = tReq.Do(t)
 			defer rs.Body.Close()
 		} else {
-			rs = tReq.Do(t, &rsData)
+			rs = tReq.Do(t)
+			httptools.ReadJSON(rs.Body, &rsData)
+
 			defer rs.Body.Close()
 		}
 

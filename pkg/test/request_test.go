@@ -44,8 +44,10 @@ func TestRequestTester(t *testing.T) {
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
 	tReq.SetBody(reqData)
 
+	rs := tReq.Do(t)
+
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	httptools.ReadJSON(rs.Body, &rsData)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -63,8 +65,10 @@ func TestRequestTesterTestServer(t *testing.T) {
 	tReq.SetBody(reqData)
 	tReq.SetTestServer(ts)
 
+	rs := tReq.Do(t)
+
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	httptools.ReadJSON(rs.Body, &rsData)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -76,6 +80,6 @@ func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"handler nor test server has been set",
-		func() { tReq.Do(t, nil) },
+		func() { tReq.Do(t) },
 	)
 }

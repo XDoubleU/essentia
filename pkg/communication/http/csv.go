@@ -29,13 +29,12 @@ func WriteCSV(
 }
 
 // ReadCSV reads the returned CSV file from a [http.Response.Body].
-func ReadCSV(body io.Reader, dst *[][]string) error {
+func ReadCSV(body io.Reader) ([][]string, error) {
 	csvReader := csv.NewReader(body)
 	csvData, err := csvReader.ReadAll()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	*dst = csvData
-	return nil
+	return csvData, nil
 }

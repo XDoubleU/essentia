@@ -15,7 +15,7 @@ func TestHealth(t *testing.T) {
 	app.config.Env = config.TestEnv
 
 	tReq := test.CreateRequestTester(app.Routes(), http.MethodGet, "/health")
-	rs := tReq.Do(t, nil)
+	rs := tReq.Do(t)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 }

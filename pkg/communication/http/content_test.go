@@ -30,8 +30,7 @@ func TestCSV(t *testing.T) {
 	}
 	http.HandlerFunc(writeCSV).ServeHTTP(res, nil)
 
-	var records [][]string
-	err := httptools.ReadCSV(res.Body, &records)
+	records, err := httptools.ReadCSV(res.Body)
 
 	require.Nil(t, err)
 	assert.Equal(t, expectedOutput, records)

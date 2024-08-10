@@ -1,6 +1,11 @@
 package wsinternal
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+
+	"github.com/xdoubleu/essentia/pkg/sentry"
+)
 
 type Subscriber interface {
 	ID() string
@@ -74,7 +79,7 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
-		go pool.workers[i].Start()
+		sentry.GoRoutineErrorHandler(fmt.Sprintf("Worker %d", i), pool.workers[i].Start)
 	}
 }
 

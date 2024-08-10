@@ -1,6 +1,7 @@
 package wsinternal
 
 import (
+	"context"
 	"math"
 	"sync"
 )
@@ -49,15 +50,15 @@ func (worker *Worker) EnqueueEvent(event any) {
 }
 
 // Start makes [Worker] start doing work.
-func (worker *Worker) Start() {
+func (worker *Worker) Start(ctx context.Context) error {
 	// already active
 	if worker.Active() {
-		return
+		return nil
 	}
 
 	// if lock not free is either being checked to start or is being started
 	if !worker.activeMu.TryLock() {
-		return
+		return nil
 	}
 
 	worker.active = true
@@ -102,6 +103,8 @@ func (worker *Worker) Start() {
 
 	worker.active = false
 	worker.activeMu.Unlock()
+
+	return nil
 }
 
 func (worker *Worker) calculateBounds() {
