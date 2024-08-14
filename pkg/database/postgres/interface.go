@@ -10,6 +10,7 @@ import (
 // DB provides a uniform interface for the postgres
 // database connection, pools and transactions.
 type DB interface {
+	//todo check if anything missing
 	Exec(
 		ctx context.Context,
 		sql string,

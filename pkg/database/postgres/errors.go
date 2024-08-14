@@ -16,7 +16,12 @@ func PgxErrorToHTTPError(err error) error {
 	errors.As(err, &pgxError)
 
 	switch {
-	case errors.Is(err, pgx.ErrNoRows), pgxError.Code == pgerrcode.ForeignKeyViolation:
+	case pgxError == nil:
+		if errors.Is(err, pgx.ErrNoRows) {
+			return database.ErrResourceNotFound
+		}
+		return err
+	case pgxError.Code == pgerrcode.ForeignKeyViolation:
 		return database.ErrResourceNotFound
 	case pgxError.Code == pgerrcode.UniqueViolation:
 		return database.ErrResourceConflict

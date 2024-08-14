@@ -1,13 +1,15 @@
 package ws
 
 import (
+	"context"
+
 	"github.com/xdoubleu/essentia/internal/wsinternal"
 	"nhooyr.io/websocket"
 )
 
 // OnSubscribeCallback is called to fetch data that
 // should be returned when a new subscriber is added to a topic.
-type OnSubscribeCallback = func(topic *Topic) (any, error)
+type OnSubscribeCallback = func(ctx context.Context, topic *Topic) (any, error)
 
 // Topic is used to efficiently send messages
 // to [Subscriber]s in a WebSocket.
@@ -43,7 +45,7 @@ func (t *Topic) Subscribe(conn *websocket.Conn) error {
 	t.pool.AddSubscriber(sub)
 
 	if t.onSubscribeCallback != nil {
-		event, err := t.onSubscribeCallback(t)
+		event, err := t.onSubscribeCallback(context.Background(), t)
 		if err != nil {
 			return err
 		}
