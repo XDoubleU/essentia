@@ -7,7 +7,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
+
+var dotEnvLoaded = false
 
 const (
 	// ProdEnv can be used as value when reading out the type of environment.
@@ -22,6 +26,11 @@ const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
 // EnvStr extracts a string environment variable.
 func EnvStr(key string, defaultValue string) string {
+	if !dotEnvLoaded {
+		godotenv.Load()
+		dotEnvLoaded = true
+	}
+
 	value, exists := os.LookupEnv(key)
 	if !exists {
 		return defaultValue

@@ -108,7 +108,8 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-			OriginPatterns: h.allowedOrigins,
+			//OriginPatterns: h.allowedOrigins,
+			InsecureSkipVerify: true,
 		})
 		if err != nil {
 			UpgradeErrorResponse(w, r, err)
