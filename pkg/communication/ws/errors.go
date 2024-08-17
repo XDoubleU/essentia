@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	contexttools "github.com/xdoubleu/essentia/pkg/context"
 	errortools "github.com/xdoubleu/essentia/pkg/errors"
 	"github.com/xdoubleu/essentia/pkg/logging"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 // ErrorResponse is used to handle any kind of error that occured on a WebSocket.

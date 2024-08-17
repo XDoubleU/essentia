@@ -3,9 +3,9 @@ package ws
 import (
 	"context"
 
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	"github.com/google/uuid"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 // Subscriber is used to receive messages

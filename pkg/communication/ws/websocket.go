@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	"github.com/xdoubleu/essentia/pkg/validate"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 // SubscribeMessageDto is implemented by all messages
@@ -149,7 +149,7 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 	}
 }
 
-// copied from nhooyr.io/websocket.
+// copied from github.com/coder/websocket.
 func authenticateOrigin(r *http.Request, originHosts []string) error {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
@@ -185,7 +185,7 @@ func authenticateOrigin(r *http.Request, originHosts []string) error {
 	return fmt.Errorf("request Origin %q is not authorized for Host %q", u.Host, r.Host)
 }
 
-// copied from nhooyr.io/websocket.
+// copied from github.com/coder/websocket.
 func match(pattern, s string) (bool, error) {
 	return filepath.Match(strings.ToLower(pattern), strings.ToLower(s))
 }
