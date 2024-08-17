@@ -12,13 +12,14 @@ import (
 
 // LogHandler is used for capturing logs and sending these to Sentry.
 type LogHandler struct {
-	level  slog.Level
-	attrs  []slog.Attr
-	groups []string
+	level   slog.Level
+	handler slog.Handler
+	attrs   []slog.Attr
+	groups  []string
 }
 
 // NewLogHandler returns a new [SentryLogHandler].
-func NewLogHandler(env string) slog.Handler {
+func NewLogHandler(env string, handler slog.Handler) slog.Handler {
 	level := slog.LevelInfo
 
 	if env == config.DevEnv {
@@ -26,9 +27,10 @@ func NewLogHandler(env string) slog.Handler {
 	}
 
 	return &LogHandler{
-		attrs:  []slog.Attr{},
-		groups: []string{},
-		level:  level,
+		handler: handler,
+		attrs:   []slog.Attr{},
+		groups:  []string{},
+		level:   level,
 	}
 }
 
@@ -60,8 +62,7 @@ func (l *LogHandler) Handle(ctx context.Context, record slog.Record) error {
 		sendErrorToSentry(ctx, recordToError(record))
 	}
 
-	fmt.Printf("%s [%s] %s\n", record.Time.Format("2006-01-02 15:04:05"), record.Level, recordToError(record))
-	return nil
+	return l.handler.Handle(ctx, record)
 }
 
 func sendErrorToSentry(ctx context.Context, err error) {

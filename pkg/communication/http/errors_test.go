@@ -48,7 +48,7 @@ func testErrorWithReq(
 
 func TestServerErrorResponseObfuscated(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.ServerErrorResponse(w, r, errors.New("test"))
+		httptools.HandleError(w, r, errors.New("test"), nil)
 	}
 
 	statusCode, errorDto := testError(t, handler)
@@ -59,7 +59,7 @@ func TestServerErrorResponseObfuscated(t *testing.T) {
 
 func TestServerErrorResponseShown(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.ServerErrorResponse(w, r, errors.New("test"))
+		httptools.HandleError(w, r, errors.New("test"), nil)
 	}
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
@@ -73,10 +73,11 @@ func TestServerErrorResponseShown(t *testing.T) {
 
 func TestBadRequestResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.BadRequestResponse(
+		httptools.HandleError(
 			w,
 			r,
 			errortools.NewBadRequestError(errors.New("test")),
+			nil,
 		)
 	}
 
@@ -99,10 +100,11 @@ func TestRateLimitExceededResponse(t *testing.T) {
 
 func TestUnauthorizedResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.UnauthorizedResponse(
+		httptools.HandleError(
 			w,
 			r,
 			errortools.NewUnauthorizedError(errors.New("test")),
+			nil,
 		)
 	}
 
@@ -125,10 +127,11 @@ func TestForbiddenResponse(t *testing.T) {
 
 func TestConflictResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.ConflictResponse(
+		httptools.HandleError(
 			w,
 			r,
 			errortools.NewConflictError("resource", "value", "field"),
+			nil,
 		)
 	}
 
@@ -142,10 +145,11 @@ func TestConflictResponse(t *testing.T) {
 
 func TestNotFoundResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.NotFoundResponse(
+		httptools.HandleError(
 			w,
 			r,
 			errortools.NewNotFoundError("resource", "value", "field"),
+			nil,
 		)
 	}
 
@@ -159,7 +163,7 @@ func TestNotFoundResponse(t *testing.T) {
 
 func TestFailedValidationResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.FailedValidationResponse(w, r, map[string]string{
+		httptools.HandleError(w, r, errortools.ErrFailedValidation, map[string]string{
 			"field": "invalid value",
 		})
 	}

@@ -22,7 +22,11 @@ type TestSubscribeMsg struct {
 }
 
 func (s TestSubscribeMsg) Validate() *validate.Validator {
-	return validate.New()
+	v := validate.New()
+
+	validate.Check(v, s.TopicName, validate.IsNotEmpty, "topicName")
+
+	return v
 }
 
 func (s TestSubscribeMsg) Topic() string {
@@ -91,4 +95,69 @@ func TestWebSocketExistingHandler(t *testing.T) {
 	)
 	assert.Nil(t, topic)
 	assert.EqualError(t, err, "topic 'exists' has already been added")
+}
+
+func TestWebsocketBasic(t *testing.T) {
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	topic, err := ws.AddTopic(
+		"exists",
+		[]string{"http://localhost"},
+		func(ctx context.Context, topic *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+	)
+	require.NotNil(t, topic)
+	require.Nil(t, err)
+
+	tWeb := test.CreateWebSocketTester(ws.Handler())
+	tWeb.SetInitialMessage(TestSubscribeMsg{
+		TopicName: "exists",
+	})
+	var rsData TestResponse
+	tWeb.Do(t, &rsData, nil)
+	assert.Equal(t, true, rsData.Ok)
+
+	topic, err = ws.UpdateTopicName(topic, "new")
+	require.NotNil(t, topic)
+	require.Nil(t, err)
+
+	tWeb = test.CreateWebSocketTester(ws.Handler())
+	tWeb.SetInitialMessage(TestSubscribeMsg{
+		TopicName: "new",
+	})
+	tWeb.Do(t, &rsData, nil)
+	assert.Equal(t, true, rsData.Ok)
+
+	err = ws.RemoveTopic(topic)
+	assert.Nil(t, err)
+}
+
+func TestWebSocketUpdateExistingTopic(t *testing.T) {
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	topic, err := ws.AddTopic(
+		"exists",
+		[]string{"http://localhost"},
+		func(ctx context.Context, topic *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+	)
+	require.NotNil(t, topic)
+	require.Nil(t, err)
+
+	topic, err = ws.UpdateTopicName(topic, "exists")
+	assert.Nil(t, topic)
+	assert.ErrorContains(t, err, "topic 'exists' already exists")
+}
+
+func TestWebSocketUpdateNonExistingTopic(t *testing.T) {
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	topic, err := ws.UpdateTopicName(&wstools.Topic{
+		Name: "unknown",
+	}, "exists")
+	assert.Nil(t, topic)
+	assert.ErrorContains(t, err, "topic 'unknown' doesn't exist")
+}
+
+func TestWebSocketRemoveNonExistingTopic(t *testing.T) {
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	err := ws.RemoveTopic(&wstools.Topic{
+		Name: "unknown",
+	})
+	assert.ErrorContains(t, err, "topic 'unknown' doesn't exist")
 }

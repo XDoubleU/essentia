@@ -23,6 +23,9 @@ func TestAnyToString(t *testing.T) {
 	assert.Equal(t, "string", ignoreError(shared.AnyToString("string")))
 	assert.Equal(t, "1", ignoreError(shared.AnyToString(1)))
 	assert.Equal(t, "1", ignoreError(shared.AnyToString(int64(1))))
+	assert.Equal(t, "str1,str2", ignoreError(shared.AnyToString([]string{"str1", "str2"})))
+	assert.Equal(t, "1,2", ignoreError(shared.AnyToString([]int{1, 2})))
+	assert.Equal(t, "1,2", ignoreError(shared.AnyToString([]int64{1, 2})))
 	assert.Error(
 		t,
 		errors.New("undefined type"),

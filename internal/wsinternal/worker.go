@@ -70,6 +70,8 @@ func (worker *Worker) Start(ctx context.Context) error {
 		// no subscribers so stop worker
 		// if lock is free no one is currently checking current state
 		if worker.upperBound == 0 && worker.activeMu.TryLock() {
+			worker.active = false
+			worker.activeMu.Unlock()
 			break
 		}
 
@@ -77,6 +79,9 @@ func (worker *Worker) Start(ctx context.Context) error {
 
 		// stop has been called from pool
 		if event == stopEvent {
+			worker.activeMu.Lock()
+			worker.active = false
+			worker.activeMu.Unlock()
 			break
 		}
 
@@ -100,9 +105,6 @@ func (worker *Worker) Start(ctx context.Context) error {
 
 		worker.pool.subscribersMu.RUnlock()
 	}
-
-	worker.active = false
-	worker.activeMu.Unlock()
 
 	return nil
 }

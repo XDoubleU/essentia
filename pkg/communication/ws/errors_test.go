@@ -32,14 +32,14 @@ func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
 	return res.Result().StatusCode
 }
 
-func setupWS(t *testing.T) http.Handler {
+func setupWS(t *testing.T, allowedOrigin string) http.Handler {
 	t.Helper()
 
 	wsHandler := wstools.CreateWebSocketHandler[TestSubscribeMsg](
 		1,
 		10,
 	)
-	_, err := wsHandler.AddTopic("topic", []string{"http://localhost"}, nil)
+	_, err := wsHandler.AddTopic("topic", []string{allowedOrigin}, nil)
 	require.Nil(t, err)
 
 	sentryMiddleware, err := sentrytools.Middleware(
@@ -62,7 +62,7 @@ func TestUpgradeErrorResponse(t *testing.T) {
 }
 
 func TestErrorResponse(t *testing.T) {
-	handler := setupWS(t)
+	handler := setupWS(t, "http://localhost")
 
 	tWeb := test.CreateWebSocketTester(handler)
 	tWeb.SetInitialMessage(TestSubscribeMsg{TopicName: "unknown"})
@@ -74,4 +74,21 @@ func TestErrorResponse(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, errorDto.Status)
 	assert.Equal(t, http.StatusText(http.StatusBadRequest), errorDto.Error)
 	assert.Equal(t, "topic 'unknown' doesn't exist", errorDto.Message)
+}
+
+func TestFailedValidationResponse(t *testing.T) {
+	handler := setupWS(t, "http://localhost")
+
+	tWeb := test.CreateWebSocketTester(handler)
+	tWeb.SetInitialMessage(TestSubscribeMsg{TopicName: ""})
+
+	var errorDto errortools.ErrorDto
+	err := tWeb.Do(t, &errorDto, nil)
+	require.Nil(t, err)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, errorDto.Status)
+	assert.Equal(t, http.StatusText(http.StatusUnprocessableEntity), errorDto.Error)
+	assert.Equal(t, map[string]any{
+		"topicName": "must be provided",
+	}, errorDto.Message)
 }

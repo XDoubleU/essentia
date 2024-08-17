@@ -60,10 +60,20 @@ func TestBasic(t *testing.T) {
 	time.Sleep(sleep)
 	require.True(t, wp.Active())
 
+	// test already started
+	wp.Start()
+	time.Sleep(sleep)
+	require.True(t, wp.Active())
+
 	event := "Hello, World!"
 	wp.EnqueueEvent(event)
 	time.Sleep(sleep)
 	assert.Equal(t, event, tSub.Output())
+
+	// test manual stop
+	wp.Stop()
+	time.Sleep(sleep)
+	assert.Equal(t, false, wp.Active())
 
 	wp.RemoveSubscriber(tSub)
 	time.Sleep(sleep)

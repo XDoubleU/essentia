@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -32,9 +33,10 @@ func TestHealth(t *testing.T) {
 		panic(err)
 	}
 
-	//todo use synctx
+	tx := postgres.CreatePgxSyncTx(context.Background(), db)
+	defer tx.Rollback(context.Background())
 
-	app := NewApp(logger, cfg, db)
+	app := NewApp(logger, cfg, tx)
 
 	tReq := test.CreateRequestTester(app.Routes(), http.MethodGet, "/health")
 	rs := tReq.Do(t)
