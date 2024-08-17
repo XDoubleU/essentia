@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/coder/websocket"
 	"github.com/xdoubleu/essentia/internal/wsinternal"
-	"nhooyr.io/websocket"
 )
 
 // OnSubscribeCallback is called to fetch data that
