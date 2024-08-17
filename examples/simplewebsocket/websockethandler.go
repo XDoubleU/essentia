@@ -39,7 +39,7 @@ func (app *application) getWebSocketHandler() http.HandlerFunc {
 	)
 	wsHandler.AddTopic(
 		"topic",
-		[]string{"http://localhost"},
+		app.config.AllowedOrigins,
 		func(_ context.Context, _ *wstools.Topic) (any, error) {
 			return ResponseMessageDto{
 				Message: "Hello, World!",
