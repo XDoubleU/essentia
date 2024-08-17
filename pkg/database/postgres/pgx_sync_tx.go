@@ -15,11 +15,13 @@ type PgxSyncTx struct {
 	syncTx *database.SyncTx[pgx.Tx]
 }
 
+// PgxSyncRow is a concurrent wrapper for [pgx.Row].
 type PgxSyncRow struct {
 	rows pgx.Rows
 	err  error
 }
 
+// PgxSyncRows is a concurrent wrapper for [pgx.Rows].
 type PgxSyncRows struct {
 	values            [][]any
 	rawValues         [][][]byte
@@ -104,34 +106,42 @@ func (tx *PgxSyncTx) Query(
 	)
 }
 
+// Close doesn't do anything for [PgxSyncRows] as these are closed in [Query].
 func (rows *PgxSyncRows) Close() {
 }
 
+// CommandTag fetches the [pgconn.CommandTag].
 func (rows *PgxSyncRows) CommandTag() pgconn.CommandTag {
 	return rows.commandTag
 }
 
+// Conn fetches the [pgx.Conn].
 func (rows *PgxSyncRows) Conn() *pgx.Conn {
 	return rows.conn
 }
 
+// Err fetches any errors.
 func (rows *PgxSyncRows) Err() error {
 	return rows.err
 }
 
+// FieldDescriptions fetches [pgconn.FieldDescription]s.
 func (rows *PgxSyncRows) FieldDescriptions() []pgconn.FieldDescription {
 	return rows.fieldDescriptions
 }
 
+// Next continues to the next row of [PgxSyncRows] if there is one.
 func (rows *PgxSyncRows) Next() bool {
 	rows.i++
 	return rows.i < len(rows.values)
 }
 
+// RawValues fetches the raw values of the current row.
 func (rows *PgxSyncRows) RawValues() [][]byte {
 	return rows.rawValues[rows.i]
 }
 
+// Scan scans the data of the current row into dest.
 func (rows *PgxSyncRows) Scan(dest ...any) error {
 	if err := rows.Err(); err != nil {
 		return err
@@ -144,6 +154,7 @@ func (rows *PgxSyncRows) Scan(dest ...any) error {
 		dest...)
 }
 
+// Values fetches the values of the current row.
 func (rows *PgxSyncRows) Values() ([]any, error) {
 	return rows.values[rows.i], nil
 }
@@ -158,6 +169,7 @@ func (tx *PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.
 	}
 }
 
+// Scan scans the data of [PgxSyncRow] into dest.
 func (row *PgxSyncRow) Scan(dest ...any) error {
 	if row.err != nil {
 		return row.err

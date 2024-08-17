@@ -50,7 +50,7 @@ func (worker *Worker) EnqueueEvent(event any) {
 }
 
 // Start makes [Worker] start doing work.
-func (worker *Worker) Start(ctx context.Context) error {
+func (worker *Worker) Start(_ context.Context) error {
 	// already active
 	if worker.Active() {
 		return nil
