@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/XDoubleU/essentia/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/xdoubleu/essentia/pkg/config"
 )
 
 const existingKey, nonExistingKey = "key", "non_key"

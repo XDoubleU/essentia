@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xdoubleu/essentia/internal/shared"
+	"github.com/XDoubleU/essentia/internal/shared"
 )
 
 var (

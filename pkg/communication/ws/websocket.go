@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/XDoubleU/essentia/pkg/validate"
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
-	"github.com/xdoubleu/essentia/pkg/validate"
 )
 
 // SubscribeMessageDto is implemented by all messages

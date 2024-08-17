@@ -7,9 +7,9 @@ import (
 	"sync"
 	"testing"
 
+	sentrytools "github.com/XDoubleU/essentia/pkg/sentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
-	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 func TestSentryErrorHandler(t *testing.T) {
