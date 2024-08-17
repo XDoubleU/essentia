@@ -108,7 +108,7 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-			//OriginPatterns: h.allowedOrigins,
+			//todo OriginPatterns: h.allowedOrigins,
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
@@ -116,32 +116,36 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 			return
 		}
 
-		var msg T
-		err = wsjson.Read(r.Context(), conn, &msg)
-		if err != nil {
-			ServerErrorResponse(r.Context(), conn, err)
-			return
-		}
+		// in case you want to subscribe on multiple topics
+		for {
+			var msg T
+			err = wsjson.Read(r.Context(), conn, &msg)
+			if err != nil {
+				ServerErrorResponse(r.Context(), conn, err)
+				return
+			}
 
-		if v := msg.Validate(); !v.Valid() {
-			FailedValidationResponse(r.Context(), conn, v.Errors)
-			return
-		}
+			if v := msg.Validate(); !v.Valid() {
+				FailedValidationResponse(r.Context(), conn, v.Errors)
+				return
+			}
 
-		topic, ok := h.topicMap[msg.Topic()]
-		if !ok {
-			ErrorResponse(
-				r.Context(),
-				conn,
-				http.StatusBadRequest,
-				fmt.Sprintf("topic '%s' doesn't exist", msg.Topic()),
-			)
-			return
-		}
+			topic, ok := h.topicMap[msg.Topic()]
+			if !ok {
+				ErrorResponse(
+					r.Context(),
+					conn,
+					http.StatusBadRequest,
+					fmt.Sprintf("topic '%s' doesn't exist", msg.Topic()),
+				)
+				return
+			}
 
-		err = topic.Subscribe(conn)
-		if err != nil {
-			ServerErrorResponse(r.Context(), conn, err)
+			err = topic.Subscribe(conn)
+			if err != nil {
+				ServerErrorResponse(r.Context(), conn, err)
+				return
+			}
 		}
 	}
 }
