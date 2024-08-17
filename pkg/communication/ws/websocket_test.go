@@ -1,6 +1,7 @@
 package ws_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -34,12 +35,12 @@ func setup(t *testing.T) http.Handler {
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
 		1,
 		10,
-		[]string{"http://localhost"},
 	)
 
 	_, err := ws.AddTopic(
 		"exists",
-		func(_ *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+		[]string{"http://localhost"},
+		func(_ context.Context, _ *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
 	)
 	require.Nil(t, err)
 
@@ -74,9 +75,10 @@ func TestWebSocketUnknownTopic(t *testing.T) {
 }
 
 func TestWebSocketExistingHandler(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10, []string{"localhost"})
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
 	topic, err := ws.AddTopic(
 		"exists",
+		[]string{"http://localhost"},
 		nil,
 	)
 	require.NotNil(t, topic)
@@ -84,6 +86,7 @@ func TestWebSocketExistingHandler(t *testing.T) {
 
 	topic, err = ws.AddTopic(
 		"exists",
+		[]string{"http://localhost"},
 		nil,
 	)
 	assert.Nil(t, topic)

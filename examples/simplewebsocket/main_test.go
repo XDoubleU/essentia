@@ -11,8 +11,10 @@ import (
 )
 
 func TestWebSocket(t *testing.T) {
-	app := NewApp(logging.NewNopLogger())
-	app.config.Env = config.TestEnv
+	cfg := NewConfig()
+	cfg.Env = config.TestEnv
+
+	app := NewApp(logging.NewNopLogger(), cfg)
 
 	tWeb := test.CreateWebSocketTester(app.Routes())
 	tWeb.SetInitialMessage(SubscribeMessageDto{

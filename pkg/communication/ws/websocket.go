@@ -3,6 +3,8 @@ package ws
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"strings"
 
 	"github.com/xdoubleu/essentia/pkg/validate"
@@ -22,7 +24,6 @@ type SubscribeMessageDto interface {
 type WebSocketHandler[T SubscribeMessageDto] struct {
 	maxTopicWorkers        int
 	topicChannelBufferSize int
-	allowedOrigins         []string
 	topicMap               map[string]*Topic
 }
 
@@ -30,18 +31,10 @@ type WebSocketHandler[T SubscribeMessageDto] struct {
 func CreateWebSocketHandler[T SubscribeMessageDto](
 	maxTopicWorkers int,
 	topicChannelBufferSize int,
-	allowedOrigins []string,
 ) WebSocketHandler[T] {
-	for i, url := range allowedOrigins {
-		if strings.Contains(url, "://") {
-			allowedOrigins[i] = strings.Split(url, "://")[1]
-		}
-	}
-
 	return WebSocketHandler[T]{
 		maxTopicWorkers:        maxTopicWorkers,
 		topicChannelBufferSize: topicChannelBufferSize,
-		allowedOrigins:         allowedOrigins,
 		topicMap:               make(map[string]*Topic),
 	}
 }
@@ -51,6 +44,7 @@ func CreateWebSocketHandler[T SubscribeMessageDto](
 // new subscriber to fetch data to send them back.
 func (h *WebSocketHandler[T]) AddTopic(
 	topicName string,
+	allowedOrigins []string,
 	onSubscribeCallback OnSubscribeCallback,
 ) (*Topic, error) {
 	_, ok := h.topicMap[topicName]
@@ -60,6 +54,7 @@ func (h *WebSocketHandler[T]) AddTopic(
 
 	topic := NewTopic(
 		topicName,
+		allowedOrigins,
 		h.maxTopicWorkers,
 		h.topicChannelBufferSize,
 		onSubscribeCallback,
@@ -108,7 +103,6 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//nolint:exhaustruct //other fields are optional
 		conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-			//todo OriginPatterns: h.allowedOrigins,
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
@@ -141,6 +135,11 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 				return
 			}
 
+			err = authenticateOrigin(r, topic.allowedOrigins)
+			if err != nil {
+				ForbiddenResponse(r.Context(), conn)
+			}
+
 			err = topic.Subscribe(conn)
 			if err != nil {
 				ServerErrorResponse(r.Context(), conn, err)
@@ -148,4 +147,40 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 			}
 		}
 	}
+}
+
+// copied from nhooyr.io/websocket
+func authenticateOrigin(r *http.Request, originHosts []string) error {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return nil
+	}
+
+	u, err := url.Parse(origin)
+	if err != nil {
+		return fmt.Errorf("failed to parse Origin header %q: %w", origin, err)
+	}
+
+	if strings.EqualFold(r.Host, u.Host) {
+		return nil
+	}
+
+	for _, hostPattern := range originHosts {
+		matched, err := match(hostPattern, u.Host)
+		if err != nil {
+			return fmt.Errorf("failed to parse filepath pattern %q: %w", hostPattern, err)
+		}
+		if matched {
+			return nil
+		}
+	}
+	if u.Host == "" {
+		return fmt.Errorf("request Origin %q is not a valid URL with a host", origin)
+	}
+	return fmt.Errorf("request Origin %q is not authorized for Host %q", u.Host, r.Host)
+}
+
+// copied from nhooyr.io/websocket
+func match(pattern, s string) (bool, error) {
+	return filepath.Match(strings.ToLower(pattern), strings.ToLower(s))
 }

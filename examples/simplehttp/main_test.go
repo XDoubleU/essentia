@@ -11,8 +11,10 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	app := NewApp(logging.NewNopLogger())
-	app.config.Env = config.TestEnv
+	cfg := NewConfig()
+	cfg.Env = config.TestEnv
+
+	app := NewApp(logging.NewNopLogger(), cfg)
 
 	tReq := test.CreateRequestTester(app.Routes(), http.MethodGet, "/health")
 	rs := tReq.Do(t)

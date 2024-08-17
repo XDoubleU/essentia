@@ -16,17 +16,19 @@ type application struct {
 	config Config
 }
 
-func NewApp(logger *slog.Logger) application {
+func NewApp(logger *slog.Logger, config Config) application {
 	return application{
 		logger: logger,
-		config: NewConfig(),
+		config: config,
 	}
 }
 
 func main() {
-	logger := slog.New(sentrytools.NewLogHandler())
+	cfg := NewConfig()
 
-	app := NewApp(logger)
+	logger := slog.New(sentrytools.NewLogHandler(cfg.Env))
+
+	app := NewApp(logger, cfg)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.Port),

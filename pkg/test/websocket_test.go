@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,11 +36,11 @@ func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
 		1,
 		10,
-		[]string{"http://localhost"},
 	)
 	topic, err := ws.AddTopic(
 		"exists",
-		func(_ *wstools.Topic) (any, error) {
+		[]string{"http://localhost"},
+		func(_ context.Context, _ *wstools.Topic) (any, error) {
 			return TestResponse{Ok: true, Message: "initial"}, nil
 		},
 	)

@@ -30,6 +30,7 @@ func TestSentryErrorHandler(t *testing.T) {
 	go func() {
 		sentrytools.GoRoutineErrorHandler(
 			name,
+			context.Background(),
 			testFunc,
 		)
 		wg.Done()

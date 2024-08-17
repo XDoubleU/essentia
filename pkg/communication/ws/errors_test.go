@@ -38,9 +38,8 @@ func setupWS(t *testing.T) http.Handler {
 	wsHandler := wstools.CreateWebSocketHandler[TestSubscribeMsg](
 		1,
 		10,
-		[]string{"http://localhost"},
 	)
-	_, err := wsHandler.AddTopic("topic", nil)
+	_, err := wsHandler.AddTopic("topic", []string{"http://localhost"}, nil)
 	require.Nil(t, err)
 
 	sentryMiddleware, err := sentrytools.Middleware(

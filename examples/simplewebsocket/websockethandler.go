@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	wstools "github.com/xdoubleu/essentia/pkg/communication/ws"
@@ -35,11 +36,11 @@ func (app *application) getWebSocketHandler() http.HandlerFunc {
 	wsHandler := wstools.CreateWebSocketHandler[SubscribeMessageDto](
 		1,
 		10,
-		app.config.AllowedOrigins,
 	)
 	wsHandler.AddTopic(
 		"topic",
-		func(_ *wstools.Topic) (any, error) {
+		[]string{"http://localhost"},
+		func(_ context.Context, _ *wstools.Topic) (any, error) {
 			return ResponseMessageDto{
 				Message: "Hello, World!",
 			}, nil

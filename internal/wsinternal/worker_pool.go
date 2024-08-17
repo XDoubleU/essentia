@@ -80,7 +80,7 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
-		sentry.GoRoutineErrorHandler(fmt.Sprintf("Worker %d", i), context.Background(), pool.workers[i].Start)
+		go sentry.GoRoutineErrorHandler(fmt.Sprintf("Worker %d", i), context.Background(), pool.workers[i].Start)
 	}
 }
 

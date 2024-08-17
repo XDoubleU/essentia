@@ -57,3 +57,9 @@ func FailedValidationResponse(
 ) {
 	ErrorResponse(ctx, conn, http.StatusUnprocessableEntity, errors)
 }
+
+// ForbiddenResponse is used to handle an error when a user
+// isn't authorized to access a certain resource.
+func ForbiddenResponse(ctx context.Context, conn *websocket.Conn) {
+	ErrorResponse(ctx, conn, http.StatusForbidden, errortools.MessageForbidden)
+}

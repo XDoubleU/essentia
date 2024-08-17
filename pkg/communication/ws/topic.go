@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"strings"
 
 	"github.com/xdoubleu/essentia/internal/wsinternal"
 	"nhooyr.io/websocket"
@@ -15,6 +16,7 @@ type OnSubscribeCallback = func(ctx context.Context, topic *Topic) (any, error)
 // to [Subscriber]s in a WebSocket.
 type Topic struct {
 	Name                string
+	allowedOrigins      []string
 	pool                *wsinternal.WorkerPool
 	onSubscribeCallback OnSubscribeCallback
 }
@@ -22,12 +24,20 @@ type Topic struct {
 // NewTopic creates a new [Topic].
 func NewTopic(
 	name string,
+	allowedOrigins []string,
 	maxWorkers int,
 	channelBufferSize int,
 	onSubscribeCallback OnSubscribeCallback,
 ) *Topic {
+	for i, url := range allowedOrigins {
+		if strings.Contains(url, "://") {
+			allowedOrigins[i] = strings.Split(url, "://")[1]
+		}
+	}
+
 	return &Topic{
-		Name: name,
+		Name:           name,
+		allowedOrigins: allowedOrigins,
 		pool: wsinternal.NewWorkerPool(
 			maxWorkers,
 			channelBufferSize,
