@@ -104,7 +104,7 @@ func TestWebsocketBasic(t *testing.T) {
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
-		func(_ context.Context, topic *wstools.Topic) (any, error) {
+		func(_ context.Context, _ *wstools.Topic) (any, error) {
 			return TestResponse{Ok: true}, nil
 		},
 	)
@@ -143,7 +143,7 @@ func TestWebSocketUpdateExistingTopic(t *testing.T) {
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
-		func(_ context.Context, topic *wstools.Topic) (any, error) {
+		func(_ context.Context, _ *wstools.Topic) (any, error) {
 			return TestResponse{Ok: true}, nil
 		},
 	)
