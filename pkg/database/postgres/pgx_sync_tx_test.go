@@ -19,11 +19,11 @@ func setup(t *testing.T) *postgres.PgxSyncTx {
 	db, err := postgres.Connect(
 		logger,
 		"postgres://postgres@localhost/postgres",
-		25, //nolint:mnd //no magic number
+		25,
 		"15m",
-		30,             //nolint:mnd //no magic number
-		30*time.Second, //nolint:mnd //no magic number
-		5*time.Minute,  //nolint:mnd //no magic number
+		30,
+		30*time.Second,
+		5*time.Minute,
 	)
 	if err != nil {
 		panic(err)
@@ -34,17 +34,19 @@ func setup(t *testing.T) *postgres.PgxSyncTx {
 
 func TestPing(t *testing.T) {
 	tx := setup(t)
-	defer tx.Rollback(context.Background())
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
 
 	db := postgres.NewSpanDB(tx)
 
-	err := db.Ping(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	err := db.Ping(ctx)
 	assert.Nil(t, err)
 }
 
 func TestExec(t *testing.T) {
 	tx := setup(t)
-	defer tx.Rollback(context.Background())
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
 
 	db := postgres.NewSpanDB(tx)
 
@@ -54,7 +56,7 @@ func TestExec(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	tx := setup(t)
-	defer tx.Rollback(context.Background())
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
 
 	db := postgres.NewSpanDB(tx)
 
@@ -94,7 +96,7 @@ func TestQuery(t *testing.T) {
 
 func TestQueryRow(t *testing.T) {
 	tx := setup(t)
-	defer tx.Rollback(context.Background())
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
 
 	db := postgres.NewSpanDB(tx)
 
@@ -112,8 +114,10 @@ func TestQueryRow(t *testing.T) {
 
 	var key string
 	var value string
-	err = db.QueryRow(context.Background(), "SELECT key, value FROM kv WHERE key = 'key1';").
-		Scan(&key, &value)
+	err = db.QueryRow(
+		context.Background(),
+		"SELECT key, value FROM kv WHERE key = 'key1';",
+	).Scan(&key, &value)
 
 	require.Nil(t, err)
 	assert.Equal(t, "key1", key)
@@ -122,7 +126,7 @@ func TestQueryRow(t *testing.T) {
 
 func TestBegin(t *testing.T) {
 	tx := setup(t)
-	defer tx.Rollback(context.Background())
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
 
 	db := postgres.NewSpanDB(tx)
 

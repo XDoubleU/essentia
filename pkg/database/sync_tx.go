@@ -27,7 +27,8 @@ func CreateSyncTx[TTx MinimalDBTx](
 		tx, err := beginTxFunc(ctx)
 		if err == nil {
 			return &SyncTx[TTx]{
-				Tx: tx,
+				Tx:    tx,
+				Mutex: sync.Mutex{},
 			}
 		}
 	}

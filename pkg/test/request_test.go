@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 	"github.com/xdoubleu/essentia/pkg/test"
 )
@@ -47,7 +48,8 @@ func TestRequestTester(t *testing.T) {
 	rs := tReq.Do(t)
 
 	var rsData map[string]string
-	httptools.ReadJSON(rs.Body, &rsData)
+	err := httptools.ReadJSON(rs.Body, &rsData)
+	require.Nil(t, err)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -68,7 +70,8 @@ func TestRequestTesterTestServer(t *testing.T) {
 	rs := tReq.Do(t)
 
 	var rsData map[string]string
-	httptools.ReadJSON(rs.Body, &rsData)
+	err := httptools.ReadJSON(rs.Body, &rsData)
+	require.Nil(t, err)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)

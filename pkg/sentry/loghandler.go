@@ -42,6 +42,7 @@ func (l *LogHandler) Enabled(_ context.Context, level slog.Level) bool {
 
 // WithAttrs adds [[]slog.Attr] to a [SentryLogHandler].
 func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	//nolint:exhaustruct //other fields are optional
 	return &LogHandler{
 		attrs:  append(l.attrs, attrs...),
 		groups: l.groups,
@@ -50,6 +51,7 @@ func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 
 // WithGroup adds a group to a [SentryLogHandler].
 func (l *LogHandler) WithGroup(name string) slog.Handler {
+	//nolint:exhaustruct //other fields are optional
 	return &LogHandler{
 		attrs:  l.attrs,
 		groups: append(l.groups, name),

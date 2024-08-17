@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
@@ -20,8 +22,10 @@ type Health struct {
 func (app *application) getHealthHandler(w http.ResponseWriter,
 	r *http.Request) {
 
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
+	defer cancel()
 	data := Health{
-		IsDatabaseActive: app.db.Ping(r.Context()) == nil,
+		IsDatabaseActive: app.db.Ping(ctx) == nil,
 	}
 
 	err := httptools.WriteJSON(w, http.StatusOK, data, nil)

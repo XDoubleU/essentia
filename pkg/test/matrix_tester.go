@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
@@ -79,7 +80,8 @@ func (mt MatrixTester) Do(t *testing.T) {
 			defer rs.Body.Close()
 		} else {
 			rs = tReq.Do(t)
-			httptools.ReadJSON(rs.Body, &rsData)
+			err := httptools.ReadJSON(rs.Body, &rsData)
+			require.Nil(t, err)
 
 			defer rs.Body.Close()
 		}

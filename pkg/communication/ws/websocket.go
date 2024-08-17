@@ -149,7 +149,7 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 	}
 }
 
-// copied from nhooyr.io/websocket
+// copied from nhooyr.io/websocket.
 func authenticateOrigin(r *http.Request, originHosts []string) error {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
@@ -166,7 +166,8 @@ func authenticateOrigin(r *http.Request, originHosts []string) error {
 	}
 
 	for _, hostPattern := range originHosts {
-		matched, err := match(hostPattern, u.Host)
+		var matched bool
+		matched, err = match(hostPattern, u.Host)
 		if err != nil {
 			return fmt.Errorf(
 				"failed to parse filepath pattern %q: %w",
@@ -184,7 +185,7 @@ func authenticateOrigin(r *http.Request, originHosts []string) error {
 	return fmt.Errorf("request Origin %q is not authorized for Host %q", u.Host, r.Host)
 }
 
-// copied from nhooyr.io/websocket
+// copied from nhooyr.io/websocket.
 func match(pattern, s string) (bool, error) {
 	return filepath.Match(strings.ToLower(pattern), strings.ToLower(s))
 }

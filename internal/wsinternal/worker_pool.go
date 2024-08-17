@@ -81,8 +81,8 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
 		go sentry.GoRoutineErrorHandler(
-			fmt.Sprintf("Worker %d", i),
 			context.Background(),
+			fmt.Sprintf("Worker %d", i),
 			pool.workers[i].Start,
 		)
 	}

@@ -18,6 +18,7 @@ func TestLogHandlerDev(t *testing.T) {
 	logger := slog.New(
 		sentry.NewLogHandler(
 			config.DevEnv,
+			//nolint:exhaustruct //other fields are optional
 			slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
 		),
 	)

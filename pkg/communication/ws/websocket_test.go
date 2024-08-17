@@ -44,7 +44,9 @@ func setup(t *testing.T) http.Handler {
 	_, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
-		func(_ context.Context, _ *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+		func(_ context.Context, _ *wstools.Topic) (any, error) {
+			return TestResponse{Ok: true}, nil
+		},
 	)
 	require.Nil(t, err)
 
@@ -102,7 +104,9 @@ func TestWebsocketBasic(t *testing.T) {
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
-		func(ctx context.Context, topic *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+		func(ctx context.Context, topic *wstools.Topic) (any, error) {
+			return TestResponse{Ok: true}, nil
+		},
 	)
 	require.NotNil(t, topic)
 	require.Nil(t, err)
@@ -112,7 +116,9 @@ func TestWebsocketBasic(t *testing.T) {
 		TopicName: "exists",
 	})
 	var rsData TestResponse
-	tWeb.Do(t, &rsData, nil)
+	err = tWeb.Do(t, &rsData, nil)
+	require.Nil(t, err)
+
 	assert.Equal(t, true, rsData.Ok)
 
 	topic, err = ws.UpdateTopicName(topic, "new")
@@ -123,7 +129,9 @@ func TestWebsocketBasic(t *testing.T) {
 	tWeb.SetInitialMessage(TestSubscribeMsg{
 		TopicName: "new",
 	})
-	tWeb.Do(t, &rsData, nil)
+	err = tWeb.Do(t, &rsData, nil)
+	require.Nil(t, err)
+
 	assert.Equal(t, true, rsData.Ok)
 
 	err = ws.RemoveTopic(topic)
@@ -135,7 +143,9 @@ func TestWebSocketUpdateExistingTopic(t *testing.T) {
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
-		func(ctx context.Context, topic *wstools.Topic) (any, error) { return TestResponse{Ok: true}, nil },
+		func(ctx context.Context, topic *wstools.Topic) (any, error) {
+			return TestResponse{Ok: true}, nil
+		},
 	)
 	require.NotNil(t, topic)
 	require.Nil(t, err)

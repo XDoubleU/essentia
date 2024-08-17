@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var dotEnvLoaded = false
+var dotEnvLoaded = false //nolint:gochecknoglobals //need this for tracking state
 
 const (
 	// ProdEnv can be used as value when reading out the type of environment.
@@ -27,7 +27,7 @@ const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 // EnvStr extracts a string environment variable.
 func EnvStr(key string, defaultValue string) string {
 	if !dotEnvLoaded {
-		godotenv.Load()
+		_ = godotenv.Load()
 		dotEnvLoaded = true
 	}
 
