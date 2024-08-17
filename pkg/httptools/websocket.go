@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/XDoubleU/essentia/pkg/validate"
-	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 )
 
 // SubjectMessageDto is implemented by all messages

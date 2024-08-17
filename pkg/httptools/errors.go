@@ -8,8 +8,8 @@ import (
 
 	"github.com/XDoubleU/essentia/pkg/contexttools"
 	"github.com/XDoubleU/essentia/pkg/tools"
+	"github.com/coder/websocket"
 	"github.com/getsentry/sentry-go"
-	"nhooyr.io/websocket"
 )
 
 var (

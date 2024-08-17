@@ -11,9 +11,9 @@ import (
 	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/XDoubleU/essentia/pkg/middleware"
 	"github.com/XDoubleU/essentia/pkg/test"
+	"github.com/coder/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"nhooyr.io/websocket"
 )
 
 func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
