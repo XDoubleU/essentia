@@ -15,7 +15,12 @@ import (
 func TestLogHandlerDev(t *testing.T) {
 	var buf bytes.Buffer
 
-	logger := slog.New(sentry.NewLogHandler(config.DevEnv, slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
+	logger := slog.New(
+		sentry.NewLogHandler(
+			config.DevEnv,
+			slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		),
+	)
 
 	logger.Error("test", logging.ErrAttr(errors.New("testerror")))
 

@@ -23,9 +23,6 @@ test/v:
 test/race:
 	go test ./... -race
 
-test/pprof:
-	go test ./... -cpuprofile cpu.prof -memprofile mem.prof -bench .
-
 test/cov/report:
 	go test ./... -coverpkg=./... -covermode=atomic -coverprofile=coverage.out -race
 

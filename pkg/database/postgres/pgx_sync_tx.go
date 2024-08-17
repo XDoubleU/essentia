@@ -137,7 +137,11 @@ func (rows *PgxSyncRows) Scan(dest ...any) error {
 		return err
 	}
 
-	return pgx.ScanRow(pgtype.NewMap(), rows.FieldDescriptions(), rows.RawValues(), dest...)
+	return pgx.ScanRow(
+		pgtype.NewMap(),
+		rows.FieldDescriptions(),
+		rows.RawValues(),
+		dest...)
 }
 
 func (rows *PgxSyncRows) Values() ([]any, error) {

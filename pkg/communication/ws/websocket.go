@@ -168,7 +168,11 @@ func authenticateOrigin(r *http.Request, originHosts []string) error {
 	for _, hostPattern := range originHosts {
 		matched, err := match(hostPattern, u.Host)
 		if err != nil {
-			return fmt.Errorf("failed to parse filepath pattern %q: %w", hostPattern, err)
+			return fmt.Errorf(
+				"failed to parse filepath pattern %q: %w",
+				hostPattern,
+				err,
+			)
 		}
 		if matched {
 			return nil

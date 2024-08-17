@@ -10,7 +10,11 @@ import (
 
 // GoRoutineErrorHandler makes sure a
 // go routine and its errors are captured by Sentry.
-func GoRoutineErrorHandler(name string, ctx context.Context, f func(ctx context.Context) error) {
+func GoRoutineErrorHandler(
+	name string,
+	ctx context.Context,
+	f func(ctx context.Context) error,
+) {
 	name = fmt.Sprintf("GO ROUTINE %s", name)
 
 	hub := sentry.CurrentHub().Clone()

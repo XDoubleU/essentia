@@ -58,10 +58,16 @@ func TestQuery(t *testing.T) {
 
 	db := postgres.NewSpanDB(tx)
 
-	_, err := db.Exec(context.Background(), "CREATE TABLE kv (key VARCHAR(255), value VARCHAR(255));")
+	_, err := db.Exec(
+		context.Background(),
+		"CREATE TABLE kv (key VARCHAR(255), value VARCHAR(255));",
+	)
 	require.Nil(t, err)
 
-	_, err = db.Exec(context.Background(), "INSERT INTO kv (key, value) VALUES ('key1', 'value1'), ('key2', 'value2');")
+	_, err = db.Exec(
+		context.Background(),
+		"INSERT INTO kv (key, value) VALUES ('key1', 'value1'), ('key2', 'value2');",
+	)
 	require.Nil(t, err)
 
 	rows, err := db.Query(context.Background(), "SELECT key, value FROM kv;")
@@ -92,15 +98,22 @@ func TestQueryRow(t *testing.T) {
 
 	db := postgres.NewSpanDB(tx)
 
-	_, err := db.Exec(context.Background(), "CREATE TABLE kv (key VARCHAR(255), value VARCHAR(255));")
+	_, err := db.Exec(
+		context.Background(),
+		"CREATE TABLE kv (key VARCHAR(255), value VARCHAR(255));",
+	)
 	require.Nil(t, err)
 
-	_, err = db.Exec(context.Background(), "INSERT INTO kv (key, value) VALUES ('key1', 'value1');")
+	_, err = db.Exec(
+		context.Background(),
+		"INSERT INTO kv (key, value) VALUES ('key1', 'value1');",
+	)
 	require.Nil(t, err)
 
 	var key string
 	var value string
-	err = db.QueryRow(context.Background(), "SELECT key, value FROM kv WHERE key = 'key1';").Scan(&key, &value)
+	err = db.QueryRow(context.Background(), "SELECT key, value FROM kv WHERE key = 'key1';").
+		Scan(&key, &value)
 
 	require.Nil(t, err)
 	assert.Equal(t, "key1", key)
