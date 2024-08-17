@@ -1,6 +1,6 @@
 package main
 
-import "github.com/xdoubleu/essentia/pkg/config"
+import "github.com/XDoubleU/essentia/pkg/config"
 
 type Config struct {
 	Env            string

@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/XDoubleU/essentia/pkg/middleware"
 	"github.com/justinas/alice"
-	"github.com/xdoubleu/essentia/pkg/middleware"
 )
 
 func (app application) Routes() http.Handler {

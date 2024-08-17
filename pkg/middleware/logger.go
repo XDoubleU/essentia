@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/XDoubleU/essentia/internal/shared"
+	"github.com/XDoubleU/essentia/pkg/context"
 	sentryhttp "github.com/getsentry/sentry-go/http"
-	"github.com/xdoubleu/essentia/internal/shared"
-	"github.com/xdoubleu/essentia/pkg/context"
 )
 
 // Logger is middleware used to add a logger to

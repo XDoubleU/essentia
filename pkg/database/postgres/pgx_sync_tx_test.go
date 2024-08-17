@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XDoubleU/essentia/pkg/database/postgres"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xdoubleu/essentia/pkg/database/postgres"
-	"github.com/xdoubleu/essentia/pkg/logging"
 )
 
 func setup(t *testing.T) *postgres.PgxSyncTx {

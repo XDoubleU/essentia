@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/xdoubleu/essentia/internal/shared"
+	"github.com/XDoubleU/essentia/internal/shared"
 )
 
 // ValidatorFunc is the expected format used for validating data using [Check].

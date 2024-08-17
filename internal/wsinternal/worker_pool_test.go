@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/XDoubleU/essentia/internal/wsinternal"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xdoubleu/essentia/internal/wsinternal"
 )
 
 type TestSubscriber struct {

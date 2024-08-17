@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/XDoubleU/essentia/internal/wsinternal"
 	"github.com/coder/websocket"
-	"github.com/xdoubleu/essentia/internal/wsinternal"
 )
 
 // OnSubscribeCallback is called to fetch data that

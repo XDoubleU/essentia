@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/xdoubleu/essentia/pkg/sentry"
+	"github.com/XDoubleU/essentia/pkg/sentry"
 )
 
 type Subscriber interface {
