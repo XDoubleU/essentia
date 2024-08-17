@@ -13,8 +13,8 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-// WebsocketTester is used for testing a websocket.
-type WebsocketTester struct {
+// WebSocketTester is used for testing a websocket.
+type WebSocketTester struct {
 	handler           http.Handler
 	timeout           time.Duration
 	sleep             time.Duration
@@ -24,13 +24,13 @@ type WebsocketTester struct {
 
 // ParallelOperation is a operation executed while
 // waiting for a new message coming from the server.
-type ParallelOperation = func(t *testing.T, ts *httptest.Server, conn *websocket.Conn)
+type ParallelOperation = func(t *testing.T, ts *httptest.Server)
 
-// CreateWebsocketTester creates a new [WebsocketTester].
-func CreateWebsocketTester(handler http.Handler) WebsocketTester {
-	return WebsocketTester{
+// CreateWebSocketTester creates a new [WebSocketTester].
+func CreateWebSocketTester(handler http.Handler) WebSocketTester {
+	return WebSocketTester{
 		handler:           handler,
-		timeout:           10 * time.Second, //nolint:mnd //no magic number
+		timeout:           5 * time.Second, //nolint:mnd //no magic number
 		sleep:             time.Second,
 		initialMsg:        nil,
 		parallelOperation: nil,
@@ -38,20 +38,20 @@ func CreateWebsocketTester(handler http.Handler) WebsocketTester {
 }
 
 // SetInitialMessage sets the message to be sent when the connection is created.
-func (tWeb *WebsocketTester) SetInitialMessage(msg any) {
+func (tWeb *WebSocketTester) SetInitialMessage(msg any) {
 	tWeb.initialMsg = msg
 }
 
 // SetParallelOperation sets operation to be executed while
 // waiting for a new message coming from the server.
-func (tWeb *WebsocketTester) SetParallelOperation(parallelOperation ParallelOperation) {
+func (tWeb *WebSocketTester) SetParallelOperation(parallelOperation ParallelOperation) {
 	tWeb.parallelOperation = parallelOperation
 }
 
-// Do executes a [WebsocketTester] returning the response
+// Do executes a [WebSocketTester] returning the response
 // of the initialRequest and parallelOperation.
 // An error is returned if the initialResponse can't be read.
-func (tWeb WebsocketTester) Do(
+func (tWeb WebSocketTester) Do(
 	t *testing.T,
 	initialResponse any,
 	parallelOperationResponse any,
@@ -64,7 +64,7 @@ func (tWeb WebsocketTester) Do(
 	defer ts.Close()
 
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
-	ws, err := dialWebsocket(wsURL, tWeb.timeout)
+	ws, err := dialWebSocket(wsURL, tWeb.timeout)
 	require.Nil(t, err)
 
 	defer func() {
@@ -92,7 +92,7 @@ func (tWeb WebsocketTester) Do(
 	if tWeb.parallelOperation != nil {
 		go func() {
 			time.Sleep(tWeb.sleep)
-			tWeb.parallelOperation(t, ts, ws)
+			tWeb.parallelOperation(t, ts)
 		}()
 
 		ctx, cancel := context.WithTimeout(context.Background(), tWeb.timeout)
@@ -104,7 +104,7 @@ func (tWeb WebsocketTester) Do(
 	return nil
 }
 
-func dialWebsocket(url string, timeout time.Duration) (*websocket.Conn, error) {
+func dialWebSocket(url string, timeout time.Duration) (*websocket.Conn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 

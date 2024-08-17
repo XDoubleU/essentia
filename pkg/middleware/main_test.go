@@ -8,12 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/XDoubleU/essentia/internal/mocks"
-	"github.com/XDoubleU/essentia/pkg/contexttools"
-	"github.com/XDoubleU/essentia/pkg/middleware"
-	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/internal/mocks"
+	"github.com/xdoubleu/essentia/pkg/context"
+	"github.com/xdoubleu/essentia/pkg/middleware"
 )
 
 func testCORSHeaders(
@@ -112,11 +110,11 @@ func TestErrors(t *testing.T) {
 		},
 		req,
 		func(_ http.ResponseWriter, r *http.Request) {
-			assert.False(t, contexttools.GetShowErrors(r))
+			assert.False(t, context.ShowErrors(r.Context()))
 		},
 	)
 	testMiddleware(t, showErrors, req, func(_ http.ResponseWriter, r *http.Request) {
-		assert.True(t, contexttools.GetShowErrors(r))
+		assert.True(t, context.ShowErrors(r.Context()))
 	})
 }
 
@@ -126,19 +124,19 @@ func TestLogger(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	testMiddleware(
 		t,
-		middleware.Logger(mockedLogger.GetLogger()),
+		middleware.Logger(mockedLogger.Logger()),
 		req,
 		func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
 	)
 
-	timeStr := time.Now().Format("2006/01/02")
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), timeStr)
+	timeStr := time.Now().Format("2006-01-02")
+	assert.Contains(t, mockedLogger.CapturedLogs(), timeStr)
 	assert.Contains(
 		t,
-		mockedLogger.GetCapturedLogs(),
-		fmt.Sprintf("[%d]", http.StatusOK),
+		mockedLogger.CapturedLogs(),
+		fmt.Sprintf("status=%d", http.StatusOK),
 	)
 }
 
@@ -178,7 +176,7 @@ func TestRecover(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
 	res := testMiddleware(
 		t,
-		middleware.Recover(mockedLogger.GetLogger()),
+		middleware.Recover(mockedLogger.Logger()),
 		req,
 		func(_ http.ResponseWriter, _ *http.Request) {
 			panic("test")
@@ -187,24 +185,5 @@ func TestRecover(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 	assert.Equal(t, "close", res.Header()["Connection"][0])
-	assert.Contains(t, mockedLogger.GetCapturedLogs(), "PANIC")
-}
-
-func TestSentry(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodGet, "http://example.com/foo", nil)
-
-	sentryMiddleware, err := middleware.Sentry(
-		true,
-		*mocks.GetMockedSentryClientOptions(),
-	)
-	require.Nil(t, err)
-
-	testMiddleware(
-		t,
-		sentryMiddleware,
-		req,
-		func(_ http.ResponseWriter, r *http.Request) {
-			assert.NotNil(t, sentry.GetHubFromContext(r.Context()))
-		},
-	)
+	assert.Contains(t, mockedLogger.CapturedLogs(), "PANIC")
 }

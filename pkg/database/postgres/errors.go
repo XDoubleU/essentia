@@ -3,10 +3,10 @@ package postgres
 import (
 	"errors"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/xdoubleu/essentia/pkg/database"
 )
 
 // PgxErrorToHTTPError converts a database error
@@ -16,10 +16,15 @@ func PgxErrorToHTTPError(err error) error {
 	errors.As(err, &pgxError)
 
 	switch {
-	case errors.Is(err, pgx.ErrNoRows), pgxError.Code == pgerrcode.ForeignKeyViolation:
-		return httptools.ErrResourceNotFound
+	case pgxError == nil:
+		if errors.Is(err, pgx.ErrNoRows) {
+			return database.ErrResourceNotFound
+		}
+		return err
+	case pgxError.Code == pgerrcode.ForeignKeyViolation:
+		return database.ErrResourceNotFound
 	case pgxError.Code == pgerrcode.UniqueViolation:
-		return httptools.ErrResourceUniqueValue
+		return database.ErrResourceConflict
 	default:
 		return err
 	}

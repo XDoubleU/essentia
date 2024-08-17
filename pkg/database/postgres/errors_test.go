@@ -3,12 +3,12 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/database/postgres"
-	"github.com/XDoubleU/essentia/pkg/httptools"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
+	"github.com/xdoubleu/essentia/pkg/database"
+	"github.com/xdoubleu/essentia/pkg/database/postgres"
 )
 
 func newPgError(code string) *pgconn.PgError {
@@ -24,14 +24,14 @@ func TestErrResourceNotFound(t *testing.T) {
 		newPgError(pgerrcode.ForeignKeyViolation),
 	)
 
-	assert.ErrorIs(t, err1, httptools.ErrResourceNotFound)
-	assert.ErrorIs(t, err2, httptools.ErrResourceNotFound)
+	assert.ErrorIs(t, err1, database.ErrResourceNotFound)
+	assert.ErrorIs(t, err2, database.ErrResourceNotFound)
 }
 
-func TestErrResourceUniqueValue(t *testing.T) {
+func TestErrResourceConflict(t *testing.T) {
 	err := postgres.PgxErrorToHTTPError(
 		newPgError(pgerrcode.UniqueViolation),
 	)
 
-	assert.ErrorIs(t, err, httptools.ErrResourceUniqueValue)
+	assert.ErrorIs(t, err, database.ErrResourceConflict)
 }

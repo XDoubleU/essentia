@@ -13,16 +13,8 @@ type MinimalDBTx interface {
 // SyncTx wraps a database transaction to make sure it can be used concurrently.
 // This is achieved by locking the transaction when in use.
 type SyncTx[TTx MinimalDBTx] struct {
+	sync.Mutex
 	Tx TTx
-	mu *sync.Mutex
-}
-
-func waitOnLock(lock *sync.Mutex) {
-	for {
-		if lock.TryLock() {
-			break
-		}
-	}
 }
 
 // CreateSyncTx creates a [SyncTx] which
@@ -30,14 +22,13 @@ func waitOnLock(lock *sync.Mutex) {
 func CreateSyncTx[TTx MinimalDBTx](
 	ctx context.Context,
 	beginTxFunc func(ctx context.Context) (TTx, error),
-) SyncTx[TTx] {
-	var mu sync.Mutex
+) *SyncTx[TTx] {
 	for {
 		tx, err := beginTxFunc(ctx)
 		if err == nil {
-			return SyncTx[TTx]{
-				Tx: tx,
-				mu: &mu,
+			return &SyncTx[TTx]{
+				Tx:    tx,
+				Mutex: sync.Mutex{},
 			}
 		}
 	}
@@ -47,15 +38,13 @@ func CreateSyncTx[TTx MinimalDBTx](
 // transactional database action can run concurrently.
 func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
-	tx SyncTx[TTx],
-	queryFunc func(ctx context.Context, sql string, args ...any) (TResult, error),
-	sql string,
-	args ...any,
+	tx *SyncTx[TTx],
+	queryFunc func(ctx context.Context) (TResult, error),
 ) (TResult, error) {
-	waitOnLock(tx.mu)
-	defer tx.mu.Unlock()
+	tx.Lock()
+	defer tx.Unlock()
 
-	return queryFunc(ctx, sql, args...)
+	return queryFunc(ctx)
 }
 
 // WrapInSyncTxNoError is used to make sure a
@@ -63,21 +52,33 @@ func WrapInSyncTx[TTx MinimalDBTx, TResult any](
 // The executed database action shouldn't return an error.
 func WrapInSyncTxNoError[TTx MinimalDBTx, TResult any](
 	ctx context.Context,
-	tx SyncTx[TTx],
-	queryFunc func(ctx context.Context, sql string, args ...any) TResult,
-	sql string,
-	args ...any,
+	tx *SyncTx[TTx],
+	queryFunc func(ctx context.Context) TResult,
 ) TResult {
-	waitOnLock(tx.mu)
-	defer tx.mu.Unlock()
+	tx.Lock()
+	defer tx.Unlock()
 
-	return queryFunc(ctx, sql, args...)
+	return queryFunc(ctx)
+}
+
+// WrapInSyncTxNoReturn is used to make sure a
+// transactional database action can run concurrently.
+// The executed database action shouldn't return anything.
+func WrapInSyncTxNoReturn[TTx MinimalDBTx](
+	ctx context.Context,
+	tx *SyncTx[TTx],
+	queryFunc func(ctx context.Context),
+) {
+	tx.Lock()
+	defer tx.Unlock()
+
+	queryFunc(ctx)
 }
 
 // Rollback is used to rollback the wrapped transaction.
-func (tx SyncTx[TTx]) Rollback(ctx context.Context) error {
-	waitOnLock(tx.mu)
-	defer tx.mu.Unlock()
+func (tx *SyncTx[TTx]) Rollback(ctx context.Context) error {
+	tx.Lock()
+	defer tx.Unlock()
 
 	return tx.Tx.Rollback(ctx)
 }

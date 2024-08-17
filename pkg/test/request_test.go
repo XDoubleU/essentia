@@ -5,9 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,10 +43,13 @@ func TestRequestTester(t *testing.T) {
 		1,
 	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
+
+	rs := tReq.Do(t)
 
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	err := httptools.ReadJSON(rs.Body, &rsData)
+	require.Nil(t, err)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -60,11 +64,14 @@ func TestRequestTesterTestServer(t *testing.T) {
 
 	tReq := test.CreateRequestTester(nil, http.MethodGet, "/test/%d", 1)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetReqData(reqData)
+	tReq.SetBody(reqData)
 	tReq.SetTestServer(ts)
 
+	rs := tReq.Do(t)
+
 	var rsData map[string]string
-	rs := tReq.Do(t, &rsData)
+	err := httptools.ReadJSON(rs.Body, &rsData)
+	require.Nil(t, err)
 
 	assert.Equal(t, http.StatusOK, rs.StatusCode)
 	assert.Equal(t, reqData, rsData)
@@ -76,6 +83,6 @@ func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
 	assert.PanicsWithValue(
 		t,
 		"handler nor test server has been set",
-		func() { tReq.Do(t, nil) },
+		func() { tReq.Do(t) },
 	)
 }

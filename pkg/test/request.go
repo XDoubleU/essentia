@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/XDoubleU/essentia/pkg/httptools"
 )
 
 // A RequestTester is used to test a certain HTTP request.
@@ -18,7 +16,7 @@ type RequestTester struct {
 	ts      *httptest.Server
 	method  string
 	path    string
-	reqData any
+	body    any
 	query   map[string]string
 	cookies []*http.Cookie
 }
@@ -54,9 +52,9 @@ func (tReq *RequestTester) SetTestServer(ts *httptest.Server) {
 	tReq.ts = ts
 }
 
-// SetReqData sets the request data, or body, of a [RequestTester].
-func (tReq *RequestTester) SetReqData(reqData any) {
-	tReq.reqData = reqData
+// SetBody sets the request body of a [RequestTester].
+func (tReq *RequestTester) SetBody(body any) {
+	tReq.body = body
 }
 
 // SetQuery sets the query of a [RequestTester].
@@ -70,9 +68,9 @@ func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 	tReq.cookies = append(tReq.cookies, cookie)
 }
 
-// Do executes a [RequestTester] returning the response of the request
+// Do executes a [RequestTester] returning the response of a request
 // and providing the returned data to rsData.
-func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
+func (tReq RequestTester) Do(t *testing.T) *http.Response {
 	t.Helper()
 
 	var body []byte
@@ -87,10 +85,10 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 		panic("handler nor test server has been set")
 	}
 
-	if tReq.reqData != nil {
-		body, err = json.Marshal(tReq.reqData)
+	if tReq.body != nil {
+		body, err = json.Marshal(tReq.body)
 		if err != nil {
-			t.Errorf("error when marshalling reqData: %v", err)
+			t.Errorf("error when marshalling body: %v", err)
 			t.FailNow()
 			return nil
 		}
@@ -130,15 +128,6 @@ func (tReq RequestTester) Do(t *testing.T, rsData any) *http.Response {
 		return nil
 	}
 
-	if rsData != nil {
-		err = httptools.ReadJSON(rs.Body, &rsData)
-		if err != nil {
-			t.Errorf("error when parsing response: %v", err)
-			t.FailNow()
-			return nil
-		}
-	}
-
 	return rs
 }
 
@@ -149,7 +138,7 @@ func (tReq RequestTester) Copy() RequestTester {
 		ts:      tReq.ts,
 		method:  tReq.method,
 		path:    tReq.path,
-		reqData: tReq.reqData,
+		body:    tReq.body,
 		query:   tReq.query,
 		cookies: tReq.cookies,
 	}

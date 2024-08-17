@@ -2,39 +2,57 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
+	"github.com/xdoubleu/essentia/pkg/database/postgres"
+	"github.com/xdoubleu/essentia/pkg/logging"
+	sentrytools "github.com/xdoubleu/essentia/pkg/sentry"
 )
 
 type application struct {
-	logger *log.Logger
+	logger *slog.Logger
 	config Config
+	db     postgres.DB
 }
 
-func NewApp(logger *log.Logger) application {
+func NewApp(logger *slog.Logger, config Config, db postgres.DB) application {
+	spandb := postgres.NewSpanDB(db)
+
 	return application{
 		logger: logger,
-		config: NewConfig(),
+		config: config,
+		db:     spandb,
 	}
 }
 
 func main() {
-	logger := log.Default()
+	cfg := NewConfig()
 
-	app := NewApp(logger)
-
-	routes, err := app.Routes()
+	logger := slog.New(
+		sentrytools.NewLogHandler(cfg.Env, slog.NewTextHandler(os.Stdout, nil)),
+	)
+	db, err := postgres.Connect(
+		logger,
+		cfg.DBDsn,
+		25, //nolint:mnd //no magic number
+		"15m",
+		30,             //nolint:mnd //no magic number
+		30*time.Second, //nolint:mnd //no magic number
+		5*time.Minute,  //nolint:mnd //no magic number
+	)
 	if err != nil {
-		logger.Fatal(err)
-		return
+		panic(err)
 	}
+
+	app := NewApp(logger, cfg, db)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.Port),
-		Handler:      *routes,
+		Handler:      app.Routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,  //nolint:gomnd //no magic number
 		WriteTimeout: 10 * time.Second, //nolint:gomnd //no magic number
@@ -42,6 +60,6 @@ func main() {
 
 	err = httptools.Serve(logger, srv, app.config.Env)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error("failed to serve server", logging.ErrAttr(err))
 	}
 }

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"time"
 
-	"github.com/XDoubleU/essentia/pkg/httptools"
+	httptools "github.com/xdoubleu/essentia/pkg/communication/http"
 )
 
 func (app *application) healthRoutes(mux *http.ServeMux) {
@@ -13,10 +15,20 @@ func (app *application) healthRoutes(mux *http.ServeMux) {
 	)
 }
 
+type Health struct {
+	IsDatabaseActive bool
+}
+
 func (app *application) getHealthHandler(w http.ResponseWriter,
 	r *http.Request) {
 
-	err := httptools.WriteJSON(w, http.StatusOK, nil, nil)
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
+	defer cancel()
+	data := Health{
+		IsDatabaseActive: app.db.Ping(ctx) == nil,
+	}
+
+	err := httptools.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		httptools.ServerErrorResponse(w, r, err)
 	}

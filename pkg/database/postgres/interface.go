@@ -13,12 +13,14 @@ type DB interface {
 	Exec(
 		ctx context.Context,
 		sql string,
-		arguments ...interface{},
+		arguments ...any,
 	) (pgconn.CommandTag, error)
 	Query(
 		ctx context.Context,
 		sql string,
-		optionsAndArgs ...interface{},
+		optionsAndArgs ...any,
 	) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, optionsAndArgs ...interface{}) pgx.Row
+	QueryRow(ctx context.Context, sql string, optionsAndArgs ...any) pgx.Row
+	Begin(ctx context.Context) (pgx.Tx, error)
+	Ping(ctx context.Context) error
 }

@@ -1,29 +1,28 @@
 package main
 
 import (
-	"io"
-	"log"
 	"testing"
 
-	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xdoubleu/essentia/pkg/config"
+	"github.com/xdoubleu/essentia/pkg/logging"
+	"github.com/xdoubleu/essentia/pkg/test"
 )
 
-func TestWebsocket(t *testing.T) {
-	app := NewApp(log.New(io.Discard, "", 0))
-	app.config.Env = TestEnv
+func TestWebSocket(t *testing.T) {
+	cfg := NewConfig()
+	cfg.Env = config.TestEnv
 
-	routes, err := app.Routes()
-	require.Nil(t, err)
+	app := NewApp(logging.NewNopLogger(), cfg)
 
-	tWeb := test.CreateWebsocketTester(*routes)
-	tWeb.SetInitialMessage(SubjectMessageDto{
-		Subject: "subject",
+	tWeb := test.CreateWebSocketTester(app.Routes())
+	tWeb.SetInitialMessage(SubscribeMessageDto{
+		TopicName: "topic",
 	})
 
 	var initialResponse ResponseMessageDto
-	err = tWeb.Do(t, &initialResponse, nil)
+	err := tWeb.Do(t, &initialResponse, nil)
 	require.Nil(t, err)
 
 	assert.Equal(t, "Hello, World!", initialResponse.Message)
