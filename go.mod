@@ -6,7 +6,7 @@ require (
 	github.com/getsentry/sentry-go v0.28.1
 	github.com/goddtriffin/helmet v1.0.2
 	github.com/justinas/alice v1.2.0
-	github.com/rs/cors v1.11.0
+	github.com/rs/cors v1.11.1
 	golang.org/x/time v0.6.0
 )
 
