@@ -30,7 +30,7 @@ func (w *responseWriter) Flush() {
 // ReadFrom reads data from r until EOF or error.
 // The return value n is the number of bytes read.
 // Any error except EOF encountered during the read is also returned.
-func (w *responseWriter) ReadFrom(r io.Reader) (n int64, err error) {
+func (w *responseWriter) ReadFrom(r io.Reader) (int64, error) {
 	return w.ResponseWriter.(io.ReaderFrom).ReadFrom(r)
 }
 
