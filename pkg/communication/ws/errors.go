@@ -11,7 +11,7 @@ import (
 	"github.com/coder/websocket/wsjson"
 )
 
-// ErrorResponse is used to handle any kind of error that occured on a WebSocket.
+// ErrorResponse is used to handle any kind of error that occurred on a WebSocket.
 func ErrorResponse(
 	ctx context.Context,
 	conn *websocket.Conn,
@@ -27,7 +27,7 @@ func ErrorResponse(
 }
 
 // ServerErrorResponse is used to handle
-// internal server errors that occured on a WebSocket.
+// internal server errors that occurred on a WebSocket.
 func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
 	contexttools.Logger(ctx).
 		ErrorContext(ctx, "server error occurred", logging.ErrAttr(err))
@@ -41,7 +41,7 @@ func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
 }
 
 // UpgradeErrorResponse is used to handle an error that
-// occured during the upgrade towards a WebSocket.
+// occurred during the upgrade towards a WebSocket.
 func UpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	contexttools.Logger(r.Context()).
 		ErrorContext(r.Context(), "WS upgrade error occurred", logging.ErrAttr(err))
@@ -49,7 +49,7 @@ func UpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 // FailedValidationResponse is used to handle
-// an error of a [validate.Validator] that occured on a WebSocket.
+// an error of a [validate.Validator] that occurred on a WebSocket.
 func FailedValidationResponse(
 	ctx context.Context,
 	conn *websocket.Conn,

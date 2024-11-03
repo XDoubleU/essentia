@@ -40,7 +40,7 @@ func EnvStr(key string, defaultValue string) string {
 }
 
 // EnvStrArray extracts a string
-// array environment variable. The values should be seperated by ','.
+// array environment variable. The values should be separated by ','.
 func EnvStrArray(key string, defaultValue []string) []string {
 	strVal := EnvStr(key, "")
 	if len(strVal) == 0 {
