@@ -1,22 +1,34 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "regexManagers": [
+  customManagers: [
     {
-      "fileMatch": [
-        "^Makefile$"
+      customType: 'regex',
+      fileMatch: [
+        '^Makefile$',
       ],
-      "matchStrings": [
-        "go install (?<depName>[^@]+)@(?<currentValue>[0-9a-zA-Z\.]+)"
+      matchStrings: [
+        'go install (?<depName>[^@]+)@(?<currentValue>[0-9a-zA-Z.]+)',
       ],
-      "datasourceTemplate": "go"
-    }
+      datasourceTemplate: 'go',
+    },
   ],
-  "timezone":"Europe/Brussels",
-  "labels": ["dependencies"],
-  "dependencyDashboardLabels": ["dependencies"],
-  "lockFileMaintenance": { "enabled": true, "schedule": ["monthly"] },
-  "schedule": ["monthly"]
+  timezone: 'Europe/Brussels',
+  labels: [
+    'dependencies',
+  ],
+  dependencyDashboardLabels: [
+    'dependencies',
+  ],
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: [
+      'monthly',
+    ],
+  },
+  schedule: [
+    'monthly',
+  ],
 }
