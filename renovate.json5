@@ -22,12 +22,6 @@
   dependencyDashboardLabels: [
     'dependencies',
   ],
-  lockFileMaintenance: {
-    enabled: true,
-    schedule: [
-      'monthly',
-    ],
-  },
   schedule: [
     'monthly',
   ],
