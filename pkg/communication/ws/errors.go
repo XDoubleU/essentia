@@ -2,7 +2,10 @@ package ws
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
+	"strings"
 
 	contexttools "github.com/XDoubleU/essentia/pkg/context"
 	errortools "github.com/XDoubleU/essentia/pkg/errors"
@@ -21,6 +24,10 @@ func ErrorResponse(
 	errorDto := errortools.NewErrorDto(status, message)
 	err := wsjson.Write(ctx, conn, errorDto)
 	if err != nil {
+		if canIgnoreError(err) {
+			return
+		}
+
 		contexttools.Logger(ctx).
 			ErrorContext(ctx, "failed to write JSON", logging.ErrAttr(err))
 	}
@@ -43,8 +50,11 @@ func ServerErrorResponse(ctx context.Context, conn *websocket.Conn, err error) {
 // UpgradeErrorResponse is used to handle an error that
 // occurred during the upgrade towards a WebSocket.
 func UpgradeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	contexttools.Logger(r.Context()).
-		ErrorContext(r.Context(), "WS upgrade error occurred", logging.ErrAttr(err))
+	if !canIgnoreError(err) {
+		contexttools.Logger(r.Context()).
+			ErrorContext(r.Context(), "WS upgrade error occurred", logging.ErrAttr(err))
+	}
+
 	w.WriteHeader(http.StatusInternalServerError)
 }
 
@@ -62,4 +72,12 @@ func FailedValidationResponse(
 // isn't authorized to access a certain resource.
 func ForbiddenResponse(ctx context.Context, conn *websocket.Conn) {
 	ErrorResponse(ctx, conn, http.StatusForbidden, errortools.MessageForbidden)
+}
+
+func canIgnoreError(err error) bool {
+	// EOF, close errors and WS Protocol Violations can be ignored
+	var closeError websocket.CloseError
+	return errors.Is(err, io.EOF) ||
+		errors.As(err, &closeError) ||
+		strings.Contains(err.Error(), "WebSocket protocol violation")
 }
