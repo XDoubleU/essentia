@@ -1,4 +1,4 @@
-// Package middleware provides configureable middleware and predefined lists,
+// Package middleware provides configurable middleware and predefined lists,
 // such as [Minimal], [Default] and [DefaultWithSentry].
 package middleware
 
