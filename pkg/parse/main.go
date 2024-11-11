@@ -154,7 +154,12 @@ func parseParam[T any](
 	}
 
 	if parserFunc == nil {
-		return any(value).(T), nil
+		castedValue, ok := any(value).(T)
+		if !ok {
+			return *new(T), fmt.Errorf("can't cast value to provided type T")
+		}
+
+		return castedValue, nil
 	}
 
 	result, err := parserFunc(paramType, paramName, value)
