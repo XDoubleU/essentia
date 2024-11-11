@@ -3,6 +3,7 @@ package http
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -24,14 +25,24 @@ type responseWriter struct {
 
 // Flush sends any buffered data to the client.
 func (w *responseWriter) Flush() {
-	w.ResponseWriter.(http.Flusher).Flush()
+	flusher, ok := w.ResponseWriter.(http.Flusher)
+	if !ok {
+		panic(fmt.Errorf("ResponseWriter doesn't implement http.Flusher"))
+	}
+
+	flusher.Flush()
 }
 
 // ReadFrom reads data from r until EOF or error.
 // The return value n is the number of bytes read.
 // Any error except EOF encountered during the read is also returned.
 func (w *responseWriter) ReadFrom(r io.Reader) (int64, error) {
-	return w.ResponseWriter.(io.ReaderFrom).ReadFrom(r)
+	reader, ok := w.ResponseWriter.(io.ReaderFrom)
+	if !ok {
+		panic(fmt.Errorf("ResponseWriter doesn't implement io.ReaderFrom"))
+	}
+
+	return reader.ReadFrom(r)
 }
 
 // NewResponseWriter returns a new [ResponseWriter].
