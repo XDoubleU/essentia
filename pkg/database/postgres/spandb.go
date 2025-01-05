@@ -14,16 +14,16 @@ type SpanDB struct {
 	dbName string
 }
 
-// NewSpanDB creates a new [SpanDB].
-func NewSpanDB(db DB) SpanDB {
-	return SpanDB{
+// NewSpanDB creates a new [*SpanDB].
+func NewSpanDB(db DB) *SpanDB {
+	return &SpanDB{
 		DB:     db,
 		dbName: "postgresql",
 	}
 }
 
 // Exec is used to wrap Exec in a [sentry.Span].
-func (db SpanDB) Exec(
+func (db *SpanDB) Exec(
 	ctx context.Context,
 	sql string,
 	arguments ...any,
@@ -32,7 +32,7 @@ func (db SpanDB) Exec(
 }
 
 // Query is used to wrap Query in a [sentry.Span].
-func (db SpanDB) Query(
+func (db *SpanDB) Query(
 	ctx context.Context,
 	sql string,
 	optionsAndArgs ...any,
@@ -41,7 +41,7 @@ func (db SpanDB) Query(
 }
 
 // QueryRow is used to wrap QueryRow in a [sentry.Span].
-func (db SpanDB) QueryRow(
+func (db *SpanDB) QueryRow(
 	ctx context.Context,
 	sql string,
 	optionsAndArgs ...any,
@@ -56,12 +56,12 @@ func (db SpanDB) QueryRow(
 
 // Begin doesn't wrap Begin in a [sentry.Span] as
 // this makes little sense for starting a transaction.
-func (db SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
+func (db *SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
 	return db.DB.Begin(ctx)
 }
 
 // Ping doesn't wrap Ping in a [sentry.Span] as
 // this makes little sense for pinging the db.
-func (db SpanDB) Ping(ctx context.Context) error {
+func (db *SpanDB) Ping(ctx context.Context) error {
 	return db.DB.Ping(ctx)
 }
