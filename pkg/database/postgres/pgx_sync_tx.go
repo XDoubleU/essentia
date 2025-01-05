@@ -214,7 +214,7 @@ func (tx *PgxSyncTx) Rollback(ctx context.Context) error {
 		ctx,
 		tx.syncTx,
 		func(ctx context.Context) error {
-			return tx.syncTx.Rollback(ctx)
+			return tx.syncTx.Tx.Rollback(ctx)
 		},
 	)
 }
