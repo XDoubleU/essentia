@@ -208,7 +208,13 @@ func (tx *PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 	)
 }
 
-// Rollback is used to rollback a [PgxSyncTx].
+// Rollback is used to wrap [pgx.Tx.Rollback] in a [database.SyncTx].
 func (tx *PgxSyncTx) Rollback(ctx context.Context) error {
-	return tx.syncTx.Rollback(ctx)
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) error {
+			return tx.syncTx.Rollback(ctx)
+		},
+	)
 }
