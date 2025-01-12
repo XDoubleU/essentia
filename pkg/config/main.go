@@ -13,7 +13,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
+// Parser parses the config provided through environment variables.
+type Parser struct {
 	logger *slog.Logger
 }
 
@@ -28,15 +29,17 @@ const (
 
 const errorMessage = "can't convert env var '%s' with value '%s' to %s"
 
-func New(logger *slog.Logger) Config {
+// New returns a new Parser and loads environment variables that
+// could be provided using a .env file (particularly useful during development).
+func New(logger *slog.Logger) Parser {
 	_ = godotenv.Load()
 
-	return Config{
+	return Parser{
 		logger: logger,
 	}
 }
 
-func (c Config) baseEnv(key string) string {
+func (c Parser) baseEnv(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
 		return ""
@@ -45,17 +48,19 @@ func (c Config) baseEnv(key string) string {
 	return value
 }
 
-func (c Config) logValue(valType string, key string, value any) {
+func (c Parser) logValue(valType string, key string, value any) {
 	strVal, err := shared.AnyToString(value)
 	if err != nil {
 		panic(err)
 	}
 
-	c.logger.Info(fmt.Sprintf("loaded env var '%s'='%s' with type '%s'", key, strVal, valType))
+	c.logger.Info(
+		fmt.Sprintf("loaded env var '%s'='%s' with type '%s'", key, strVal, valType),
+	)
 }
 
 // EnvStr extracts a string environment variable.
-func (c Config) EnvStr(key string, defaultValue string) string {
+func (c Parser) EnvStr(key string, defaultValue string) string {
 	value := c.baseEnv(key)
 	if len(value) == 0 {
 		value = defaultValue
@@ -67,7 +72,7 @@ func (c Config) EnvStr(key string, defaultValue string) string {
 
 // EnvStrArray extracts a string
 // array environment variable. The values should be separated by ','.
-func (c Config) EnvStrArray(key string, defaultValue []string) []string {
+func (c Parser) EnvStrArray(key string, defaultValue []string) []string {
 	value := defaultValue
 
 	strVal := c.baseEnv(key)
@@ -80,7 +85,7 @@ func (c Config) EnvStrArray(key string, defaultValue []string) []string {
 }
 
 // EnvInt extracts an integer environment variable.
-func (c Config) EnvInt(key string, defaultValue int) int {
+func (c Parser) EnvInt(key string, defaultValue int) int {
 	value := defaultValue
 
 	strVal := c.baseEnv(key)
@@ -97,7 +102,7 @@ func (c Config) EnvInt(key string, defaultValue int) int {
 }
 
 // EnvFloat extracts a float environment variable.
-func (c Config) EnvFloat(key string, defaultValue float64) float64 {
+func (c Parser) EnvFloat(key string, defaultValue float64) float64 {
 	value := defaultValue
 
 	strVal := c.baseEnv(key)
@@ -114,7 +119,7 @@ func (c Config) EnvFloat(key string, defaultValue float64) float64 {
 }
 
 // EnvBool extracts a boolean environment variable.
-func (c Config) EnvBool(key string, defaultValue bool) bool {
+func (c Parser) EnvBool(key string, defaultValue bool) bool {
 	value := defaultValue
 
 	strVal := c.baseEnv(key)

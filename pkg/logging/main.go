@@ -18,7 +18,8 @@ func NewNopLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
 }
 
-// NewBufLogHandler provides a [slog.TextHandler] which logs to the provided [bytes.Buffer].
+// NewBufLogHandler provides a [slog.TextHandler]
+// which logs to the provided [bytes.Buffer].
 func NewBufLogHandler(buf *bytes.Buffer, opts *slog.HandlerOptions) *slog.TextHandler {
 	return slog.NewTextHandler(buf, opts)
 }

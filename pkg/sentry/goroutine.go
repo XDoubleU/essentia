@@ -9,14 +9,13 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-type GoRoutineFunc = func(ctx context.Context, logger *slog.Logger) error
-
-// GoRoutineWrapper wraps a go routine with Sentry logic for error and performance tracking.
+// GoRoutineWrapper wraps a go routine with
+// Sentry logic for error and performance tracking.
 func GoRoutineWrapper(
 	ctx context.Context,
 	logger *slog.Logger,
 	name string,
-	f GoRoutineFunc,
+	f func(ctx context.Context, logger *slog.Logger) error,
 ) {
 	name = fmt.Sprintf("GO ROUTINE %s", name)
 

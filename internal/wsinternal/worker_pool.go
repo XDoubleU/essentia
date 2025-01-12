@@ -27,8 +27,13 @@ type WorkerPool struct {
 }
 
 // NewWorkerPool creates a new [WorkerPool].
-func NewWorkerPool(logger *slog.Logger, maxWorkers int, channelBufferSize int) *WorkerPool {
+func NewWorkerPool(
+	logger *slog.Logger,
+	maxWorkers int,
+	channelBufferSize int,
+) *WorkerPool {
 	pool := &WorkerPool{
+		logger:        logger,
 		subscribers:   []Subscriber{},
 		subscribersMu: &sync.RWMutex{},
 		workers:       make([]Worker, maxWorkers),

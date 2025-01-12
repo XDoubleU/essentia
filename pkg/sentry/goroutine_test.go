@@ -22,6 +22,8 @@ func TestSentryErrorHandler(t *testing.T) {
 	testFunc := func(ctx context.Context, logger *slog.Logger) error {
 		transaction := sentry.TransactionFromContext(ctx)
 
+		logger.Debug("started execution")
+
 		assert.Equal(t, fmt.Sprintf("GO ROUTINE %s", name), transaction.Name)
 		assert.Equal(t, "go.routine", transaction.Op)
 

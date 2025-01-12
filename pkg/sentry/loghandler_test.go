@@ -19,7 +19,10 @@ func TestLogHandlerDev(t *testing.T) {
 		sentry.NewLogHandler(
 			config.DevEnv,
 			//nolint:exhaustruct //other fields are optional
-			logging.NewBufLogHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
+			logging.NewBufLogHandler(
+				&buf,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
 		),
 	)
 
@@ -35,7 +38,10 @@ func TestLogHandlerWith(t *testing.T) {
 		sentry.NewLogHandler(
 			config.DevEnv,
 			//nolint:exhaustruct //other fields are optional
-			logging.NewBufLogHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug}),
+			logging.NewBufLogHandler(
+				&buf,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
 		),
 	)
 

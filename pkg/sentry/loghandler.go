@@ -50,7 +50,7 @@ func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	}
 
 	l.handler = l.handler.WithAttrs(attrs)
-	return l.withGroupOrAttrs(groupOrAttrs{attrs: attrs})
+	return l.withGroupOrAttrs(groupOrAttrs{group: "", attrs: attrs})
 }
 
 // WithGroup adds a group to a [SentryLogHandler].
@@ -60,7 +60,7 @@ func (l *LogHandler) WithGroup(name string) slog.Handler {
 	}
 
 	l.handler = l.handler.WithGroup(name)
-	return l.withGroupOrAttrs(groupOrAttrs{group: name})
+	return l.withGroupOrAttrs(groupOrAttrs{group: name, attrs: []slog.Attr{}})
 }
 
 func (l *LogHandler) withGroupOrAttrs(goa groupOrAttrs) slog.Handler {
@@ -97,7 +97,10 @@ func (l *LogHandler) sendErrorToSentry(ctx context.Context, err error) {
 				}
 
 				for _, attr := range goa.attrs {
-					scope.SetTag(fmt.Sprintf("%s%s", temporaryPrefix, attr.Key), attr.Value.String())
+					scope.SetTag(
+						fmt.Sprintf("%s%s", temporaryPrefix, attr.Key),
+						attr.Value.String(),
+					)
 				}
 			}
 
