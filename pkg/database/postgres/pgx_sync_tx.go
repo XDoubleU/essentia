@@ -106,6 +106,17 @@ func (tx *PgxSyncTx) Query(
 	)
 }
 
+// SendBatch is used to wrap [pgx.Tx.QueryRow] in a [database.SyncTx].
+func (tx *PgxSyncTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults {
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) pgx.BatchResults {
+			return tx.syncTx.Tx.SendBatch(ctx, b)
+		},
+	)
+}
+
 // Close doesn't do anything for [PgxSyncRows] as these are closed in [Query].
 func (rows *PgxSyncRows) Close() {
 }
@@ -204,6 +215,28 @@ func (tx *PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 		tx.syncTx,
 		func(ctx context.Context) (pgx.Tx, error) {
 			return tx.syncTx.Tx.Begin(ctx)
+		},
+	)
+}
+
+// BeginTx is used to wrap [pgx.Tx.BeginTx] in a [database.SyncTx].
+func (tx *PgxSyncTx) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+	return database.WrapInSyncTx(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) (pgx.Tx, error) {
+			return tx.syncTx.Tx.Conn().BeginTx(ctx, txOptions)
+		},
+	)
+}
+
+// Commit is used to wrap [pgx.Tx.Commit] in a [database.SyncTx].
+func (tx *PgxSyncTx) Commit(ctx context.Context) error {
+	return database.WrapInSyncTxNoError(
+		ctx,
+		tx.syncTx,
+		func(ctx context.Context) error {
+			return tx.syncTx.Tx.Commit(ctx)
 		},
 	)
 }
