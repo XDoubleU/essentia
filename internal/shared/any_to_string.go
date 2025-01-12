@@ -3,7 +3,6 @@ package shared
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 func arrayToString[T any](array []T) (string, error) {
@@ -27,15 +26,23 @@ func AnyToString(value any) (string, error) {
 	switch value := value.(type) {
 	case string:
 		return value, nil
-	case int:
-		return strconv.Itoa(value), nil
-	case int64:
-		return strconv.FormatInt(value, 10), nil
+	case bool:
+		return fmt.Sprintf("%t", value), nil
+	case int, int64:
+		return fmt.Sprintf("%d", value), nil
+	case float32, float64:
+		return fmt.Sprintf("%.2f", value), nil
 	case []string:
+		return arrayToString(value)
+	case []bool:
 		return arrayToString(value)
 	case []int:
 		return arrayToString(value)
 	case []int64:
+		return arrayToString(value)
+	case []float32:
+		return arrayToString(value)
+	case []float64:
 		return arrayToString(value)
 	default:
 		return "", errors.New("undefined type")

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/XDoubleU/essentia/pkg/config"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	sentrytools "github.com/XDoubleU/essentia/pkg/sentry"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ import (
 )
 
 func TestWebSocket(t *testing.T) {
-	cfg := NewConfig()
+	cfg := NewConfig(logging.NewNopLogger())
 	cfg.Env = config.TestEnv
 
 	logger := slog.New(
