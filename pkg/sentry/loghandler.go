@@ -14,8 +14,12 @@ import (
 type LogHandler struct {
 	level   slog.Level
 	handler slog.Handler
-	attrs   []slog.Attr
-	groups  []string
+	goas    []groupOrAttrs
+}
+
+type groupOrAttrs struct {
+	group string      // group name if non-empty
+	attrs []slog.Attr // attrs if non-empty
 }
 
 // NewLogHandler returns a new [SentryLogHandler].
@@ -28,9 +32,8 @@ func NewLogHandler(env string, handler slog.Handler) slog.Handler {
 
 	return &LogHandler{
 		handler: handler,
-		attrs:   []slog.Attr{},
-		groups:  []string{},
 		level:   level,
+		goas:    []groupOrAttrs{},
 	}
 }
 
@@ -42,34 +45,62 @@ func (l *LogHandler) Enabled(_ context.Context, level slog.Level) bool {
 
 // WithAttrs adds [[]slog.Attr] to a [SentryLogHandler].
 func (l *LogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	//nolint:exhaustruct //other fields are optional
-	return &LogHandler{
-		attrs:  append(l.attrs, attrs...),
-		groups: l.groups,
+	if len(attrs) == 0 {
+		return l
 	}
+
+	l.handler = l.handler.WithAttrs(attrs)
+	return l.withGroupOrAttrs(groupOrAttrs{attrs: attrs})
 }
 
 // WithGroup adds a group to a [SentryLogHandler].
 func (l *LogHandler) WithGroup(name string) slog.Handler {
-	//nolint:exhaustruct //other fields are optional
-	return &LogHandler{
-		attrs:  l.attrs,
-		groups: append(l.groups, name),
+	if name == "" {
+		return l
 	}
+
+	l.handler = l.handler.WithGroup(name)
+	return l.withGroupOrAttrs(groupOrAttrs{group: name})
+}
+
+func (l *LogHandler) withGroupOrAttrs(goa groupOrAttrs) slog.Handler {
+	l2 := *l
+	l2.goas = make([]groupOrAttrs, len(l.goas)+1)
+	copy(l2.goas, l.goas)
+	l2.goas[len(l2.goas)-1] = goa
+	return &l2
 }
 
 // Handle handles a [slog.Record] by a [SentryLogHandler].
 func (l *LogHandler) Handle(ctx context.Context, record slog.Record) error {
 	if record.Level == slog.LevelError {
-		sendErrorToSentry(ctx, recordToError(record))
+		l.sendErrorToSentry(ctx, recordToError(record))
 	}
 
 	return l.handler.Handle(ctx, record)
 }
 
-func sendErrorToSentry(ctx context.Context, err error) {
+func (l *LogHandler) sendErrorToSentry(ctx context.Context, err error) {
 	if hub := sentry.GetHubFromContext(ctx); hub != nil {
 		hub.WithScope(func(scope *sentry.Scope) {
+			prefix := ""
+
+			for _, goa := range l.goas {
+				temporaryPrefix := prefix
+				if goa.group != "" {
+					temporaryPrefix = fmt.Sprintf("%s.", goa.group)
+				}
+
+				if len(goa.attrs) == 0 {
+					prefix = temporaryPrefix
+					continue
+				}
+
+				for _, attr := range goa.attrs {
+					scope.SetTag(fmt.Sprintf("%s%s", temporaryPrefix, attr.Key), attr.Value.String())
+				}
+			}
+
 			scope.SetLevel(sentry.LevelError)
 			hub.CaptureException(err)
 		})
@@ -77,12 +108,5 @@ func sendErrorToSentry(ctx context.Context, err error) {
 }
 
 func recordToError(record slog.Record) error {
-	err := record.Message
-
-	record.Attrs(func(a slog.Attr) bool {
-		err += fmt.Sprintf(" %s=%s", a.Key, a.Value)
-		return true
-	})
-
-	return errors.New(err)
+	return errors.New(record.Message)
 }
