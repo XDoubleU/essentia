@@ -3,6 +3,7 @@ package wsinternal
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/XDoubleU/essentia/pkg/sentry"
@@ -19,13 +20,14 @@ const stopEvent = "stop"
 // WorkerPool is used to divide [Subscriber]s between [Worker]s.
 // This prevents one [Worker] of being very busy.
 type WorkerPool struct {
+	logger        *slog.Logger
 	subscribers   []Subscriber
 	subscribersMu *sync.RWMutex
 	workers       []Worker
 }
 
 // NewWorkerPool creates a new [WorkerPool].
-func NewWorkerPool(maxWorkers int, channelBufferSize int) *WorkerPool {
+func NewWorkerPool(logger *slog.Logger, maxWorkers int, channelBufferSize int) *WorkerPool {
 	pool := &WorkerPool{
 		subscribers:   []Subscriber{},
 		subscribersMu: &sync.RWMutex{},
@@ -80,8 +82,9 @@ func (pool *WorkerPool) RemoveSubscriber(sub Subscriber) {
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
-		go sentry.GoRoutineErrorHandler(
+		go sentry.GoRoutineWrapper(
 			context.Background(),
+			pool.logger,
 			fmt.Sprintf("Worker %d", i),
 			pool.workers[i].Start,
 		)

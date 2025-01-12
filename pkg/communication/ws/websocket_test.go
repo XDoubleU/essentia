@@ -7,6 +7,7 @@ import (
 
 	wstools "github.com/XDoubleU/essentia/pkg/communication/ws"
 	errortools "github.com/XDoubleU/essentia/pkg/errors"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/XDoubleU/essentia/pkg/validate"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,10 @@ func (s TestSubscribeMsg) Topic() string {
 func setup(t *testing.T) http.Handler {
 	t.Helper()
 
+	logger := logging.NewNopLogger()
+
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		logger,
 		1,
 		10,
 	)
@@ -81,7 +85,9 @@ func TestWebSocketUnknownTopic(t *testing.T) {
 }
 
 func TestWebSocketExistingHandler(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	logger := logging.NewNopLogger()
+
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](logger, 1, 10)
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
@@ -100,7 +106,9 @@ func TestWebSocketExistingHandler(t *testing.T) {
 }
 
 func TestWebsocketBasic(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	logger := logging.NewNopLogger()
+
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](logger, 1, 10)
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
@@ -139,7 +147,9 @@ func TestWebsocketBasic(t *testing.T) {
 }
 
 func TestWebSocketUpdateExistingTopic(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	logger := logging.NewNopLogger()
+
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](logger, 1, 10)
 	topic, err := ws.AddTopic(
 		"exists",
 		[]string{"http://localhost"},
@@ -156,7 +166,9 @@ func TestWebSocketUpdateExistingTopic(t *testing.T) {
 }
 
 func TestWebSocketUpdateNonExistingTopic(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	logger := logging.NewNopLogger()
+
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](logger, 1, 10)
 	topic, err := ws.UpdateTopicName(&wstools.Topic{
 		Name: "unknown",
 	}, "exists")
@@ -165,7 +177,9 @@ func TestWebSocketUpdateNonExistingTopic(t *testing.T) {
 }
 
 func TestWebSocketRemoveNonExistingTopic(t *testing.T) {
-	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](1, 10)
+	logger := logging.NewNopLogger()
+
+	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](logger, 1, 10)
 	err := ws.RemoveTopic(&wstools.Topic{
 		Name: "unknown",
 	})

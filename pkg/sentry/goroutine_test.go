@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 	"testing"
 
+	"github.com/XDoubleU/essentia/pkg/logging"
 	sentrytools "github.com/XDoubleU/essentia/pkg/sentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +17,9 @@ import (
 func TestSentryErrorHandler(t *testing.T) {
 	name := "test"
 
-	testFunc := func(ctx context.Context) error {
+	logger := logging.NewNopLogger()
+
+	testFunc := func(ctx context.Context, logger *slog.Logger) error {
 		transaction := sentry.TransactionFromContext(ctx)
 
 		assert.Equal(t, fmt.Sprintf("GO ROUTINE %s", name), transaction.Name)
@@ -28,8 +32,9 @@ func TestSentryErrorHandler(t *testing.T) {
 	wg.Add(1)
 
 	go func() {
-		sentrytools.GoRoutineErrorHandler(
+		sentrytools.GoRoutineWrapper(
 			context.Background(),
+			logger,
 			name,
 			testFunc,
 		)

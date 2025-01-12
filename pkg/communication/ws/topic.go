@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/XDoubleU/essentia/internal/wsinternal"
@@ -23,6 +24,7 @@ type Topic struct {
 
 // NewTopic creates a new [Topic].
 func NewTopic(
+	logger *slog.Logger,
 	name string,
 	allowedOrigins []string,
 	maxWorkers int,
@@ -39,6 +41,7 @@ func NewTopic(
 		Name:           name,
 		allowedOrigins: allowedOrigins,
 		pool: wsinternal.NewWorkerPool(
+			logger,
 			maxWorkers,
 			channelBufferSize,
 		),

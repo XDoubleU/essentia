@@ -34,6 +34,7 @@ func (app *application) websocketRoutes(mux *http.ServeMux) {
 func (app *application) getWebSocketHandler() http.HandlerFunc {
 
 	wsHandler := wstools.CreateWebSocketHandler[SubscribeMessageDto](
+		app.logger,
 		1,
 		10,
 	)

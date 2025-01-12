@@ -3,17 +3,20 @@ package sentry
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/getsentry/sentry-go"
 )
 
-// GoRoutineErrorHandler makes sure a
-// go routine and its errors are captured by Sentry.
-func GoRoutineErrorHandler(
+type GoRoutineFunc = func(ctx context.Context, logger *slog.Logger) error
+
+// GoRoutineWrapper wraps a go routine with Sentry logic for error and performance tracking.
+func GoRoutineWrapper(
 	ctx context.Context,
+	logger *slog.Logger,
 	name string,
-	f func(ctx context.Context) error,
+	f GoRoutineFunc,
 ) {
 	name = fmt.Sprintf("GO ROUTINE %s", name)
 
@@ -28,7 +31,7 @@ func GoRoutineErrorHandler(
 	transaction.Status = sentry.HTTPtoSpanStatus(http.StatusOK)
 	defer transaction.Finish()
 
-	err := f(transaction.Context())
+	err := f(transaction.Context(), logger)
 
 	if err != nil {
 		transaction.Status = sentry.HTTPtoSpanStatus(http.StatusInternalServerError)

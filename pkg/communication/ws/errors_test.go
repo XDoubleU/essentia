@@ -9,6 +9,7 @@ import (
 	wstools "github.com/XDoubleU/essentia/pkg/communication/ws"
 	"github.com/XDoubleU/essentia/pkg/config"
 	errortools "github.com/XDoubleU/essentia/pkg/errors"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	sentrytools "github.com/XDoubleU/essentia/pkg/sentry"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +36,10 @@ func testErrorStatusCode(t *testing.T, handler http.HandlerFunc) int {
 func setupWS(t *testing.T, allowedOrigin string) http.Handler {
 	t.Helper()
 
+	logger := logging.NewNopLogger()
+
 	wsHandler := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		logger,
 		1,
 		10,
 	)
