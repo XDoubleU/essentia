@@ -124,8 +124,8 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 				return
 			}
 
-			if v := msg.Validate(); !v.Valid() {
-				FailedValidationResponse(r.Context(), conn, v.Errors)
+			if valid, errors := msg.Validate(); !valid {
+				FailedValidationResponse(r.Context(), conn, errors)
 				return
 			}
 

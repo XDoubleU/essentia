@@ -22,12 +22,12 @@ type TestSubscribeMsg struct {
 	TopicName string `json:"topicName"`
 }
 
-func (s TestSubscribeMsg) Validate() *validate.Validator {
+func (s TestSubscribeMsg) Validate() (bool, map[string]string) {
 	v := validate.New()
 
-	validate.Check(v, s.TopicName, validate.IsNotEmpty, "topicName")
+	validate.Check(v, "topicName", s.TopicName, validate.IsNotEmpty)
 
-	return v
+	return v.Valid(), v.Errors()
 }
 
 func (s TestSubscribeMsg) Topic() string {

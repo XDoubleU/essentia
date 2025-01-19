@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/XDoubleU/essentia/internal/shared"
@@ -15,15 +16,15 @@ func IsNotEmpty(value string) (bool, string) {
 	return value != "", "must be provided"
 }
 
-// IsGreaterThanFunc checks if the provided value2 > value1.
-func IsGreaterThanFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
+// IsGreaterThan checks if the provided value2 > value1.
+func IsGreaterThan[T shared.IntType](value1 T) ValidatorFunc[T] {
 	return func(value2 T) (bool, string) {
 		return value2 > value1, fmt.Sprintf("must be greater than %d", value1)
 	}
 }
 
-// IsGreaterThanOrEqualFunc checks if the provided value2 >= value1.
-func IsGreaterThanOrEqualFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
+// IsGreaterThanOrEqual checks if the provided value2 >= value1.
+func IsGreaterThanOrEqual[T shared.IntType](value1 T) ValidatorFunc[T] {
 	return func(value2 T) (bool, string) {
 		return value2 >= value1,
 			fmt.Sprintf(
@@ -33,15 +34,15 @@ func IsGreaterThanOrEqualFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
 	}
 }
 
-// IsLesserThanFunc checks if the provided value2 < value1.
-func IsLesserThanFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
+// IsLesserThan checks if the provided value2 < value1.
+func IsLesserThan[T shared.IntType](value1 T) ValidatorFunc[T] {
 	return func(value2 T) (bool, string) {
 		return value2 < value1, fmt.Sprintf("must be lesser than %d", value1)
 	}
 }
 
-// IsLesserThanOrEqualFunc checks if the provided value2 <= value1.
-func IsLesserThanOrEqualFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
+// IsLesserThanOrEqual checks if the provided value2 <= value1.
+func IsLesserThanOrEqual[T shared.IntType](value1 T) ValidatorFunc[T] {
 	return func(value2 T) (bool, string) {
 		return value2 <= value1,
 			fmt.Sprintf(
@@ -55,4 +56,11 @@ func IsLesserThanOrEqualFunc[T shared.IntType](value1 T) ValidatorFunc[T] {
 func IsValidTimeZone(value string) (bool, string) {
 	_, err := time.LoadLocation(value)
 	return err == nil, "must be a valid IANA value"
+}
+
+// IsInSlice checks if the provided value is part of the provided slice.
+func IsInSlice[T comparable](slice []T) ValidatorFunc[T] {
+	return func(value T) (bool, string) {
+		return slices.Contains(slice, value), "must be a valid value"
+	}
 }

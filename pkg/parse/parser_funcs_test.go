@@ -12,6 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestURLParamString(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
+	req.SetPathValue("pathValue", "value")
+
+	result, err := parse.URLParam(req, "pathValue", parse.String)
+
+	assert.Equal(t, "value", result)
+	assert.Equal(t, nil, err)
+}
+
 func TestURLParamUUIDOK(t *testing.T) {
 	val, _ := uuid.NewV7()
 
@@ -44,7 +54,7 @@ func TestURLParamInt64OK(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", fmt.Sprintf("%d", 1))
 
-	result, err := parse.URLParam(req, "pathValue", parse.Int64Func(false, true))
+	result, err := parse.URLParam(req, "pathValue", parse.Int64(false, true))
 
 	assert.Equal(t, int64(1), result)
 	assert.Equal(t, nil, err)
@@ -54,7 +64,7 @@ func TestURLParamIntOK(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", fmt.Sprintf("%d", 1))
 
-	result, err := parse.URLParam(req, "pathValue", parse.IntFunc(false, true))
+	result, err := parse.URLParam(req, "pathValue", parse.Int(false, true))
 
 	assert.Equal(t, 1, result)
 	assert.Equal(t, nil, err)
@@ -64,7 +74,7 @@ func TestURLParamIntNOK(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", "notint")
 
-	result, err := parse.URLParam(req, "pathValue", parse.IntFunc(false, true))
+	result, err := parse.URLParam(req, "pathValue", parse.Int(false, true))
 
 	assert.Equal(t, 0, result)
 	assert.Equal(
@@ -80,7 +90,7 @@ func TestURLParamIntLTZero(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", fmt.Sprintf("%d", -1))
 
-	result, err := parse.URLParam(req, "pathValue", parse.IntFunc(true, true))
+	result, err := parse.URLParam(req, "pathValue", parse.Int(true, true))
 
 	assert.Equal(t, 0, result)
 	assert.Equal(
@@ -96,7 +106,7 @@ func TestURLParamIntZero(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", fmt.Sprintf("%d", 0))
 
-	result, err := parse.URLParam(req, "pathValue", parse.IntFunc(true, false))
+	result, err := parse.URLParam(req, "pathValue", parse.Int(true, false))
 
 	assert.Equal(t, 0, result)
 	assert.Equal(
@@ -112,7 +122,7 @@ func TestURLParamDateOK(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", datetime)
 
-	result, err := parse.URLParam(req, "pathValue", parse.DateFunc("2006-01-02"))
+	result, err := parse.URLParam(req, "pathValue", parse.Date("2006-01-02"))
 
 	expected, _ := time.Parse("2006-01-02", datetime)
 	assert.Equal(t, expected, result)
@@ -125,7 +135,7 @@ func TestURLParamDateNOK(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "http://example.com", nil)
 	req.SetPathValue("pathValue", datetime)
 
-	result, err := parse.URLParam(req, "pathValue", parse.DateFunc("2006-01-02"))
+	result, err := parse.URLParam(req, "pathValue", parse.Date("2006-01-02"))
 
 	expected, _ := time.Parse("2006-01-02", datetime)
 	assert.Equal(t, expected, result)

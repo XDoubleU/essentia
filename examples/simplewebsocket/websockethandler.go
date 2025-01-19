@@ -16,8 +16,9 @@ type ResponseMessageDto struct {
 	Message string `json:"message"`
 }
 
-func (msg SubscribeMessageDto) Validate() *validate.Validator {
-	return validate.New()
+func (msg SubscribeMessageDto) Validate() (bool, map[string]string) {
+	v := validate.New()
+	return v.Valid(), v.Errors()
 }
 
 func (msg SubscribeMessageDto) Topic() string {

@@ -12,6 +12,12 @@ import (
 // ParserFunc is the expected format used for parsing data using any parsing function.
 type ParserFunc[T any] func(paramType string, paramName string, value string) (T, error)
 
+// String is used to parse a parameter as string value.
+// As all parameters are string by default this returns the original value.
+func String(paramType string, paramName string, value string) (string, error) {
+	return value, nil
+}
+
 // UUID is used to parse a parameter as UUID value.
 // Technically this only validates if a string is a UUID.
 func UUID(paramType string, paramName string, value string) (string, error) {
@@ -28,15 +34,15 @@ func UUID(paramType string, paramName string, value string) (string, error) {
 	return uuidVal.String(), nil
 }
 
-// IntFunc parses a parameter as [int].
-func IntFunc(isPositive bool, isZero bool) ParserFunc[int] {
+// Int parses a parameter as [int].
+func Int(isPositive bool, isZero bool) ParserFunc[int] {
 	return func(paramType string, paramName string, value string) (int, error) {
 		return parseInt[int](isPositive, isZero, paramType, paramName, value, 0)
 	}
 }
 
-// Int64Func parses a parameter as [int64].
-func Int64Func(isPositive bool, isZero bool) ParserFunc[int64] {
+// Int64 parses a parameter as [int64].
+func Int64(isPositive bool, isZero bool) ParserFunc[int64] {
 	return func(paramType string, paramName string, value string) (int64, error) {
 		//nolint:mnd // no magic number
 		return parseInt[int64](isPositive, isZero, paramType, paramName, value, 64)
@@ -83,9 +89,9 @@ func parseInt[T shared.IntType](
 	return T(result), nil
 }
 
-// DateFunc parses a parameter as a date.
+// Date parses a parameter as a date.
 // The parameter should match the required date layout.
-func DateFunc(layout string) ParserFunc[time.Time] {
+func Date(layout string) ParserFunc[time.Time] {
 	return func(paramType string, paramName string, value string) (time.Time, error) {
 		result, err := time.Parse(layout, value)
 		if err != nil {

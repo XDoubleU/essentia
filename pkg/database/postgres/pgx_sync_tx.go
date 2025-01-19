@@ -6,7 +6,6 @@ import (
 	"github.com/XDoubleU/essentia/pkg/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // PgxSyncTx uses [database.SyncTx] to make sure
@@ -17,19 +16,14 @@ type PgxSyncTx struct {
 
 // PgxSyncRow is a concurrent wrapper for [pgx.Row].
 type PgxSyncRow struct {
-	rows pgx.Rows
-	err  error
+	syncTx *database.SyncTx[pgx.Tx]
+	row    pgx.Row
 }
 
 // PgxSyncRows is a concurrent wrapper for [pgx.Rows].
 type PgxSyncRows struct {
-	values            [][]any
-	rawValues         [][][]byte
-	err               error
-	fieldDescriptions []pgconn.FieldDescription
-	commandTag        pgconn.CommandTag
-	conn              *pgx.Conn
-	i                 int
+	syncTx *database.SyncTx[pgx.Tx]
+	rows   pgx.Rows
 }
 
 // CreatePgxSyncTx returns a [pgx.Tx] which works concurrently.
@@ -62,48 +56,17 @@ func (tx *PgxSyncTx) Query(
 	sql string,
 	args ...any,
 ) (pgx.Rows, error) {
-	return database.WrapInSyncTx(
-		ctx,
-		tx.syncTx,
-		func(ctx context.Context) (*PgxSyncRows, error) {
-			rows, err := tx.syncTx.Tx.Query(ctx, sql, args...)
-			if err != nil {
-				return nil, err
-			}
-			defer rows.Close()
+	tx.syncTx.Mutex.Lock()
 
-			var results [][]any
-			var rawResults [][][]byte
-			for rows.Next() {
-				var values []any
-				values, err = rows.Values()
-				if err != nil {
-					break
-				}
+	rows, err := tx.syncTx.Tx.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
 
-				temp := rows.RawValues()
-				rawValues := make([][]byte, len(temp))
-				copy(rawValues, temp)
-
-				results = append(results, values)
-				rawResults = append(rawResults, rawValues)
-			}
-
-			if err == nil {
-				err = rows.Err()
-			}
-
-			return &PgxSyncRows{
-				values:            results,
-				rawValues:         rawResults,
-				err:               err,
-				fieldDescriptions: rows.FieldDescriptions(),
-				commandTag:        rows.CommandTag(),
-				conn:              rows.Conn(),
-				i:                 -1,
-			}, nil
-		},
-	)
+	return &PgxSyncRows{
+		syncTx: tx.syncTx,
+		rows:   rows,
+	}, nil
 }
 
 // SendBatch is used to wrap [pgx.Tx.QueryRow] in a [database.SyncTx].
@@ -117,84 +80,68 @@ func (tx *PgxSyncTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResul
 	)
 }
 
-// Close doesn't do anything for [PgxSyncRows] as these are closed in [Query].
+// Close closes the opened [pgx.Rows].
 func (rows *PgxSyncRows) Close() {
+	rows.syncTx.Unlock()
+	rows.rows.Close()
 }
 
 // CommandTag fetches the [pgconn.CommandTag].
 func (rows *PgxSyncRows) CommandTag() pgconn.CommandTag {
-	return rows.commandTag
+	return rows.rows.CommandTag()
 }
 
 // Conn fetches the [pgx.Conn].
 func (rows *PgxSyncRows) Conn() *pgx.Conn {
-	return rows.conn
+	return rows.rows.Conn()
 }
 
 // Err fetches any errors.
 func (rows *PgxSyncRows) Err() error {
-	return rows.err
+	return rows.rows.Err()
 }
 
 // FieldDescriptions fetches [pgconn.FieldDescription]s.
 func (rows *PgxSyncRows) FieldDescriptions() []pgconn.FieldDescription {
-	return rows.fieldDescriptions
+	return rows.rows.FieldDescriptions()
 }
 
 // Next continues to the next row of [PgxSyncRows] if there is one.
 func (rows *PgxSyncRows) Next() bool {
-	rows.i++
-	return rows.i < len(rows.values)
+	return rows.rows.Next()
 }
 
 // RawValues fetches the raw values of the current row.
 func (rows *PgxSyncRows) RawValues() [][]byte {
-	return rows.rawValues[rows.i]
+	return rows.rows.RawValues()
 }
 
 // Scan scans the data of the current row into dest.
 func (rows *PgxSyncRows) Scan(dest ...any) error {
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	return pgx.ScanRow(
-		pgtype.NewMap(),
-		rows.FieldDescriptions(),
-		rows.RawValues(),
-		dest...)
+	return rows.rows.Scan(dest...)
 }
 
 // Values fetches the values of the current row.
 func (rows *PgxSyncRows) Values() ([]any, error) {
-	return rows.values[rows.i], nil
+	return rows.rows.Values()
 }
 
 // QueryRow is used to wrap [pgx.Tx.QueryRow] in a [database.SyncTx].
 func (tx *PgxSyncTx) QueryRow(ctx context.Context, sql string, args ...any) pgx.Row {
-	rows, err := tx.Query(ctx, sql, args...)
+	tx.syncTx.Mutex.Lock()
+
+	row := tx.syncTx.Tx.QueryRow(ctx, sql, args...)
 
 	return &PgxSyncRow{
-		rows: rows,
-		err:  err,
+		syncTx: tx.syncTx,
+		row:    row,
 	}
 }
 
 // Scan scans the data of [PgxSyncRow] into dest.
 func (row *PgxSyncRow) Scan(dest ...any) error {
-	if row.err != nil {
-		return row.err
-	}
-
-	if err := row.rows.Err(); err != nil {
-		return err
-	}
-
-	if !row.rows.Next() {
-		return pgx.ErrNoRows
-	}
-
-	return row.rows.Scan(dest...)
+	defer row.syncTx.Unlock()
+	return row.row.Scan(dest...)
 }
 
 // Ping is used to wrap [pgx.Tx.Conn.Ping] in a [database.SyncTx].

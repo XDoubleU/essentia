@@ -23,8 +23,9 @@ type TestSubscribeMsg struct {
 	TopicName string `json:"topicName"`
 }
 
-func (s TestSubscribeMsg) Validate() *validate.Validator {
-	return validate.New()
+func (s TestSubscribeMsg) Validate() (bool, map[string]string) {
+	v := validate.New()
+	return v.Valid(), v.Errors()
 }
 
 func (s TestSubscribeMsg) Topic() string {

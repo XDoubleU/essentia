@@ -29,20 +29,20 @@ func EndOfDay(dateTime time.Time) time.Time {
 	return output
 }
 
-// NowTimeZoneIndependent returns the time in the
+// NowTimeZoneIndependent returns the provided time in the
 // provided time zone but forces the time zone to UTC.
-func NowTimeZoneIndependent(locationTimeZone string) time.Time {
+func TimeZoneIndependentTime(t time.Time, locationTimeZone string) time.Time {
 	timeZone, _ := time.LoadLocation(locationTimeZone)
 	utcTimeZone, _ := time.LoadLocation("UTC")
-	now := time.Now().In(timeZone)
+	t = t.In(timeZone)
 	return time.Date(
-		now.Year(),
-		now.Month(),
-		now.Day(),
-		now.Hour(),
-		now.Minute(),
-		now.Second(),
-		now.Nanosecond(),
+		t.Year(),
+		t.Month(),
+		t.Day(),
+		t.Hour(),
+		t.Minute(),
+		t.Second(),
+		t.Nanosecond(),
 		utcTimeZone,
 	)
 }
