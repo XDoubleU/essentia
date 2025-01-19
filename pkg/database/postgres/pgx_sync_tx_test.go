@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -30,6 +31,55 @@ func setup(t *testing.T) *postgres.PgxSyncTx {
 	}
 
 	return postgres.CreatePgxSyncTx(context.Background(), db)
+}
+
+func TestParallel(t *testing.T) {
+	tx := setup(t)
+	defer func() { err := tx.Rollback(context.Background()); assert.Nil(t, err) }()
+
+	db := postgres.NewSpanDB(tx)
+
+	_, err := db.Exec(
+		context.Background(),
+		"CREATE TABLE kv (key VARCHAR(255), value VARCHAR(255));",
+	)
+	require.Nil(t, err)
+
+	_, err = db.Exec(
+		context.Background(),
+		"INSERT INTO kv (key, value) VALUES ('key1', 'value1');",
+	)
+	require.Nil(t, err)
+
+	mu1 := sync.Mutex{}
+	mu2 := sync.Mutex{}
+
+	mu1.Lock()
+	mu2.Lock()
+
+	go queryRow(t, db, &mu1)
+	go queryRow(t, db, &mu2)
+
+	mu1.Lock()
+	mu2.Lock()
+
+	assert.True(t, true)
+}
+
+func queryRow(t *testing.T, db postgres.DB, mu *sync.Mutex) {
+	for i := 0; i < 100; i++ {
+		var key string
+		var value string
+		err := db.QueryRow(
+			context.Background(),
+			"SELECT key, value FROM kv WHERE key = 'key1';",
+		).Scan(&key, &value)
+		assert.Nil(t, err)
+
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	mu.Unlock()
 }
 
 func TestPing(t *testing.T) {
@@ -74,6 +124,7 @@ func TestQuery(t *testing.T) {
 
 	rows, err := db.Query(context.Background(), "SELECT key, value FROM kv;")
 	require.Nil(t, err)
+	defer rows.Close()
 
 	results := make([][]string, 2)
 	results[0] = make([]string, 2)

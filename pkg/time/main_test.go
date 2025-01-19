@@ -34,11 +34,11 @@ func TestEndOfDay(t *testing.T) {
 	assert.Equal(t, endOfDay, timetools.EndOfDay(now))
 }
 
-func TestNowTimeZoneIndependent(t *testing.T) {
+func TestLocationIndependentTime(t *testing.T) {
 	now := time.Now()
 
 	utcTimeZone, _ := time.LoadLocation("UTC")
-	result := timetools.NowTimeZoneIndependent(now.Location().String())
+	result := timetools.LocationIndependentTime(now, now.Location().String())
 
 	expected := time.Date(
 		now.Year(),
@@ -47,7 +47,7 @@ func TestNowTimeZoneIndependent(t *testing.T) {
 		now.Hour(),
 		now.Minute(),
 		now.Second(),
-		result.Nanosecond(),
+		now.Nanosecond(),
 		utcTimeZone,
 	)
 

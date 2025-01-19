@@ -2,6 +2,7 @@ package ws
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -22,6 +23,7 @@ type SubscribeMessageDto interface {
 // A WebSocketHandler handles incoming requests to a
 // websocket and makes sure subscriptions are made to the right topics.
 type WebSocketHandler[T SubscribeMessageDto] struct {
+	logger                 *slog.Logger
 	maxTopicWorkers        int
 	topicChannelBufferSize int
 	topicMap               map[string]*Topic
@@ -29,10 +31,12 @@ type WebSocketHandler[T SubscribeMessageDto] struct {
 
 // CreateWebSocketHandler creates a new [WebSocketHandler].
 func CreateWebSocketHandler[T SubscribeMessageDto](
+	logger *slog.Logger,
 	maxTopicWorkers int,
 	topicChannelBufferSize int,
 ) WebSocketHandler[T] {
 	return WebSocketHandler[T]{
+		logger:                 logger,
 		maxTopicWorkers:        maxTopicWorkers,
 		topicChannelBufferSize: topicChannelBufferSize,
 		topicMap:               make(map[string]*Topic),
@@ -53,6 +57,7 @@ func (h *WebSocketHandler[T]) AddTopic(
 	}
 
 	topic := NewTopic(
+		h.logger,
 		topicName,
 		allowedOrigins,
 		h.maxTopicWorkers,
@@ -119,8 +124,8 @@ func (h WebSocketHandler[T]) Handler() http.HandlerFunc {
 				return
 			}
 
-			if v := msg.Validate(); !v.Valid() {
-				FailedValidationResponse(r.Context(), conn, v.Errors)
+			if valid, errors := msg.Validate(); !valid {
+				FailedValidationResponse(r.Context(), conn, errors)
 				return
 			}
 

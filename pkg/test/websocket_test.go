@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	wstools "github.com/XDoubleU/essentia/pkg/communication/ws"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	"github.com/XDoubleU/essentia/pkg/test"
 	"github.com/XDoubleU/essentia/pkg/validate"
 	"github.com/stretchr/testify/assert"
@@ -22,8 +23,9 @@ type TestSubscribeMsg struct {
 	TopicName string `json:"topicName"`
 }
 
-func (s TestSubscribeMsg) Validate() *validate.Validator {
-	return validate.New()
+func (s TestSubscribeMsg) Validate() (bool, map[string]string) {
+	v := validate.New()
+	return v.Valid(), v.Errors()
 }
 
 func (s TestSubscribeMsg) Topic() string {
@@ -33,7 +35,9 @@ func (s TestSubscribeMsg) Topic() string {
 func setup(t *testing.T) (http.Handler, *wstools.Topic) {
 	t.Helper()
 
+	logger := logging.NewNopLogger()
 	ws := wstools.CreateWebSocketHandler[TestSubscribeMsg](
+		logger,
 		1,
 		10,
 	)

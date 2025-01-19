@@ -30,11 +30,12 @@ func NewApp(logger *slog.Logger, config Config, db postgres.DB) application {
 }
 
 func main() {
-	cfg := NewConfig()
+	cfg := NewConfig(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	logger := slog.New(
 		sentrytools.NewLogHandler(cfg.Env, slog.NewTextHandler(os.Stdout, nil)),
 	)
+
 	db, err := postgres.Connect(
 		logger,
 		cfg.DBDsn,

@@ -1,10 +1,13 @@
 package config_test
 
 import (
+	"bytes"
+	"log/slog"
 	"strconv"
 	"testing"
 
 	"github.com/XDoubleU/essentia/pkg/config"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,11 +18,25 @@ func TestEnvStr(t *testing.T) {
 
 	t.Setenv(existingKey, expected)
 
-	exists := config.EnvStr(existingKey, def)
-	notExists := config.EnvStr(nonExistingKey, def)
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
+	exists := c.EnvStr(existingKey, def)
+	notExists := c.EnvStr(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+
+	assert.Contains(t, buf.String(), "loaded env var 'key'='string' with type 'string'")
+	assert.Contains(t, buf.String(), "loaded env var 'non_key'='' with type 'string'")
 }
 
 func TestEnvStrArray(t *testing.T) {
@@ -28,11 +45,33 @@ func TestEnvStrArray(t *testing.T) {
 
 	t.Setenv(existingKey, rawExpected)
 
-	exists := config.EnvStrArray(existingKey, def)
-	notExists := config.EnvStrArray(nonExistingKey, def)
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
+	exists := c.EnvStrArray(existingKey, def)
+	notExists := c.EnvStrArray(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+
+	assert.Contains(
+		t,
+		buf.String(),
+		"loaded env var 'key'='string1,string2' with type 'string array'",
+	)
+	assert.Contains(
+		t,
+		buf.String(),
+		"loaded env var 'non_key'='' with type 'string array'",
+	)
 }
 
 func TestEnvInt(t *testing.T) {
@@ -40,11 +79,25 @@ func TestEnvInt(t *testing.T) {
 
 	t.Setenv(existingKey, strconv.Itoa(expected))
 
-	exists := config.EnvInt(existingKey, def)
-	notExists := config.EnvInt(nonExistingKey, def)
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
+	exists := c.EnvInt(existingKey, def)
+	notExists := c.EnvInt(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+
+	assert.Contains(t, buf.String(), "loaded env var 'key'='14' with type 'int'")
+	assert.Contains(t, buf.String(), "loaded env var 'non_key'='0' with type 'int'")
 }
 
 func TestEnvIntWrong(t *testing.T) {
@@ -52,10 +105,21 @@ func TestEnvIntWrong(t *testing.T) {
 
 	t.Setenv(existingKey, expected)
 
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to int",
-		func() { config.EnvInt(existingKey, def) },
+		func() { c.EnvInt(existingKey, def) },
 	)
 }
 
@@ -64,11 +128,29 @@ func TestEnvFloat(t *testing.T) {
 
 	t.Setenv(existingKey, strconv.FormatFloat(expected, 'f', -1, 64))
 
-	exists := config.EnvFloat(existingKey, def)
-	notExists := config.EnvFloat(nonExistingKey, def)
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
+	exists := c.EnvFloat(existingKey, def)
+	notExists := c.EnvFloat(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+
+	assert.Contains(t, buf.String(), "loaded env var 'key'='14.00' with type 'float64'")
+	assert.Contains(
+		t,
+		buf.String(),
+		"loaded env var 'non_key'='0.00' with type 'float64'",
+	)
 }
 
 func TestEnvFloatWrong(t *testing.T) {
@@ -76,10 +158,21 @@ func TestEnvFloatWrong(t *testing.T) {
 
 	t.Setenv(existingKey, expected)
 
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to float64",
-		func() { config.EnvFloat(existingKey, def) },
+		func() { c.EnvFloat(existingKey, def) },
 	)
 }
 
@@ -88,11 +181,29 @@ func TestEnvBool(t *testing.T) {
 
 	t.Setenv(existingKey, strconv.FormatBool(expected))
 
-	exists := config.EnvBool(existingKey, def)
-	notExists := config.EnvBool(nonExistingKey, def)
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
+	exists := c.EnvBool(existingKey, def)
+	notExists := c.EnvBool(nonExistingKey, def)
 
 	assert.Equal(t, exists, expected)
 	assert.Equal(t, notExists, def)
+
+	assert.Contains(t, buf.String(), "loaded env var 'key'='true' with type 'bool'")
+	assert.Contains(
+		t,
+		buf.String(),
+		"loaded env var 'non_key'='false' with type 'bool'",
+	)
 }
 
 func TestEnvBoolWrong(t *testing.T) {
@@ -100,9 +211,20 @@ func TestEnvBoolWrong(t *testing.T) {
 
 	t.Setenv(existingKey, expected)
 
+	var buf bytes.Buffer
+	c := config.New(
+		slog.New(
+			logging.NewBufLogHandler(
+				&buf,
+				//nolint:exhaustruct //other fields are optional
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			),
+		),
+	)
+
 	assert.PanicsWithValue(
 		t,
 		"can't convert env var 'key' with value 'string' to bool",
-		func() { config.EnvBool(existingKey, def) },
+		func() { c.EnvBool(existingKey, def) },
 	)
 }

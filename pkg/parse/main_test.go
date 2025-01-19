@@ -123,7 +123,7 @@ func TestArrayQueryParamFailedParseFunc(t *testing.T) {
 		req,
 		"queryParam",
 		[]int{1, 2},
-		parse.IntFunc(false, true),
+		parse.Int(false, true),
 	)
 
 	assert.Equal(t, []int{}, result)

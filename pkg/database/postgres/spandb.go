@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/XDoubleU/essentia/pkg/database"
 	"github.com/jackc/pgx/v5"
@@ -54,10 +55,35 @@ func (db *SpanDB) QueryRow(
 		optionsAndArgs...)
 }
 
+// SendBatch is used to wrap SendBatch in a [sentry.Span].
+func (db *SpanDB) SendBatch(
+	ctx context.Context,
+	b *pgx.Batch,
+) pgx.BatchResults {
+	sql := ""
+	for i, query := range b.QueuedQueries {
+		sql += fmt.Sprintf("query %d: %s\n", i, query.SQL)
+	}
+
+	span := database.StartSpan(ctx, db.dbName, sql)
+	defer span.Finish()
+
+	return db.DB.SendBatch(ctx, b)
+}
+
 // Begin doesn't wrap Begin in a [sentry.Span] as
 // this makes little sense for starting a transaction.
 func (db *SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
 	return db.DB.Begin(ctx)
+}
+
+// BeginTx doesn't wrap BeginTx in a [sentry.Span] as
+// this makes little sense for starting a transaction.
+func (db *SpanDB) BeginTx(
+	ctx context.Context,
+	txOptions pgx.TxOptions,
+) (pgx.Tx, error) {
+	return db.DB.BeginTx(ctx, txOptions)
 }
 
 // Ping doesn't wrap Ping in a [sentry.Span] as

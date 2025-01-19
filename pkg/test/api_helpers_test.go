@@ -15,7 +15,7 @@ func paginatedEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	pageSize := 2
 	data := []string{"1", "2", "3"}
 
-	page, err := parse.RequiredQueryParam(r, "page", parse.IntFunc(true, false))
+	page, err := parse.RequiredQueryParam(r, "page", parse.Int(true, false))
 	if err != nil {
 		httptools.BadRequestResponse(w, r, errors.NewBadRequestError(err))
 		return

@@ -1,6 +1,10 @@
 package main
 
-import "github.com/XDoubleU/essentia/pkg/config"
+import (
+	"log/slog"
+
+	"github.com/XDoubleU/essentia/pkg/config"
+)
 
 type Config struct {
 	Env            string
@@ -9,13 +13,15 @@ type Config struct {
 	AllowedOrigins []string
 }
 
-func NewConfig() Config {
+func NewConfig(logger *slog.Logger) Config {
+	c := config.New(logger)
+
 	var cfg Config
 
-	cfg.Env = config.EnvStr("ENV", config.ProdEnv)
-	cfg.Port = config.EnvInt("PORT", 8000)
-	cfg.DBDsn = config.EnvStr("DB_DSN", "postgres://postgres@localhost/postgres")
-	cfg.AllowedOrigins = config.EnvStrArray(
+	cfg.Env = c.EnvStr("ENV", config.ProdEnv)
+	cfg.Port = c.EnvInt("PORT", 8000)
+	cfg.DBDsn = c.EnvStr("DB_DSN", "postgres://postgres@localhost/postgres")
+	cfg.AllowedOrigins = c.EnvStrArray(
 		"ALLOWED_ORIGINS",
 		[]string{"http://localhost"},
 	)

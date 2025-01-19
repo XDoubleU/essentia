@@ -15,10 +15,10 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	cfg := NewConfig()
-	cfg.Env = config.TestEnv
-
 	logger := logging.NewNopLogger()
+
+	cfg := NewConfig(logger)
+	cfg.Env = config.TestEnv
 
 	db, err := postgres.Connect(
 		logger,

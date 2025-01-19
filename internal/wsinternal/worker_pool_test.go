@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/XDoubleU/essentia/internal/wsinternal"
+	"github.com/XDoubleU/essentia/pkg/logging"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -52,7 +53,9 @@ func (sub *TestSubscriber) Output() string {
 const sleep = 100 * time.Millisecond
 
 func TestBasic(t *testing.T) {
-	wp := wsinternal.NewWorkerPool(1, 10)
+	logger := logging.NewNopLogger()
+
+	wp := wsinternal.NewWorkerPool(logger, 1, 10)
 
 	tSub := NewTestSubscriber()
 	wp.AddSubscriber(tSub)
@@ -81,7 +84,9 @@ func TestBasic(t *testing.T) {
 }
 
 func TestMoreWorkersThanSubs(t *testing.T) {
-	wp := wsinternal.NewWorkerPool(2, 10)
+	logger := logging.NewNopLogger()
+
+	wp := wsinternal.NewWorkerPool(logger, 2, 10)
 
 	tSub := NewTestSubscriber()
 	wp.AddSubscriber(tSub)
@@ -100,7 +105,9 @@ func TestMoreWorkersThanSubs(t *testing.T) {
 }
 
 func TestAddRemoveSubscriberWhileWorkersActive(t *testing.T) {
-	wp := wsinternal.NewWorkerPool(2, 10)
+	logger := logging.NewNopLogger()
+
+	wp := wsinternal.NewWorkerPool(logger, 2, 10)
 
 	tSub := NewTestSubscriber()
 	wp.AddSubscriber(tSub)
@@ -146,7 +153,9 @@ func work(t *testing.T, wp *wsinternal.WorkerPool, nr int) {
 }
 
 func TestToggleWork(t *testing.T) {
-	wp := wsinternal.NewWorkerPool(1, 10)
+	logger := logging.NewNopLogger()
+
+	wp := wsinternal.NewWorkerPool(logger, 1, 10)
 
 	work(t, wp, 1)
 	work(t, wp, 2)
