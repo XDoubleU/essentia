@@ -6,6 +6,7 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+// StartSpan is used to start a [sentry.Span].
 func StartSpan(ctx context.Context, dbName string, sql string) *sentry.Span {
 	span := sentry.StartSpan(ctx, "db.query", sentry.WithDescription(sql))
 	span.SetData("db.system", dbName)

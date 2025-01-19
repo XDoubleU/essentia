@@ -79,7 +79,10 @@ func (db *SpanDB) Begin(ctx context.Context) (pgx.Tx, error) {
 
 // BeginTx doesn't wrap BeginTx in a [sentry.Span] as
 // this makes little sense for starting a transaction.
-func (db *SpanDB) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+func (db *SpanDB) BeginTx(
+	ctx context.Context,
+	txOptions pgx.TxOptions,
+) (pgx.Tx, error) {
 	return db.DB.BeginTx(ctx, txOptions)
 }
 

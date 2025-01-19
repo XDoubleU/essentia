@@ -167,7 +167,10 @@ func (tx *PgxSyncTx) Begin(ctx context.Context) (pgx.Tx, error) {
 }
 
 // BeginTx is used to wrap [pgx.Tx.BeginTx] in a [database.SyncTx].
-func (tx *PgxSyncTx) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+func (tx *PgxSyncTx) BeginTx(
+	ctx context.Context,
+	txOptions pgx.TxOptions,
+) (pgx.Tx, error) {
 	return database.WrapInSyncTx(
 		ctx,
 		tx.syncTx,

@@ -23,6 +23,7 @@ func (v *Validator) Valid() bool {
 	return len(v.errors) == 0
 }
 
+// Errors returns the [Validator] errors.
 func (v *Validator) Errors() map[string]string {
 	return v.errors
 }
@@ -41,7 +42,14 @@ func Check[T any](v *Validator, key string, value T, validatorFunc ValidatorFunc
 	}
 }
 
-func CheckOptional[T any](v *Validator, key string, value *T, validatorFunc ValidatorFunc[T]) {
+// CheckOptional checks if value passes the validatorFunc, when the value is provided.
+// The provided key is used for creating the errors map of the [Validator].
+func CheckOptional[T any](
+	v *Validator,
+	key string,
+	value *T,
+	validatorFunc ValidatorFunc[T],
+) {
 	if value == nil {
 		return
 	}

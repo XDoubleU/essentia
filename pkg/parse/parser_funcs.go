@@ -14,7 +14,7 @@ type ParserFunc[T any] func(paramType string, paramName string, value string) (T
 
 // String is used to parse a parameter as string value.
 // As all parameters are string by default this returns the original value.
-func String(paramType string, paramName string, value string) (string, error) {
+func String(_ string, _ string, value string) (string, error) {
 	return value, nil
 }
 

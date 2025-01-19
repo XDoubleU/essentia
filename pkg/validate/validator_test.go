@@ -1,3 +1,4 @@
+//nolint:exhaustruct //on purpose
 package validate_test
 
 import (
@@ -42,7 +43,12 @@ func (ts *TestStruct) Validate() (bool, map[string]string) {
 
 	validate.Check(v, "tzVal", ts.TzVal, validate.IsValidTimeZone)
 
-	validate.CheckOptional(v, "optStrVal", ts.OptStrVal, validate.IsInSlice([]string{"allowed"}))
+	validate.CheckOptional(
+		v,
+		"optStrVal",
+		ts.OptStrVal,
+		validate.IsInSlice([]string{"allowed"}),
+	)
 
 	return v.Valid(), v.Errors()
 }
