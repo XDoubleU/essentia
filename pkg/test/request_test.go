@@ -11,14 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testHandler(w http.ResponseWriter, r *http.Request) {
+type Test struct {
+	Key string
+}
+
+func testHandlerJson(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("cookiename")
 	if err != nil || cookie.Value != "value" {
 		httptools.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	var data map[string]string
+	var data Test
 	err = httptools.ReadJSON(r.Body, &data)
 	if err != nil {
 		httptools.ServerErrorResponse(w, r, err)
@@ -31,23 +35,69 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TestRequestTester(t *testing.T) {
-	reqData := map[string]string{
-		"test": "data",
+func TestRequestTesterJson(t *testing.T) {
+	reqData := Test{
+		Key: "data",
 	}
 
 	tReq := test.CreateRequestTester(
-		http.HandlerFunc(testHandler),
-		http.MethodGet,
+		http.HandlerFunc(testHandlerJson),
+		test.JsonContentType,
+		http.MethodPost,
 		"/test/%d",
 		1,
 	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetBody(reqData)
+	tReq.SetData(reqData)
 
 	rs := tReq.Do(t)
 
-	var rsData map[string]string
+	var rsData Test
+	err := httptools.ReadJSON(rs.Body, &rsData)
+	require.Nil(t, err)
+
+	assert.Equal(t, http.StatusOK, rs.StatusCode)
+	assert.Equal(t, reqData, rsData)
+}
+
+func testHandlerForm(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("cookiename")
+	if err != nil || cookie.Value != "value" {
+		httptools.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	var data Test
+	err = httptools.ReadForm(r, &data)
+	if err != nil {
+		httptools.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	err = httptools.WriteJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		httptools.ServerErrorResponse(w, r, err)
+	}
+}
+
+func TestRequestTesterForm(t *testing.T) {
+	reqData := Test{
+		Key: "data",
+	}
+
+	tReq := test.CreateRequestTester(
+		http.HandlerFunc(testHandlerForm),
+		test.FormContentType,
+		http.MethodPost,
+		"/test/%d",
+		1,
+	)
+	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
+	tReq.SetData(reqData)
+
+	rs := tReq.Do(t)
+
+	var rsData Test
 	err := httptools.ReadJSON(rs.Body, &rsData)
 	require.Nil(t, err)
 
@@ -56,20 +106,20 @@ func TestRequestTester(t *testing.T) {
 }
 
 func TestRequestTesterTestServer(t *testing.T) {
-	reqData := map[string]string{
-		"test": "data",
+	reqData := Test{
+		Key: "data",
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(testHandler))
+	ts := httptest.NewServer(http.HandlerFunc(testHandlerJson))
 
-	tReq := test.CreateRequestTester(nil, http.MethodGet, "/test/%d", 1)
+	tReq := test.CreateRequestTester(nil, test.JsonContentType, http.MethodGet, "/test/%d", 1)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
-	tReq.SetBody(reqData)
+	tReq.SetData(reqData)
 	tReq.SetTestServer(ts)
 
 	rs := tReq.Do(t)
 
-	var rsData map[string]string
+	var rsData Test
 	err := httptools.ReadJSON(rs.Body, &rsData)
 	require.Nil(t, err)
 
@@ -78,7 +128,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 }
 
 func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
-	tReq := test.CreateRequestTester(nil, http.MethodGet, "")
+	tReq := test.CreateRequestTester(nil, test.JsonContentType, http.MethodGet, "")
 
 	assert.PanicsWithValue(
 		t,

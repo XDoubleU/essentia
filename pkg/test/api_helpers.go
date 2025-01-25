@@ -2,6 +2,7 @@ package test
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 	"testing"
 )
@@ -28,8 +29,8 @@ func PaginatedEndpointTester(
 
 	for page, statusCode := range pagesAndStatusCodes {
 		tReq := baseRequest.Copy()
-		tReq.SetQuery(map[string]string{
-			pageQueryParamName: strconv.Itoa(page),
+		tReq.SetQuery(url.Values{
+			pageQueryParamName: {strconv.Itoa(page)},
 		})
 
 		mt.AddTestCase(tReq, NewCaseResponse(statusCode, nil, nil))

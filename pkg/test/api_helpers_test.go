@@ -33,6 +33,7 @@ func paginatedEndpointHandler(w http.ResponseWriter, r *http.Request) {
 func TestPaginatedEndpointTester(t *testing.T) {
 	tReq := test.CreateRequestTester(
 		http.HandlerFunc(paginatedEndpointHandler),
+		test.JsonContentType,
 		http.MethodGet,
 		"",
 	)
