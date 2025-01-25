@@ -34,7 +34,12 @@ func TestHealth(t *testing.T) {
 
 	app := NewApp(logger, cfg, db)
 
-	tReq := test.CreateRequestTester(app.Routes(), test.JsonContentType, http.MethodGet, "/health")
+	tReq := test.CreateRequestTester(
+		app.Routes(),
+		test.JSONContentType,
+		http.MethodGet,
+		"/health",
+	)
 	rs := tReq.Do(t)
 
 	var rsData Health

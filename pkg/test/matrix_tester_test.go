@@ -66,7 +66,7 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 func TestMatrixTester(t *testing.T) {
 	baseRequest := test.CreateRequestTester(
 		http.HandlerFunc(matrixTestHandler),
-		test.JsonContentType,
+		test.JSONContentType,
 		http.MethodGet,
 		"",
 	)

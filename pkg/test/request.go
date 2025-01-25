@@ -15,11 +15,16 @@ import (
 	httptools "github.com/XDoubleU/essentia/pkg/communication/http"
 )
 
+// ContentType is used to set the "Content-Type" header of requests.
+// This also has an influence on the encoding of your data.
 type ContentType = int
 
 const (
-	JsonContentType ContentType = iota
-	FormContentType             = iota
+	// JSONContentType sets the "Content-Type" header to "application/json".
+	JSONContentType ContentType = iota
+	// FormContentType sets the "Content-Type" header to
+	// "application/x-www-form-urlencoded".
+	FormContentType = iota
 )
 
 // A RequestTester is used to test a certain HTTP request.
@@ -103,7 +108,7 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 
 	if tReq.data != nil {
 		switch tReq.contentType {
-		case JsonContentType:
+		case JSONContentType:
 			contentType = "application/json"
 
 			var body []byte
@@ -168,12 +173,13 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 // Copy creates a copy of a [RequestTester] in order to easily test similar requests.
 func (tReq RequestTester) Copy() RequestTester {
 	return RequestTester{
-		handler: tReq.handler,
-		ts:      tReq.ts,
-		method:  tReq.method,
-		path:    tReq.path,
-		data:    tReq.data,
-		query:   tReq.query,
-		cookies: tReq.cookies,
+		handler:     tReq.handler,
+		ts:          tReq.ts,
+		contentType: tReq.contentType,
+		method:      tReq.method,
+		path:        tReq.path,
+		data:        tReq.data,
+		query:       tReq.query,
+		cookies:     tReq.cookies,
 	}
 }

@@ -15,7 +15,7 @@ type Test struct {
 	Key string
 }
 
-func testHandlerJson(w http.ResponseWriter, r *http.Request) {
+func testHandlerJSON(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("cookiename")
 	if err != nil || cookie.Value != "value" {
 		httptools.ServerErrorResponse(w, r, err)
@@ -41,8 +41,8 @@ func TestRequestTesterJson(t *testing.T) {
 	}
 
 	tReq := test.CreateRequestTester(
-		http.HandlerFunc(testHandlerJson),
-		test.JsonContentType,
+		http.HandlerFunc(testHandlerJSON),
+		test.JSONContentType,
 		http.MethodPost,
 		"/test/%d",
 		1,
@@ -110,9 +110,15 @@ func TestRequestTesterTestServer(t *testing.T) {
 		Key: "data",
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(testHandlerJson))
+	ts := httptest.NewServer(http.HandlerFunc(testHandlerJSON))
 
-	tReq := test.CreateRequestTester(nil, test.JsonContentType, http.MethodGet, "/test/%d", 1)
+	tReq := test.CreateRequestTester(
+		nil,
+		test.JSONContentType,
+		http.MethodGet,
+		"/test/%d",
+		1,
+	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
 	tReq.SetData(reqData)
 	tReq.SetTestServer(ts)
@@ -128,7 +134,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 }
 
 func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
-	tReq := test.CreateRequestTester(nil, test.JsonContentType, http.MethodGet, "")
+	tReq := test.CreateRequestTester(nil, test.JSONContentType, http.MethodGet, "")
 
 	assert.PanicsWithValue(
 		t,
