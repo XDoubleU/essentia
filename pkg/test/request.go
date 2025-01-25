@@ -5,25 +5,44 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
+
+	httptools "github.com/XDoubleU/essentia/pkg/communication/http"
+)
+
+// ContentType is used to set the "Content-Type" header of requests.
+// This also has an influence on the encoding of your data.
+type ContentType = int
+
+const (
+	// JSONContentType sets the "Content-Type" header to "application/json".
+	JSONContentType ContentType = iota
+	// FormContentType sets the "Content-Type" header to
+	// "application/x-www-form-urlencoded".
+	FormContentType = iota
 )
 
 // A RequestTester is used to test a certain HTTP request.
 type RequestTester struct {
-	handler http.Handler
-	ts      *httptest.Server
-	method  string
-	path    string
-	body    any
-	query   map[string]string
-	cookies []*http.Cookie
+	handler     http.Handler
+	ts          *httptest.Server
+	contentType ContentType
+	method      string
+	path        string
+	data        any
+	query       url.Values
+	cookies     []*http.Cookie
 }
 
 // CreateRequestTester creates a new [RequestTester].
 func CreateRequestTester(
 	handler http.Handler,
+	contentType ContentType,
 	method, path string,
 	pathValues ...any,
 ) RequestTester {
@@ -38,10 +57,11 @@ func CreateRequestTester(
 	return RequestTester{
 		handler,
 		nil,
+		contentType,
 		method,
 		path,
 		nil,
-		make(map[string]string),
+		make(url.Values),
 		[]*http.Cookie{},
 	}
 }
@@ -52,13 +72,13 @@ func (tReq *RequestTester) SetTestServer(ts *httptest.Server) {
 	tReq.ts = ts
 }
 
-// SetBody sets the request body of a [RequestTester].
-func (tReq *RequestTester) SetBody(body any) {
-	tReq.body = body
+// SetData sets the request data of a [RequestTester].
+func (tReq *RequestTester) SetData(data any) {
+	tReq.data = data
 }
 
 // SetQuery sets the query of a [RequestTester].
-func (tReq *RequestTester) SetQuery(query map[string]string) {
+func (tReq *RequestTester) SetQuery(query url.Values) {
 	tReq.query = query
 }
 
@@ -73,7 +93,8 @@ func (tReq *RequestTester) AddCookie(cookie *http.Cookie) {
 func (tReq RequestTester) Do(t *testing.T) *http.Response {
 	t.Helper()
 
-	var body []byte
+	var contentType string
+	var bodyReader io.Reader
 	var err error
 
 	if tReq.ts == nil && tReq.handler != nil {
@@ -85,8 +106,22 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 		panic("handler nor test server has been set")
 	}
 
-	if tReq.body != nil {
-		body, err = json.Marshal(tReq.body)
+	if tReq.data != nil {
+		switch tReq.contentType {
+		case JSONContentType:
+			contentType = "application/json"
+
+			var body []byte
+			body, err = json.Marshal(tReq.data)
+			bodyReader = bytes.NewReader(body)
+		case FormContentType:
+			contentType = "application/x-www-form-urlencoded"
+
+			var query url.Values
+			query, err = httptools.WriteForm(tReq.data)
+			bodyReader = strings.NewReader(query.Encode())
+		}
+
 		if err != nil {
 			t.Errorf("error when marshalling body: %v", err)
 			t.FailNow()
@@ -98,7 +133,7 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 		context.Background(),
 		tReq.method,
 		fmt.Sprintf("%s/%s", tReq.ts.URL, tReq.path),
-		bytes.NewReader(body),
+		bodyReader,
 	)
 
 	if err != nil {
@@ -110,8 +145,10 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 	if len(tReq.query) > 0 {
 		query := req.URL.Query()
 
-		for key, value := range tReq.query {
-			query.Add(key, value)
+		for key, values := range tReq.query {
+			for _, value := range values {
+				query.Add(key, value)
+			}
 		}
 
 		req.URL.RawQuery = query.Encode()
@@ -120,6 +157,8 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 	for _, cookie := range tReq.cookies {
 		req.AddCookie(cookie)
 	}
+
+	req.Header.Set("Content-Type", contentType)
 
 	rs, err := tReq.ts.Client().Do(req)
 	if err != nil {
@@ -134,12 +173,13 @@ func (tReq RequestTester) Do(t *testing.T) *http.Response {
 // Copy creates a copy of a [RequestTester] in order to easily test similar requests.
 func (tReq RequestTester) Copy() RequestTester {
 	return RequestTester{
-		handler: tReq.handler,
-		ts:      tReq.ts,
-		method:  tReq.method,
-		path:    tReq.path,
-		body:    tReq.body,
-		query:   tReq.query,
-		cookies: tReq.cookies,
+		handler:     tReq.handler,
+		ts:          tReq.ts,
+		contentType: tReq.contentType,
+		method:      tReq.method,
+		path:        tReq.path,
+		data:        tReq.data,
+		query:       tReq.query,
+		cookies:     tReq.cookies,
 	}
 }

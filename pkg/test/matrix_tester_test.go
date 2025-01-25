@@ -3,6 +3,7 @@ package test_test
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"testing"
 
 	httptools "github.com/XDoubleU/essentia/pkg/communication/http"
@@ -65,13 +66,14 @@ func matrixTestHandler(w http.ResponseWriter, r *http.Request) {
 func TestMatrixTester(t *testing.T) {
 	baseRequest := test.CreateRequestTester(
 		http.HandlerFunc(matrixTestHandler),
+		test.JSONContentType,
 		http.MethodGet,
 		"",
 	)
 	mt := test.CreateMatrixTester()
 
 	tReq1 := baseRequest.Copy()
-	tReq1.SetBody(map[string]string{
+	tReq1.SetData(map[string]string{
 		"test": "error",
 	})
 
@@ -83,8 +85,8 @@ func TestMatrixTester(t *testing.T) {
 	mt.AddTestCase(tReq1, tRes1)
 
 	tReq2 := baseRequest.Copy()
-	tReq2.SetQuery(map[string]string{
-		"param": "value",
+	tReq2.SetQuery(url.Values{
+		"param": {"value"},
 	})
 
 	mt.AddTestCase(tReq2, test.NewCaseResponse(http.StatusForbidden, nil, nil))
