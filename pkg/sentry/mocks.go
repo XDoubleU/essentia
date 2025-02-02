@@ -38,7 +38,7 @@ type transportMock struct {
 	lastEvent *sentry.Event
 }
 
-func newTransportMock() *transportMock {
+func newTransportMock() sentry.Transport {
 	return &transportMock{
 		mu:        sync.Mutex{},
 		events:    []*sentry.Event{},
@@ -60,4 +60,6 @@ func (t *transportMock) Events() []*sentry.Event {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	return t.events
+}
+func (t *transportMock) Close() {
 }
