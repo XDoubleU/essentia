@@ -21,7 +21,8 @@ const (
 	Normal GraphType = iota
 	// Cumulative GraphType will accumulate all previous values on your graph.
 	Cumulative GraphType = iota
-	// CumulativeSameDate GraphType will accumulate values with the same date on your graph.
+	// CumulativeSameDate GraphType will accumulate values
+	// with the same date on your graph.
 	CumulativeSameDate GraphType = iota
 )
 
