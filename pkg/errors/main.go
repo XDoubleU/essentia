@@ -2,7 +2,7 @@
 // and other helpers for dealing with errors.
 package errors
 
-//nolint:lll // can't make these lines shorter
+//nolint:lll,revive //can't make these lines shorter,the errors are clear
 const (
 	MessageInternalServerError = "the server encountered a problem and could not process your request"
 	MessageTooManyRequests     = "rate limit exceeded"
