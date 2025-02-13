@@ -36,7 +36,6 @@ func TestHealth(t *testing.T) {
 
 	tReq := test.CreateRequestTester(
 		app.Routes(),
-		test.JSONContentType,
 		http.MethodGet,
 		"/health",
 	)

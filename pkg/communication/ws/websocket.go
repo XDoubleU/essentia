@@ -98,7 +98,6 @@ func (h *WebSocketHandler[T]) RemoveTopic(topic *Topic) error {
 		return fmt.Errorf("topic '%s' doesn't exist", topic.Name)
 	}
 
-	topic.StopPool()
 	delete(h.topicMap, topic.Name)
 	return nil
 }
