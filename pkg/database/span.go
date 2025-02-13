@@ -8,7 +8,17 @@ import (
 
 // StartSpan is used to start a [sentry.Span].
 func StartSpan(ctx context.Context, dbName string, sql string) *sentry.Span {
-	span := sentry.StartSpan(ctx, "db.query", sentry.WithDescription(sql))
+	transaction := sentry.TransactionFromContext(ctx)
+
+	options := []sentry.SpanOption{
+		sentry.WithDescription(sql),
+	}
+
+	if transaction != nil {
+		options = append(options, sentry.WithTransactionName(transaction.Name))
+	}
+
+	span := sentry.StartSpan(ctx, "db.query", options...)
 	span.SetData("db.system", dbName)
 
 	return span

@@ -48,7 +48,7 @@ func testErrorWithReq(
 
 func TestServerErrorResponseObfuscated(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.HandleError(w, r, errors.New("test"), nil)
+		httptools.HandleError(w, r, errors.New("test"))
 	}
 
 	statusCode, errorDto := testError(t, handler)
@@ -59,7 +59,7 @@ func TestServerErrorResponseObfuscated(t *testing.T) {
 
 func TestServerErrorResponseShown(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.HandleError(w, r, errors.New("test"), nil)
+		httptools.HandleError(w, r, errors.New("test"))
 	}
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
@@ -77,7 +77,6 @@ func TestBadRequestResponse(t *testing.T) {
 			w,
 			r,
 			errortools.NewBadRequestError(errors.New("test")),
-			nil,
 		)
 	}
 
@@ -104,7 +103,6 @@ func TestUnauthorizedResponse(t *testing.T) {
 			w,
 			r,
 			errortools.NewUnauthorizedError(errors.New("test")),
-			nil,
 		)
 	}
 
@@ -131,7 +129,6 @@ func TestConflictResponse(t *testing.T) {
 			w,
 			r,
 			errortools.NewConflictError("resource", "value", "field"),
-			nil,
 		)
 	}
 
@@ -149,7 +146,6 @@ func TestNotFoundResponse(t *testing.T) {
 			w,
 			r,
 			errortools.NewNotFoundError("resource", "value", "field"),
-			nil,
 		)
 	}
 
@@ -163,7 +159,7 @@ func TestNotFoundResponse(t *testing.T) {
 
 func TestFailedValidationResponse(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		httptools.HandleError(w, r, errortools.ErrFailedValidation, map[string]string{
+		httptools.FailedValidationResponse(w, r, map[string]string{
 			"field": "invalid value",
 		})
 	}

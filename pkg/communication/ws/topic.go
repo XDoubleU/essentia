@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/XDoubleU/essentia/internal/wsinternal"
+	"github.com/XDoubleU/essentia/pkg/threading"
 	"github.com/coder/websocket"
 )
 
@@ -18,7 +18,7 @@ type OnSubscribeCallback = func(ctx context.Context, topic *Topic) (any, error)
 type Topic struct {
 	Name                string
 	allowedOrigins      []string
-	pool                *wsinternal.WorkerPool
+	eventQueue          *threading.EventQueue
 	onSubscribeCallback OnSubscribeCallback
 }
 
@@ -40,7 +40,7 @@ func NewTopic(
 	return &Topic{
 		Name:           name,
 		allowedOrigins: allowedOrigins,
-		pool: wsinternal.NewWorkerPool(
+		eventQueue: threading.NewEventQueue(
 			logger,
 			maxWorkers,
 			channelBufferSize,
@@ -55,7 +55,7 @@ func NewTopic(
 // running this will be started now.
 func (t *Topic) Subscribe(conn *websocket.Conn) error {
 	sub := NewSubscriber(t, conn)
-	t.pool.AddSubscriber(sub)
+	t.eventQueue.AddSubscriber(sub)
 
 	if t.onSubscribeCallback != nil {
 		event, err := t.onSubscribeCallback(context.Background(), t)
@@ -66,22 +66,15 @@ func (t *Topic) Subscribe(conn *websocket.Conn) error {
 		sub.OnEventCallback(event)
 	}
 
-	t.pool.Start()
-
 	return nil
 }
 
 // UnSubscribe unsubscribes a [Subscriber] from this [Topic].
 func (t *Topic) UnSubscribe(sub Subscriber) {
-	t.pool.RemoveSubscriber(sub)
+	t.eventQueue.RemoveSubscriber(sub)
 }
 
 // EnqueueEvent enqueues an event if there are subscribers on this [Topic].
 func (t *Topic) EnqueueEvent(event any) {
-	t.pool.EnqueueEvent(event)
-}
-
-// StopPool stops the used [wsinternal.WorkerPool].
-func (t *Topic) StopPool() {
-	t.pool.Stop()
+	t.eventQueue.EnqueueEvent(event)
 }

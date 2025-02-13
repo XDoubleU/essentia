@@ -1,15 +1,9 @@
 package errors
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/XDoubleU/essentia/internal/shared"
-)
-
-var (
-	// ErrFailedValidation is used when validation by [validate.Validator] failed.
-	ErrFailedValidation = errors.New("failed validation")
 )
 
 // NotFoundError is used when a certain resource doesn't exist.

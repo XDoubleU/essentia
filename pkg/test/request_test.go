@@ -42,7 +42,6 @@ func TestRequestTesterJson(t *testing.T) {
 
 	tReq := test.CreateRequestTester(
 		http.HandlerFunc(testHandlerJSON),
-		test.JSONContentType,
 		http.MethodPost,
 		"/test/%d",
 		1,
@@ -87,12 +86,12 @@ func TestRequestTesterForm(t *testing.T) {
 
 	tReq := test.CreateRequestTester(
 		http.HandlerFunc(testHandlerForm),
-		test.FormContentType,
 		http.MethodPost,
 		"/test/%d",
 		1,
 	)
 	tReq.AddCookie(&http.Cookie{Name: "cookiename", Value: "value"})
+	tReq.SetContentType(test.FormContentType)
 	tReq.SetData(reqData)
 
 	rs := tReq.Do(t)
@@ -114,7 +113,6 @@ func TestRequestTesterTestServer(t *testing.T) {
 
 	tReq := test.CreateRequestTester(
 		nil,
-		test.JSONContentType,
 		http.MethodGet,
 		"/test/%d",
 		1,
@@ -134,7 +132,7 @@ func TestRequestTesterTestServer(t *testing.T) {
 }
 
 func TestRequestTesterNoTestServerOrHandler(t *testing.T) {
-	tReq := test.CreateRequestTester(nil, test.JSONContentType, http.MethodGet, "")
+	tReq := test.CreateRequestTester(nil, http.MethodGet, "")
 
 	assert.PanicsWithValue(
 		t,

@@ -14,7 +14,6 @@ func HandleError(
 	w http.ResponseWriter,
 	r *http.Request,
 	err error,
-	validationErrors map[string]string,
 ) {
 	//nolint:exhaustruct //fields are not needed here
 	notFoundError := errortools.NotFoundError{}
@@ -28,8 +27,6 @@ func HandleError(
 	switch {
 	case errors.As(err, &unauthorizedError):
 		UnauthorizedResponse(w, r, unauthorizedError)
-	case errors.Is(err, errortools.ErrFailedValidation):
-		FailedValidationResponse(w, r, validationErrors)
 	case errors.As(err, &badRequestError):
 		BadRequestResponse(w, r, badRequestError)
 	case errors.As(err, &notFoundError):
