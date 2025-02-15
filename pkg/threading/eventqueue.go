@@ -37,8 +37,9 @@ func NewEventQueue(
 
 // EnqueueEvent puts an event on the [Worker] channels.
 func (q *EventQueue) EnqueueEvent(event any) {
-	q.workerPool.EnqueueWork(func(ctx context.Context, logger *slog.Logger) {
+	q.workerPool.EnqueueWork(func(ctx context.Context, logger *slog.Logger) error {
 		q.processEvent(ctx, logger, event)
+		return nil
 	})
 }
 

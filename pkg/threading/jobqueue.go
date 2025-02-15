@@ -204,7 +204,7 @@ func getSmallestPeriod(jobContainers map[string]*jobContainer) time.Duration {
 	return *smallestPeriod
 }
 
-func (c *jobContainer) run(ctx context.Context, logger *slog.Logger) {
+func (c *jobContainer) run(ctx context.Context, logger *slog.Logger) error {
 	defer func() {
 		c.mu.Lock()
 		c.isPushed = false
@@ -223,13 +223,15 @@ func (c *jobContainer) run(ctx context.Context, logger *slog.Logger) {
 	logger.Debug(fmt.Sprintf("started job %s", c.job.ID()))
 	err := c.job.Run(ctx, logger)
 	if err != nil {
-		logger.Error(err.Error())
+		return err
 	}
-	logger.Debug(fmt.Sprintf("finished job %s", c.job.ID()))
+	logger.Debug(fmt.Sprintf("successfully finished job %s", c.job.ID()))
 
 	c.mu.RLock()
 	c.callback(c.job.ID(), false, c.lastRunTime)
 	c.mu.RUnlock()
+
+	return nil
 }
 
 func (c *jobContainer) shouldRun() bool {
