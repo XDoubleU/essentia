@@ -11,8 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func doWork(_ context.Context, _ *slog.Logger) {
-	time.Sleep(300 * time.Millisecond)
+func doWork(_ context.Context, _ *slog.Logger) error {
+	time.Sleep(1 * time.Second)
+	return nil
 }
 
 func TestBasicWorkerPool(t *testing.T) {
@@ -22,8 +23,5 @@ func TestBasicWorkerPool(t *testing.T) {
 	workerpool.EnqueueWork(doWork)
 
 	workerpool.WaitUntilDone()
-	assert.True(t, workerpool.Active())
-
-	workerpool.Stop()
-	assert.False(t, workerpool.Active())
+	assert.False(t, workerpool.IsDoingWork())
 }

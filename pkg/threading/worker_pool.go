@@ -10,7 +10,7 @@ import (
 )
 
 // DoWork describes the interface for work executed by the workers.
-type DoWork = func(ctx context.Context, logger *slog.Logger)
+type DoWork = func(ctx context.Context, logger *slog.Logger) error
 
 // WorkerPool is used to divide [Subscriber]s between [Worker]s.
 // This prevents one [Worker] of being very busy.
@@ -49,6 +49,16 @@ func (pool *WorkerPool) Active() bool {
 	return false
 }
 
+// IsDoingWork checks if the [WorkerPool] is still processing work.
+func (pool *WorkerPool) IsDoingWork() bool {
+	for i := range pool.workers {
+		if pool.workers[i].IsDoingWork() {
+			return true
+		}
+	}
+	return false
+}
+
 // Start starts [Worker]s of a [WorkerPool] if they weren't active yet.
 func (pool *WorkerPool) Start() {
 	for i := range pool.workers {
@@ -68,7 +78,7 @@ func (pool *WorkerPool) EnqueueWork(doWork DoWork) {
 
 // IsWorkRemaining checks if there is still work on the queue.
 func (pool *WorkerPool) IsWorkRemaining() bool {
-	return len(pool.queue) > 0
+	return len(pool.queue) > 0 || pool.IsDoingWork()
 }
 
 // WaitUntilDone blocks until the queue is empty.
