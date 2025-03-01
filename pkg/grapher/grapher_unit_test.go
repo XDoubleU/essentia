@@ -10,7 +10,12 @@ import (
 )
 
 func TestGrapherCumulative(t *testing.T) {
-	grapher := grapher.New[int](grapher.Cumulative, grapher.PreviousValue, "2006-01-02", 24*time.Hour)
+	grapher := grapher.New[int](
+		grapher.Cumulative,
+		grapher.PreviousValue,
+		"2006-01-02",
+		24*time.Hour,
+	)
 
 	dateNow := time.Now().UTC()
 	for i := 0; i < 10; i++ {
@@ -37,7 +42,12 @@ func TestGrapherCumulative(t *testing.T) {
 }
 
 func TestGrapherNormal(t *testing.T) {
-	grapher := grapher.New[int](grapher.Normal, grapher.PreviousValue, "2006-01-02", 24*time.Hour)
+	grapher := grapher.New[int](
+		grapher.Normal,
+		grapher.PreviousValue,
+		"2006-01-02",
+		24*time.Hour,
+	)
 
 	dateNow := time.Now().UTC()
 	for i := 0; i < 10; i++ {

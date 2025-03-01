@@ -30,8 +30,12 @@ const (
 )
 
 const (
-	None          InterpolationType = iota
-	Zero          InterpolationType = iota
+	// None InterpolationType provides a grapher that won't interpolate.
+	None InterpolationType = iota
+	// Zero InterpolationType provides a grapher that will interpolate using value zero.
+	Zero InterpolationType = iota
+	// PreviousValue InterpolationType provides a grapher
+	// that will interpolate using the previous value.
 	PreviousValue InterpolationType = iota
 )
 
