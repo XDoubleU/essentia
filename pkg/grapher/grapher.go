@@ -36,7 +36,11 @@ type Grapher[T Numeric] struct {
 }
 
 // New returns a new Grapher.
-func New[T Numeric](graphType GraphType, dateFormat string, dateGranularity time.Duration) *Grapher[T] {
+func New[T Numeric](
+	graphType GraphType,
+	dateFormat string,
+	dateGranularity time.Duration,
+) *Grapher[T] {
 	return &Grapher[T]{
 		graphType:       graphType,
 		dateFormat:      dateFormat,
