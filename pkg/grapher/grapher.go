@@ -11,6 +11,9 @@ import (
 // GraphType is used to define the type of graph you need.
 type GraphType int
 
+// InterpolationType is used to define the type of interpolation you need.
+type InterpolationType int
+
 // Numeric is a union of all numeric types.
 type Numeric interface {
 	int | int64 | float64
@@ -26,27 +29,40 @@ const (
 	CumulativeSameDate GraphType = iota
 )
 
+const (
+	// None InterpolationType provides a grapher that won't interpolate.
+	None InterpolationType = iota
+	// Zero InterpolationType provides a grapher that will interpolate using value zero.
+	Zero InterpolationType = iota
+	// PreviousValue InterpolationType provides a grapher
+	// that will interpolate using the previous value.
+	PreviousValue InterpolationType = iota
+)
+
 // Grapher is used to easily create graphs.
 type Grapher[T Numeric] struct {
-	graphType       GraphType
-	dateFormat      string
-	dateGranularity time.Duration
-	dateStrings     []string
-	values          map[string][]T
+	graphType         GraphType
+	interpolationType InterpolationType
+	dateFormat        string
+	dateGranularity   time.Duration
+	dateStrings       []string
+	values            map[string][]T
 }
 
 // New returns a new Grapher.
 func New[T Numeric](
 	graphType GraphType,
+	interpolationType InterpolationType,
 	dateFormat string,
 	dateGranularity time.Duration,
 ) *Grapher[T] {
 	return &Grapher[T]{
-		graphType:       graphType,
-		dateFormat:      dateFormat,
-		dateGranularity: dateGranularity,
-		dateStrings:     []string{},
-		values:          make(map[string][]T),
+		graphType:         graphType,
+		interpolationType: interpolationType,
+		dateFormat:        dateFormat,
+		dateGranularity:   dateGranularity,
+		dateStrings:       []string{},
+		values:            make(map[string][]T),
 	}
 }
 
@@ -90,41 +106,61 @@ func (grapher *Grapher[T]) addDates(dateStr string) {
 		grapher.dateStrings[len(grapher.dateStrings)-1],
 	)
 
+	if grapher.interpolationType == None {
+		if dateDay.Before(smallestDate) {
+			grapher.addDateBefore(dateDay, *new(T))
+		} else if dateDay.After(largestDate) {
+			grapher.addDateAfter(dateDay)
+		}
+		return
+	}
+
 	i := smallestDate
 	for i.After(dateDay) {
 		i = i.Add(-1 * grapher.dateGranularity)
-
-		grapher.dateStrings = append(
-			[]string{i.Format(grapher.dateFormat)},
-			grapher.dateStrings...)
-
-		for label := range grapher.values {
-			grapher.values[label] = append(
-				[]T{*new(T)},
-				grapher.values[label]...)
-		}
+		grapher.addDateBefore(i, *new(T))
 	}
 
 	i = largestDate
 	for i.Before(dateDay) {
 		i = i.Add(grapher.dateGranularity)
+		grapher.addDateAfter(i)
+	}
+}
 
-		grapher.dateStrings = append(
-			grapher.dateStrings,
-			i.Format(grapher.dateFormat),
-		)
+func (grapher *Grapher[T]) addDateBefore(date time.Time, value T) {
+	grapher.dateStrings = append(
+		[]string{date.Format(grapher.dateFormat)},
+		grapher.dateStrings...)
 
-		indexOfI := slices.Index(
-			grapher.dateStrings,
-			i.Format(grapher.dateFormat),
-		)
+	for label := range grapher.values {
+		grapher.values[label] = append(
+			[]T{value},
+			grapher.values[label]...)
+	}
+}
 
-		for label := range grapher.values {
-			grapher.values[label] = append(
-				grapher.values[label],
-				grapher.values[label][indexOfI-1],
-			)
+func (grapher *Grapher[T]) addDateAfter(date time.Time) {
+	grapher.dateStrings = append(
+		grapher.dateStrings,
+		date.Format(grapher.dateFormat),
+	)
+
+	indexOfI := slices.Index(
+		grapher.dateStrings,
+		date.Format(grapher.dateFormat),
+	)
+
+	for label := range grapher.values {
+		value := grapher.values[label][indexOfI-1]
+		if grapher.interpolationType == Zero || grapher.interpolationType == None {
+			value = *new(T)
 		}
+
+		grapher.values[label] = append(
+			grapher.values[label],
+			value,
+		)
 	}
 }
 
