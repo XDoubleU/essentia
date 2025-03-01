@@ -28,19 +28,25 @@ const (
 
 // Grapher is used to easily create graphs.
 type Grapher[T Numeric] struct {
-	graphType   GraphType
-	dateFormat  string
-	dateStrings []string
-	values      map[string][]T
+	graphType       GraphType
+	dateFormat      string
+	dateGranularity time.Duration
+	dateStrings     []string
+	values          map[string][]T
 }
 
 // New returns a new Grapher.
-func New[T Numeric](graphType GraphType, dateFormat string) *Grapher[T] {
+func New[T Numeric](
+	graphType GraphType,
+	dateFormat string,
+	dateGranularity time.Duration,
+) *Grapher[T] {
 	return &Grapher[T]{
-		graphType:   graphType,
-		dateFormat:  dateFormat,
-		dateStrings: []string{},
-		values:      make(map[string][]T),
+		graphType:       graphType,
+		dateFormat:      dateFormat,
+		dateGranularity: dateGranularity,
+		dateStrings:     []string{},
+		values:          make(map[string][]T),
 	}
 }
 
@@ -57,7 +63,7 @@ func (grapher *Grapher[T]) getDateIndex(dateStr string, label string) int {
 	dateIndex := slices.Index(grapher.dateStrings, dateStr)
 
 	if dateIndex == -1 {
-		grapher.addDays(dateStr)
+		grapher.addDates(dateStr)
 		dateIndex = slices.Index(grapher.dateStrings, dateStr)
 	}
 
@@ -71,7 +77,7 @@ func (grapher *Grapher[T]) getDateIndex(dateStr string, label string) int {
 	return dateIndex
 }
 
-func (grapher *Grapher[T]) addDays(dateStr string) {
+func (grapher *Grapher[T]) addDates(dateStr string) {
 	if len(grapher.dateStrings) == 0 {
 		grapher.dateStrings = append(grapher.dateStrings, dateStr)
 		return
@@ -86,7 +92,7 @@ func (grapher *Grapher[T]) addDays(dateStr string) {
 
 	i := smallestDate
 	for i.After(dateDay) {
-		i = i.AddDate(0, 0, -1)
+		i = i.Add(-1 * grapher.dateGranularity)
 
 		grapher.dateStrings = append(
 			[]string{i.Format(grapher.dateFormat)},
@@ -101,7 +107,7 @@ func (grapher *Grapher[T]) addDays(dateStr string) {
 
 	i = largestDate
 	for i.Before(dateDay) {
-		i = i.AddDate(0, 0, 1)
+		i = i.Add(grapher.dateGranularity)
 
 		grapher.dateStrings = append(
 			grapher.dateStrings,

@@ -10,7 +10,7 @@ import (
 )
 
 func TestGrapherCumulative(t *testing.T) {
-	grapher := grapher.New[int](grapher.Cumulative, "2006-01-02")
+	grapher := grapher.New[int](grapher.Cumulative, "2006-01-02", 24*time.Hour)
 
 	dateNow := time.Now().UTC()
 	for i := 0; i < 10; i++ {
@@ -37,7 +37,7 @@ func TestGrapherCumulative(t *testing.T) {
 }
 
 func TestGrapherNormal(t *testing.T) {
-	grapher := grapher.New[int](grapher.Normal, "2006-01-02")
+	grapher := grapher.New[int](grapher.Normal, "2006-01-02", 24*time.Hour)
 
 	dateNow := time.Now().UTC()
 	for i := 0; i < 10; i++ {
@@ -53,6 +53,29 @@ func TestGrapherNormal(t *testing.T) {
 		assert.Equal(
 			t,
 			time.Now().UTC().AddDate(0, 0, i).Format("2006-01-02"),
+			dateSlice[i],
+		)
+		assert.Equal(t, fmt.Sprint(i), valueSlice["data"][i])
+	}
+}
+
+func TestGrapherNormalSeconds(t *testing.T) {
+	grapher := grapher.New[int](grapher.Normal, time.RFC3339, time.Second)
+
+	dateNow := time.Now().UTC()
+	for i := 0; i < 10; i++ {
+		grapher.AddPoint(dateNow.Add(time.Duration(i)*time.Second), i, "data")
+	}
+
+	dateSlice, valueSlice := grapher.ToStringSlices()
+
+	assert.Equal(t, 10, len(dateSlice))
+	assert.Equal(t, 10, len(valueSlice["data"]))
+
+	for i := 0; i < 10; i++ {
+		assert.Equal(
+			t,
+			time.Now().UTC().Add(time.Duration(i)*time.Second).Format(time.RFC3339),
 			dateSlice[i],
 		)
 		assert.Equal(t, fmt.Sprint(i), valueSlice["data"][i])
